@@ -1,222 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-    <title>الجولة الافتراضية</title>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
-        #container { width: 100vw; height: 100vh; }
-        #controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
+    <meta charset="UTF-8">
+    <title>Virtual Tour Studio - باني الجولات</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
         }
-        #autoRotateBtn {
-            padding: 12px 24px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border: 2px solid #4a6c8f;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 16px;
-            backdrop-filter: blur(5px);
-        }
-        .hotspot {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
-            z-index: 10;
-        }
-        .hotspot-tooltip {
-            position: absolute;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            white-space: nowrap;
-            display: none;
-        }
-        .hotspot:hover .hotspot-tooltip {
-            display: block;
-        }
-    </style>
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
-    <div id="container"></div>
-    <div id="controls">
-        <button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
+    <div class="toolbar">
+        <div class="logo">🏗️ Virtual Tour Studio</div>
+        <div class="controls">
+            <button id="newProject">🆕 مشروع جديد</button>
+            <button id="openProject">📂 فتح مشروع</button>
+            <button id="saveProject">💾 حفظ المشروع</button>
+            <button id="exportTour">📦 تصدير الجولة</button>
+        </div>
     </div>
 
-    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <div class="status-bar" id="status">
+        النوع الحالي: <span style="color:#ffcc00;">EL</span>
+    </div>
+
+    <div class="color-panel">
+        <div class="color-btn EL" onclick="window.changeType('EL')"></div>
+        <div class="color-btn AC" onclick="window.changeType('AC')"></div>
+        <div class="color-btn WP" onclick="window.changeType('WP')"></div>
+        <div class="color-btn WA" onclick="window.changeType('WA')"></div>
+        <div class="color-btn GS" onclick="window.changeType('GS')"></div>
+    </div>
+
+    <div id="container"></div>
+
+    <div class="drawing-tools">
+        <button id="toggleRotate">⏸️ إيقاف التدوير</button>
+        <button id="toggleDraw">✏️ تفعيل الرسم</button>
+        <button id="finalizePath">💾 تثبيت المسار</button>
+        <button id="clearAll">🗑️ مسح الكل</button>
+    </div>
+
+    <!-- شريط Hotspots الجديد -->
+    <div class="hotspot-toolbar">
+        <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">🚪</button>
+        <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">ℹ️</button>
+    </div>
+
+    <div class="hint">
+        🖱 Click: إضافة نقطة<br>
+        ⌫ Backspace: حذف آخر نقطة<br>
+        ⏎ Enter: اعتماد المسار<br>
+        🖼️ Esc: إلغاء الرسم<br>
+        🔴 وضع Hotspot: اختر نوعاً ثم انقر
+    </div>
+
+    <div class="project-panel" id="projectPanel" style="display: none;">
+        <div class="panel-header">
+            <h3>📁 المشاريع</h3>
+            <button class="close-panel" onclick="toggleProjectPanel()">✕</button>
+        </div>
+        <div class="project-list" id="projectList"></div>
+    </div>
+
+    <!-- لوحة المشاهد الجديدة -->
+    <div class="scene-panel" id="scenePanel">
+        <div class="panel-header">
+            <h3>📋 المشاهد</h3>
+            <button class="add-scene-btn" id="addSceneBtn">➕ إضافة مشهد</button>
+        </div>
+        <div class="scene-list" id="sceneList"></div>
+    </div>
+
+    <div id="loader" style="display: none;">⏳ جاري التحميل...</div>
+
+    <script type="module" src="main.js"></script>
     
     <script>
-    // تحميل بيانات الجولة - مع دعم عدم وجود ملف
-    async function loadTourData() {
-        try {
-            const response = await fetch('tour-data.json');
-            if (!response.ok) {
-                console.log('⚠️ لا يوجد ملف JSON، استخدم بيانات افتراضية');
-                return {
-                    scenes: [{
-                        id: 'scene-1',
-                        name: 'المشهد الرئيسي',
-                        image: 'panorama.jpg',
-                        paths: [],
-                        hotspots: []
-                    }]
-                };
+        window.changeType = function(type) {
+            if (window.setCurrentPathType) {
+                window.setCurrentPathType(type);
             }
-            return await response.json();
-        } catch (error) {
-            console.log('⚠️ خطأ في تحميل JSON، استخدم بيانات افتراضية');
-            return {
-                scenes: [{
-                    id: 'scene-1',
-                    name: 'المشهد الرئيسي',
-                    image: 'panorama.jpg',
-                    paths: [],
-                    hotspots: []
-                }]
-            };
-        }
-    }
-
-    // استخدم الدالة
-    loadTourData().then(data => {
-        let autoRotate = true;
-        const scenes = data.scenes;
-        let currentScene = 0;
-
-        // إعداد المشهد
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 0, 0.1);
-        
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('container').appendChild(renderer.domElement);
-        
-        // إضاءة
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-        scene.add(ambientLight);
-        
-        // تحكم
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableZoom = true;
-        controls.enablePan = false;
-        controls.enableDamping = true;
-        controls.autoRotate = autoRotate;
-        controls.autoRotateSpeed = 0.5;
-        
-        // زر التحكم بالدوران
-        document.getElementById('autoRotateBtn').onclick = () => {
-            autoRotate = !autoRotate;
-            controls.autoRotate = autoRotate;
-            document.getElementById('autoRotateBtn').textContent = 
-                autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
         };
         
-        // تحميل المشهد الحالي
-        function loadScene(index) {
-            const sceneData = scenes[index];
-            
-            // تحميل الصورة
-            new THREE.TextureLoader().load(sceneData.image, texture => {
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.x = -1;
-                
-                const geometry = new THREE.SphereGeometry(500, 128, 128);
-                const material = new THREE.MeshBasicMaterial({
-                    map: texture,
-                    side: THREE.BackSide
-                });
-                
-                const sphere = new THREE.Mesh(geometry, material);
-                scene.add(sphere);
-                
-                // إضافة المسارات
-                sceneData.paths.forEach(pathData => {
-                    const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                    
-                    for (let i = 0; i < points.length - 1; i++) {
-                        const start = points[i];
-                        const end = points[i + 1];
-                        
-                        const direction = new THREE.Vector3().subVectors(end, start);
-                        const distance = direction.length();
-                        
-                        if (distance < 5) continue;
-                        
-                        const cylinder = new THREE.Mesh(
-                            new THREE.CylinderGeometry(3.5, 3.5, distance, 12),
-                            new THREE.MeshStandardMaterial({ 
-                                color: pathData.color,
-                                emissive: pathData.color,
-                                emissiveIntensity: 0.3
-                            })
-                        );
-                        
-                        const quaternion = new THREE.Quaternion();
-                        quaternion.setFromUnitVectors(
-                            new THREE.Vector3(0, 1, 0),
-                            direction.clone().normalize()
-                        );
-                        
-                        cylinder.applyQuaternion(quaternion);
-                        
-                        const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-                        cylinder.position.copy(center);
-                        
-                        scene.add(cylinder);
-                    }
-                });
-                
-                // إضافة hotspots
-                sceneData.hotspots.forEach(hotspot => {
-                    // تحويل إحداثيات Three.js إلى إحداثيات الشاشة
-                    const vector = new THREE.Vector3(hotspot.position.x, hotspot.position.y, hotspot.position.z).project(camera);
-                    
-                    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                    const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-                    
-                    const div = document.createElement('div');
-                    div.className = 'hotspot';
-                    div.style.left = x + 'px';
-                    div.style.top = y + 'px';
-                    div.innerHTML = `
-                        <span style="font-size:30px; filter:drop-shadow(0 0 5px ${hotspot.color});">
-                            ${hotspot.icon}
-                        </span>
-                        <div class="hotspot-tooltip">${hotspot.data.text}</div>
-                    `;
-                    
-                    div.onclick = () => {
-                        if (hotspot.type === 'SCENE') {
-                            // انتقال إلى مشهد آخر
-                            loadScene(hotspot.data.targetScene);
-                        } else {
-                            alert(hotspot.data.text);
-                        }
-                    };
-                    
-                    document.body.appendChild(div);
-                });
-            });
+        function toggleProjectPanel() {
+            const panel = document.getElementById('projectPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
-        
-        loadScene(0);
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-    });
     </script>
 </body>
 </html>
