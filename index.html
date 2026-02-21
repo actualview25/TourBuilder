@@ -50,9 +50,9 @@
     </div>
 
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
     <script>
-        // تحميل بيانات الجولة
-        <script>
     // تحميل بيانات الجولة - مع دعم عدم وجود ملف
     async function loadTourData() {
         try {
@@ -63,7 +63,7 @@
                     scenes: [{
                         id: 'scene-1',
                         name: 'المشهد الرئيسي',
-                        image: 'textures/StartPoint.jpg',
+                        image: 'panorama.jpg',
                         paths: [],
                         hotspots: []
                     }]
@@ -76,7 +76,7 @@
                 scenes: [{
                     id: 'scene-1',
                     name: 'المشهد الرئيسي',
-                    image: 'textures/StartPoint.jpg',
+                    image: 'panorama.jpg',
                     paths: [],
                     hotspots: []
                 }]
@@ -90,142 +90,133 @@
         const scenes = data.scenes;
         let currentScene = 0;
 
-        // ... باقي الكود كما هو ...
-    });
-</script>
-            .then(res => res.json())
-            .then(data => {
-                let autoRotate = true;
-                const scenes = data.scenes;
-                let currentScene = 0;
+        // إعداد المشهد
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 0.1);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('container').appendChild(renderer.domElement);
+        
+        // إضاءة
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+        scene.add(ambientLight);
+        
+        // تحكم
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableZoom = true;
+        controls.enablePan = false;
+        controls.enableDamping = true;
+        controls.autoRotate = autoRotate;
+        controls.autoRotateSpeed = 0.5;
+        
+        // زر التحكم بالدوران
+        document.getElementById('autoRotateBtn').onclick = () => {
+            autoRotate = !autoRotate;
+            controls.autoRotate = autoRotate;
+            document.getElementById('autoRotateBtn').textContent = 
+                autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
+        };
+        
+        // تحميل المشهد الحالي
+        function loadScene(index) {
+            const sceneData = scenes[index];
+            
+            // تحميل الصورة
+            new THREE.TextureLoader().load(sceneData.image, texture => {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.x = -1;
                 
-                // إعداد المشهد
-                const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-                camera.position.set(0, 0, 0.1);
+                const geometry = new THREE.SphereGeometry(500, 128, 128);
+                const material = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    side: THREE.BackSide
+                });
                 
-                const renderer = new THREE.WebGLRenderer({ antialias: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                document.getElementById('container').appendChild(renderer.domElement);
+                const sphere = new THREE.Mesh(geometry, material);
+                scene.add(sphere);
                 
-                // إضاءة
-                const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-                scene.add(ambientLight);
-                
-                // تحكم
-                const controls = new THREE.OrbitControls(camera, renderer.domElement);
-                controls.enableZoom = true;
-                controls.enablePan = false;
-                controls.enableDamping = true;
-                controls.autoRotate = autoRotate;
-                controls.autoRotateSpeed = 0.5;
-                
-                // زر التحكم بالدوران
-                document.getElementById('autoRotateBtn').onclick = () => {
-                    autoRotate = !autoRotate;
-                    controls.autoRotate = autoRotate;
-                    document.getElementById('autoRotateBtn').textContent = 
-                        autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
-                };
-                
-                // تحميل المشهد الحالي
-                function loadScene(index) {
-                    const sceneData = scenes[index];
+                // إضافة المسارات
+                sceneData.paths.forEach(pathData => {
+                    const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
                     
-                    // تحميل الصورة
-                    new THREE.TextureLoader().load(sceneData.image, texture => {
-                        texture.wrapS = THREE.RepeatWrapping;
-                        texture.wrapT = THREE.RepeatWrapping;
-                        texture.repeat.x = -1;
+                    for (let i = 0; i < points.length - 1; i++) {
+                        const start = points[i];
+                        const end = points[i + 1];
                         
-                        const geometry = new THREE.SphereGeometry(500, 128, 128);
-                        const material = new THREE.MeshBasicMaterial({
-                            map: texture,
-                            side: THREE.BackSide
-                        });
+                        const direction = new THREE.Vector3().subVectors(end, start);
+                        const distance = direction.length();
                         
-                        const sphere = new THREE.Mesh(geometry, material);
-                        scene.add(sphere);
+                        if (distance < 5) continue;
                         
-                        // إضافة المسارات
-                        sceneData.paths.forEach(pathData => {
-                            const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                            
-                            for (let i = 0; i < points.length - 1; i++) {
-                                const start = points[i];
-                                const end = points[i + 1];
-                                
-                                const direction = new THREE.Vector3().subVectors(end, start);
-                                const distance = direction.length();
-                                
-                                if (distance < 5) continue;
-                                
-                                const cylinder = new THREE.Mesh(
-                                    new THREE.CylinderGeometry(3.5, 3.5, distance, 12),
-                                    new THREE.MeshStandardMaterial({ 
-                                        color: pathData.color,
-                                        emissive: pathData.color,
-                                        emissiveIntensity: 0.3
-                                    })
-                                );
-                                
-                                const quaternion = new THREE.Quaternion();
-                                quaternion.setFromUnitVectors(
-                                    new THREE.Vector3(0, 1, 0),
-                                    direction.clone().normalize()
-                                );
-                                
-                                cylinder.applyQuaternion(quaternion);
-                                
-                                const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-                                cylinder.position.copy(center);
-                                
-                                scene.add(cylinder);
-                            }
-                        });
+                        const cylinder = new THREE.Mesh(
+                            new THREE.CylinderGeometry(3.5, 3.5, distance, 12),
+                            new THREE.MeshStandardMaterial({ 
+                                color: pathData.color,
+                                emissive: pathData.color,
+                                emissiveIntensity: 0.3
+                            })
+                        );
                         
-                        // إضافة hotspots
-                        sceneData.hotspots.forEach(hotspot => {
-                            // تحويل إحداثيات Three.js إلى إحداثيات الشاشة
-                            const vector = hotspot.position.clone().project(camera);
-                            
-                            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                            const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-                            
-                            const div = document.createElement('div');
-                            div.className = 'hotspot';
-                            div.style.left = x + 'px';
-                            div.style.top = y + 'px';
-                            div.innerHTML = `
-                                <span style="font-size:30px; filter:drop-shadow(0 0 5px ${hotspot.color});">
-                                    ${hotspot.icon}
-                                </span>
-                                <div class="hotspot-tooltip">${hotspot.data.text}</div>
-                            `;
-                            
-                            div.onclick = () => {
-                                if (hotspot.type === 'SCENE') {
-                                    // انتقال إلى مشهد آخر
-                                    loadScene(hotspot.data.targetScene);
-                                } else {
-                                    alert(hotspot.data.text);
-                                }
-                            };
-                            
-                            document.body.appendChild(div);
-                        });
-                    });
-                }
+                        const quaternion = new THREE.Quaternion();
+                        quaternion.setFromUnitVectors(
+                            new THREE.Vector3(0, 1, 0),
+                            direction.clone().normalize()
+                        );
+                        
+                        cylinder.applyQuaternion(quaternion);
+                        
+                        const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+                        cylinder.position.copy(center);
+                        
+                        scene.add(cylinder);
+                    }
+                });
                 
-                loadScene(0);
-                
-                function animate() {
-                    requestAnimationFrame(animate);
-                    controls.update();
-                    renderer.render(scene, camera);
-                }
-                animate();
+                // إضافة hotspots
+                sceneData.hotspots.forEach(hotspot => {
+                    // تحويل إحداثيات Three.js إلى إحداثيات الشاشة
+                    const vector = new THREE.Vector3(hotspot.position.x, hotspot.position.y, hotspot.position.z).project(camera);
+                    
+                    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                    const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+                    
+                    const div = document.createElement('div');
+                    div.className = 'hotspot';
+                    div.style.left = x + 'px';
+                    div.style.top = y + 'px';
+                    div.innerHTML = `
+                        <span style="font-size:30px; filter:drop-shadow(0 0 5px ${hotspot.color});">
+                            ${hotspot.icon}
+                        </span>
+                        <div class="hotspot-tooltip">${hotspot.data.text}</div>
+                    `;
+                    
+                    div.onclick = () => {
+                        if (hotspot.type === 'SCENE') {
+                            // انتقال إلى مشهد آخر
+                            loadScene(hotspot.data.targetScene);
+                        } else {
+                            alert(hotspot.data.text);
+                        }
+                    };
+                    
+                    document.body.appendChild(div);
+                });
             });
+        }
+        
+        loadScene(0);
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    });
     </script>
 </body>
 </html>
