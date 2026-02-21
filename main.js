@@ -232,7 +232,96 @@ class TourExporter {
 `;
     }
 }
+// =======================================
+// نظام إدارة الصور المتعددة (Multi-Scene)
+// =======================================
+class SceneManager {
+    constructor() {
+        this.scenes = [];
+        this.currentSceneIndex = 0;
+        this.maxScenes = 1000; // يمكنك زيادتها
+    }
 
+    // إضافة صورة جديدة
+    async addScene(name, imageFile) {
+        const reader = new FileReader();
+        const imageData = await new Promise((resolve) => {
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(imageFile);
+        });
+
+        const scene = {
+            id: `scene-${Date.now()}-${this.scenes.length}`,
+            name: name,
+            image: imageData,
+            imageSize: imageFile.size,
+            paths: [],
+            hotspots: [],
+            date: new Date().toISOString()
+        };
+
+        this.scenes.push(scene);
+        this.saveToIndexedDB();
+        return scene;
+    }
+
+    // حفظ في IndexedDB (سعة كبيرة)
+    saveToIndexedDB() {
+        const request = indexedDB.open('VirtualTourDB', 1);
+        
+        request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('scenes')) {
+                db.createObjectStore('scenes', { keyPath: 'id' });
+            }
+        };
+
+        request.onsuccess = (e) => {
+            const db = e.target.result;
+            const tx = db.transaction('scenes', 'readwrite');
+            const store = tx.objectStore('scenes');
+            
+            this.scenes.forEach(scene => {
+                store.put(scene);
+            });
+        };
+    }
+}
+
+// =======================================
+// تصدير المشروع الكامل
+// =======================================
+async function exportFullProject() {
+    const zip = new JSZip();
+    
+    // 1. إضافة كل الصور
+    sceneManager.scenes.forEach((scene, index) => {
+        const imageData = scene.image.split(',')[1];
+        zip.file(`scenes/scene-${index}.jpg`, imageData, { base64: true });
+    });
+    
+    // 2. إضافة ملف البيانات
+    const projectData = {
+        name: "مشروعي الكبير",
+        scenes: sceneManager.scenes.map((s, i) => ({
+            id: s.id,
+            name: s.name,
+            image: `scenes/scene-${i}.jpg`,
+            paths: s.paths,
+            hotspots: s.hotspots
+        }))
+    };
+    
+    zip.file('project.json', JSON.stringify(projectData, null, 2));
+    
+    // 3. إضافة مشغل الجولة
+    zip.file('index.html', generatePlayerHTML());
+    zip.file('style.css', generatePlayerCSS());
+    
+    // 4. تصدير
+    const content = await zip.generateAsync({ type: 'blob' });
+    saveAs(content, `project-${Date.now()}.zip`);
+}
 // =======================================
 // المتغيرات الأساسية
 // =======================================
