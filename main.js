@@ -659,145 +659,354 @@ async function exportCompleteTour() {
 
 function showLoader(message) {
     const loader = document.getElementById('loader');
-    loader.style.display = 'flex';
-    loader.textContent = message || '⏳ جاري التحميل...';
+    if (loader) {
+        loader.style.display = 'flex';
+        loader.textContent = message || '⏳ جاري التحميل...';
+    }
 }
 
 function hideLoader() {
-    document.getElementById('loader').style.display = 'none';
-}
-
-// =======================================
-// تحميل المشروع
-// =======================================
-function loadProject(project) {
-    projectManager.currentProject = project;
-    
-    if (project.imageData) {
-        const img = new Image();
-        img.onload = () => {
-            const texture = new THREE.CanvasTexture(img);
-            sphereMesh.material.map = texture;
-            sphereMesh.material.needsUpdate = true;
-            
-            paths.forEach(p => scene.remove(p));
-            paths = [];
-            
-            project.paths.forEach(pathData => {
-                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                currentPathType = pathData.type;
-                createStraightPath(points);
-            });
-        };
-        img.src = project.imageData;
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
     }
-    
-    document.getElementById('projectPanel').style.display = 'none';
-    alert(`✅ تم تحميل المشروع: ${project.name}`);
 }
 
 // =======================================
-// إعداد الأحداث (مرة واحدة فقط)
+// المتغيرات الجديدة للمشاهد المتعددة
 // =======================================
-function setupEvents() {
-    renderer.domElement.addEventListener('click', onClick);
-    renderer.domElement.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('resize', onResize);
-    
-    document.getElementById('toggleRotate').onclick = () => {
-        autorotate = !autorotate;
-        controls.autoRotate = autorotate;
-        document.getElementById('toggleRotate').textContent = 
-            autorotate ? '⏸️ إيقاف التدوير' : '▶️ تشغيل التدوير';
-    };
+let sceneManager = null;
+let hotspotMode = null;
 
-    document.getElementById('toggleDraw').onclick = () => {
-        drawMode = !drawMode;
-        const btn = document.getElementById('toggleDraw');
-        
-        if (drawMode) {
-            btn.textContent = '⛔ إيقاف الرسم';
-            btn.style.background = '#aa3333';
-            document.body.style.cursor = 'crosshair';
-            if (markerPreview) markerPreview.visible = true;
-            controls.autoRotate = false;
-        } else {
-            btn.textContent = '✏️ تفعيل الرسم';
-            btn.style.background = '#8f6c4a';
-            document.body.style.cursor = 'default';
-            if (markerPreview) markerPreview.visible = false;
-            controls.autoRotate = autorotate;
-            clearCurrentDrawing();
-        }
-    };
+// =======================================
+// إدارة المشاهد المتعددة
+// =======================================
+class SceneManager {
+    constructor() {
+        this.scenes = [];
+        this.currentScene = null;
+        this.currentSceneIndex = 0;
+        this.loadFromIndexedDB();
+    }
 
-    document.getElementById('finalizePath').onclick = saveCurrentPath;
-
-    document.getElementById('clearAll').onclick = () => {
-        if (confirm('هل أنت متأكد من مسح جميع المسارات؟')) {
-            paths.forEach(path => scene.remove(path));
-            paths = [];
-            clearCurrentDrawing();
-        }
-    };
-
-    document.getElementById('newProject').onclick = () => {
-        const name = prompt('أدخل اسم المشروع:');
-        if (name) {
-            projectManager.newProject(name);
-            alert(`✅ مشروع جديد: ${name}`);
-        }
-    };
-
-    document.getElementById('openProject').onclick = () => {
-        const panel = document.getElementById('projectPanel');
-        const list = document.getElementById('projectList');
-        
-        list.innerHTML = '';
-        projectManager.projects.forEach(project => {
-            const item = document.createElement('div');
-            item.className = 'project-item';
-            item.innerHTML = `
-                <strong>${project.name}</strong><br>
-                <small>${new Date(project.created).toLocaleDateString()}</small>
-            `;
-            item.onclick = () => loadProject(project);
-            list.appendChild(item);
+    async addScene(name, imageFile) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const scene = {
+                    id: `scene-${Date.now()}-${this.scenes.length}`,
+                    name: name,
+                    image: e.target.result,
+                    paths: [],
+                    hotspots: [],
+                    date: new Date().toISOString()
+                };
+                this.scenes.push(scene);
+                this.saveToIndexedDB();
+                resolve(scene);
+            };
+            reader.readAsDataURL(imageFile);
         });
-        
-        panel.style.display = 'block';
-    };
+    }
 
-    document.getElementById('saveProject').onclick = () => {
-        if (!projectManager.currentProject) {
-            const name = prompt('أدخل اسم المشروع:');
-            if (name) projectManager.newProject(name);
+    saveToIndexedDB() {
+        try {
+            localStorage.setItem('virtual-tour-scenes', JSON.stringify(this.scenes));
+        } catch (e) {
+            console.log('⚠️ فشل الحفظ في IndexedDB');
         }
-        
-        if (projectManager.currentProject && sphereMesh?.material?.map) {
-            const image = sphereMesh.material.map.image;
-            exportCanvas.width = image.width;
-            exportCanvas.height = image.height;
-            exportContext.drawImage(image, 0, 0, image.width, image.height);
-            
-            projectManager.saveCurrentProject(
-                paths, 
-                exportCanvas.toDataURL('image/jpeg', 0.95)
-            );
-            alert('✅ تم حفظ المشروع');
-        }
-    };
+    }
 
-    document.getElementById('exportTour').onclick = exportCompleteTour;
+    loadFromIndexedDB() {
+        try {
+            const saved = localStorage.getItem('virtual-tour-scenes');
+            if (saved) {
+                this.scenes = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.log('⚠️ فشل التحميل من IndexedDB');
+        }
+    }
+
+    addHotspot(sceneId, type, position, data) {
+        const scene = this.scenes.find(s => s.id === sceneId);
+        if (!scene) return null;
+
+        const hotspot = {
+            id: `hotspot-${Date.now()}-${Math.random()}`,
+            sceneId: sceneId,
+            type: type,
+            position: { x: position.x, y: position.y, z: position.z },
+            data: data,
+            icon: hotspotTypes[type].icon,
+            color: hotspotTypes[type].color
+        };
+
+        scene.hotspots.push(hotspot);
+        this.saveToIndexedDB();
+        return hotspot;
+    }
+}
+
+// أنواع النقاط
+const hotspotTypes = {
+    SCENE: { icon: '🚪', color: 0x44aaff, name: 'انتقال' },
+    INFO: { icon: 'ℹ️', color: 0xffaa44, name: 'معلومات' },
+    WARNING: { icon: '⚠️', color: 0xff4444, name: 'تحذير' },
+    PRODUCT: { icon: '🛒', color: 0x44ff44, name: 'منتج' },
+    VIDEO: { icon: '🎥', color: 0xff44ff, name: 'فيديو' }
+};
+
+// =======================================
+// دوال الـ Hotspots
+// =======================================
+function addHotspot(type, position) {
+    if (!sceneManager || !sceneManager.currentScene) {
+        alert('❌ لا يوجد مشهد نشط');
+        return;
+    }
+
+    let data = {};
+    
+    if (type === 'SCENE') {
+        const sceneNames = sceneManager.scenes.map(s => s.name).join('\n');
+        const targetScene = prompt(`أدخل اسم المشهد المستهدف:\nالمشاهد المتاحة:\n${sceneNames}`);
+        if (!targetScene) return;
+        data = { targetScene: targetScene };
+    } else {
+        const text = prompt(`أدخل نص ${hotspotTypes[type].name}:`);
+        if (!text) return;
+        data = { text: text };
+    }
+
+    const hotspot = sceneManager.addHotspot(
+        sceneManager.currentScene.id,
+        type,
+        position,
+        data
+    );
+
+    if (hotspot) {
+        // إنشاء كرة ملونة تمثل hotspot
+        const geometry = new THREE.SphereGeometry(12, 24, 24);
+        const material = new THREE.MeshStandardMaterial({
+            color: hotspot.color,
+            emissive: hotspot.color,
+            emissiveIntensity: 0.5
+        });
+
+        const marker = new THREE.Mesh(geometry, material);
+        marker.position.copy(position);
+        marker.userData = { type: 'hotspot', hotspotId: hotspot.id };
+        scene.add(marker);
+
+        console.log(`✅ تم إضافة ${hotspotTypes[type].name}`);
+    }
+}
+
+function rebuildHotspots(hotspots) {
+    // مسح الـ hotspots القديمة
+    scene.children.forEach(child => {
+        if (child.userData && child.userData.type === 'hotspot') {
+            scene.remove(child);
+        }
+    });
+
+    // إضافة الـ hotspots الجديدة
+    hotspots.forEach(hotspot => {
+        const geometry = new THREE.SphereGeometry(12, 24, 24);
+        const material = new THREE.MeshStandardMaterial({
+            color: hotspot.color,
+            emissive: hotspot.color,
+            emissiveIntensity: 0.5
+        });
+
+        const marker = new THREE.Mesh(geometry, material);
+        marker.position.set(hotspot.position.x, hotspot.position.y, hotspot.position.z);
+        marker.userData = { type: 'hotspot', hotspotId: hotspot.id };
+        scene.add(marker);
+    });
 }
 
 // =======================================
-// تهيئة المشهد
+// دوال إدارة المشاهد
+// =======================================
+function switchScene(sceneId) {
+    const sceneData = sceneManager.scenes.find(s => s.id === sceneId);
+    if (!sceneData) return;
+
+    // حفظ المسارات الحالية
+    if (sceneManager.currentScene) {
+        sceneManager.currentScene.paths = paths.map(p => ({
+            type: p.userData.type,
+            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
+            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
+        }));
+    }
+
+    sceneManager.currentScene = sceneData;
+    sceneManager.currentSceneIndex = sceneManager.scenes.indexOf(sceneData);
+
+    // مسح المشهد الحالي
+    paths.forEach(p => scene.remove(p));
+    paths = [];
+    clearCurrentDrawing();
+
+    // تحميل الصورة الجديدة
+    loadSceneImage(sceneData.image);
+
+    // إعادة بناء المسارات
+    sceneData.paths.forEach(pathData => {
+        const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+        currentPathType = pathData.type;
+        createStraightPath(points);
+    });
+
+    // إعادة بناء hotspots
+    rebuildHotspots(sceneData.hotspots);
+
+    console.log(`✅ تم التبديل إلى: ${sceneData.name}`);
+}
+
+function loadSceneImage(imageUrl) {
+    if (!sphereMesh || !sphereMesh.material) return;
+
+    const img = new Image();
+    img.onload = () => {
+        const texture = new THREE.CanvasTexture(img);
+        sphereMesh.material.map = texture;
+        sphereMesh.material.needsUpdate = true;
+    };
+    img.src = imageUrl;
+}
+
+function addNewScene() {
+    const name = prompt('أدخل اسم المشهد:');
+    if (!name) return;
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const scene = await sceneManager.addScene(name, file);
+        addSceneToPanel(scene);
+        switchScene(scene.id);
+    };
+
+    input.click();
+}
+
+function createScenePanel() {
+    const panel = document.createElement('div');
+    panel.className = 'scene-panel';
+    panel.innerHTML = `
+        <div class="panel-header">
+            <h3>📋 المشاهد</h3>
+            <button class="add-scene-btn">➕ إضافة مشهد</button>
+        </div>
+        <div class="scene-list" id="sceneList"></div>
+    `;
+
+    document.body.appendChild(panel);
+
+    panel.querySelector('.add-scene-btn').onclick = addNewScene;
+
+    return panel;
+}
+
+function addSceneToPanel(scene) {
+    const list = document.getElementById('sceneList');
+    if (!list) return;
+
+    const item = document.createElement('div');
+    item.className = 'scene-item';
+    item.innerHTML = `
+        <span class="scene-icon">🌄</span>
+        <span class="scene-name">${scene.name}</span>
+        <span class="scene-hotspots">${scene.hotspots.length} نقطة</span>
+    `;
+
+    item.onclick = () => switchScene(scene.id);
+    list.appendChild(item);
+}
+
+function createHotspotToolbar() {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'hotspot-toolbar';
+    toolbar.innerHTML = `
+        <button class="hotspot-btn scene" title="نقطة انتقال">🚪</button>
+        <button class="hotspot-btn info" title="معلومات">ℹ️</button>
+        <button class="hotspot-btn warning" title="تحذير">⚠️</button>
+        <button class="hotspot-btn product" title="منتج">🛒</button>
+        <button class="hotspot-btn video" title="فيديو">🎥</button>
+    `;
+
+    document.body.appendChild(toolbar);
+
+    toolbar.querySelector('.scene').onclick = () => {
+        hotspotMode = 'SCENE';
+        document.body.style.cursor = 'cell';
+    };
+
+    toolbar.querySelector('.info').onclick = () => {
+        hotspotMode = 'INFO';
+        document.body.style.cursor = 'cell';
+    };
+
+    toolbar.querySelector('.warning').onclick = () => {
+        hotspotMode = 'WARNING';
+        document.body.style.cursor = 'cell';
+    };
+
+    toolbar.querySelector('.product').onclick = () => {
+        hotspotMode = 'PRODUCT';
+        document.body.style.cursor = 'cell';
+    };
+
+    toolbar.querySelector('.video').onclick = () => {
+        hotspotMode = 'VIDEO';
+        document.body.style.cursor = 'cell';
+    };
+
+    return toolbar;
+}
+
+// تعديل دالة onClick لدعم hotspots
+const originalOnClick = onClick;
+window.onClick = function(e) {
+    if (!sphereMesh) return;
+
+    mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(sphereMesh);
+
+    if (hits.length) {
+        const point = hits[0].point.clone();
+
+        if (hotspotMode) {
+            // إضافة hotspot
+            addHotspot(hotspotMode, point);
+            hotspotMode = null;
+            document.body.style.cursor = 'default';
+        } else if (drawMode) {
+            // إضافة نقطة مسار
+            addPoint(point);
+        }
+    }
+};
+
+// =======================================
+// دالة init كاملة
 // =======================================
 function init() {
     console.log('🚀 بدء التهيئة...');
-    
+
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
@@ -829,63 +1038,20 @@ function init() {
     controls.target.set(0, 0, 0);
     controls.update();
 
+    // تهيئة مدير المشاهد
+    sceneManager = new SceneManager();
+    
+    // إنشاء اللوحات
+    createScenePanel();
+    createHotspotToolbar();
+
     loadPanorama();
     setupEvents();
     setupExportCanvas();
     animate();
+
+    console.log('✅ التهيئة اكتملت');
 }
 
-// =======================================
-// تحميل البانوراما
-// =======================================
-function loadPanorama() {
-    console.log('🔄 جاري تحميل البانوراما...');
-    
-    const loader = new THREE.TextureLoader();
-    
-    loader.load(
-        './textures/StartPoint.jpg',
-        (texture) => {
-            console.log('✅ تم تحميل الصورة');
-            
-            texture.colorSpace = THREE.SRGBColorSpace;
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.x = -1;
-
-            const geometry = new THREE.SphereGeometry(500, 128, 128);
-            const material = new THREE.MeshBasicMaterial({
-                map: texture,
-                side: THREE.BackSide
-            });
-
-            sphereMesh = new THREE.Mesh(geometry, material);
-            scene.add(sphereMesh);
-            
-            const loaderEl = document.getElementById('loader');
-            if (loaderEl) loaderEl.style.display = 'none';
-            
-            setupMarkerPreview();
-        },
-        (progress) => {
-            console.log(`⏳ التحميل: ${Math.round((progress.loaded / progress.total) * 100)}%`);
-        },
-        (error) => {
-            console.error('❌ فشل تحميل الصورة:', error);
-        }
-    );
-}
-
-// =======================================
-// الرسوم المتحركة
-// =======================================
-function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-}
-
-// =======================================
-// بدء التشغيل
-// =======================================
-init();
+// تأكد من أن onClick يشير للدالة الجديدة
+window.onclick = onClick;
