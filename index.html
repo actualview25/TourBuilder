@@ -52,7 +52,47 @@
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
     <script>
         // تحميل بيانات الجولة
-        fetch('tour-data.json')
+        <script>
+    // تحميل بيانات الجولة - مع دعم عدم وجود ملف
+    async function loadTourData() {
+        try {
+            const response = await fetch('tour-data.json');
+            if (!response.ok) {
+                console.log('⚠️ لا يوجد ملف JSON، استخدم بيانات افتراضية');
+                return {
+                    scenes: [{
+                        id: 'scene-1',
+                        name: 'المشهد الرئيسي',
+                        image: 'textures/StartPoint.jpg',
+                        paths: [],
+                        hotspots: []
+                    }]
+                };
+            }
+            return await response.json();
+        } catch (error) {
+            console.log('⚠️ خطأ في تحميل JSON، استخدم بيانات افتراضية');
+            return {
+                scenes: [{
+                    id: 'scene-1',
+                    name: 'المشهد الرئيسي',
+                    image: 'textures/StartPoint.jpg',
+                    paths: [],
+                    hotspots: []
+                }]
+            };
+        }
+    }
+
+    // استخدم الدالة
+    loadTourData().then(data => {
+        let autoRotate = true;
+        const scenes = data.scenes;
+        let currentScene = 0;
+
+        // ... باقي الكود كما هو ...
+    });
+</script>
             .then(res => res.json())
             .then(data => {
                 let autoRotate = true;
