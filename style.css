@@ -171,6 +171,123 @@ body {
 #clearAll { background: #882222; }
 
 /* =======================================
+   شريط Hotspots الجديد
+   ======================================= */
+.hotspot-toolbar {
+    position: fixed;
+    bottom: 120px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 900;
+}
+
+.hotspot-btn {
+    width: 55px;
+    height: 55px;
+    border: none;
+    border-radius: 50%;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border: 2px solid white;
+}
+
+.hotspot-btn:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px currentColor;
+}
+
+.hotspot-btn.scene { background: #44aaff; }
+.hotspot-btn.info { background: #ffaa44; }
+
+/* =======================================
+   لوحة المشاهد الجديدة
+   ======================================= */
+.scene-panel {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 280px;
+    background: rgba(20, 30, 40, 0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid #4a6c8f;
+    border-radius: 15px;
+    color: white;
+    z-index: 900;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.scene-panel .panel-header {
+    padding: 15px;
+    border-bottom: 1px solid #4a6c8f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.scene-panel h3 {
+    margin: 0;
+    color: #88aaff;
+}
+
+.add-scene-btn {
+    padding: 5px 15px;
+    background: #228822;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    border: 1px solid #44ff44;
+}
+
+.add-scene-btn:hover {
+    background: #44aa44;
+}
+
+.scene-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.scene-item {
+    padding: 12px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.scene-item:hover {
+    background: rgba(74, 108, 143, 0.5);
+    transform: translateX(-5px);
+}
+
+.scene-icon {
+    font-size: 20px;
+}
+
+.scene-name {
+    flex: 1;
+    font-weight: bold;
+}
+
+.scene-hotspots {
+    font-size: 12px;
+    background: #4a6c8f;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+/* =======================================
    التلميحات
    ======================================= */
 .hint {
@@ -203,7 +320,7 @@ body {
 .project-panel {
     position: fixed;
     top: 80px;
-    right: 20px;
+    right: 320px;
     width: 300px;
     background: rgba(20, 30, 40, 0.95);
     backdrop-filter: blur(10px);
@@ -298,116 +415,13 @@ body {
     .hint {
         display: none;
     }
+    
+    .scene-panel {
+        width: 220px;
+    }
+    
+    .project-panel {
+        right: 260px;
+        width: 220px;
+    }
 }
-/* =======================================
-   لوحة المشاهد
-   ======================================= */
-.scene-panel {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    width: 280px;
-    background: rgba(20, 30, 40, 0.95);
-    backdrop-filter: blur(10px);
-    border: 2px solid #4a6c8f;
-    border-radius: 15px;
-    color: white;
-    z-index: 900;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-.scene-panel .panel-header {
-    padding: 15px;
-    border-bottom: 1px solid #4a6c8f;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.scene-panel h3 {
-    margin: 0;
-    color: #88aaff;
-}
-
-.add-scene-btn {
-    padding: 5px 15px;
-    background: #228822;
-    border: none;
-    border-radius: 20px;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.scene-list {
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 10px;
-}
-
-.scene-item {
-    padding: 12px;
-    margin: 5px 0;
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
-
-.scene-item:hover {
-    background: rgba(74, 108, 143, 0.5);
-    transform: translateX(-5px);
-}
-
-.scene-icon {
-    font-size: 20px;
-}
-
-.scene-name {
-    flex: 1;
-    font-weight: bold;
-}
-
-.scene-hotspots {
-    font-size: 12px;
-    background: #4a6c8f;
-    padding: 3px 8px;
-    border-radius: 12px;
-}
-
-/* =======================================
-   شريط أدوات Hotspots
-   ======================================= */
-.hotspot-toolbar {
-    position: fixed;
-    bottom: 100px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 900;
-}
-
-.hotspot-btn {
-    width: 50px;
-    height: 50px;
-    border: none;
-    border-radius: 25px;
-    font-size: 24px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
-
-.hotspot-btn:hover {
-    transform: scale(1.15);
-}
-
-.hotspot-btn.scene { background: #44aaff; }
-.hotspot-btn.info { background: #ffaa44; }
-.hotspot-btn.warning { background: #ff4444; }
-.hotspot-btn.product { background: #44ff44; }
-.hotspot-btn.video { background: #ff44ff; }
