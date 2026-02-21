@@ -63,10 +63,8 @@ class TourExporter {
     async exportTour(projectName, imageData, paths, imageWidth, imageHeight) {
         const folder = this.zip.folder(projectName);
         
-        // 1. إضافة الصورة
         folder.file('panorama.jpg', imageData.split(',')[1], { base64: true });
         
-        // 2. إضافة بيانات المسارات
         const pathsData = paths.map(path => ({
             type: path.userData.type,
             color: '#' + pathColors[path.userData.type].toString(16).padStart(6, '0'),
@@ -76,17 +74,10 @@ class TourExporter {
         }));
         
         folder.file('paths.json', JSON.stringify(pathsData, null, 2));
-        
-        // 3. إضافة ملف HTML للمشغل
         folder.file('index.html', this.generatePlayerHTML(projectName, imageWidth, imageHeight));
-        
-        // 4. إضافة ملف CSS
         folder.file('style.css', this.generatePlayerCSS());
-        
-        // 5. إضافة Three.js من CDN (سنضيف رابطاً بدلاً من الملف)
         folder.file('README.md', this.generateReadme(projectName));
         
-        // تصدير الملف
         const content = await this.zip.generateAsync({ type: 'blob' });
         saveAs(content, `${projectName}.zip`);
     }
@@ -107,7 +98,6 @@ class TourExporter {
     <div id="container"></div>
 
     <script>
-        // تحميل بيانات المسارات
         fetch('paths.json')
             .then(res => res.json())
             .then(pathsData => {
@@ -119,11 +109,9 @@ class TourExporter {
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 document.getElementById('container').appendChild(renderer.domElement);
                 
-                // إضاءة
                 const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
                 scene.add(ambientLight);
                 
-                // تحميل البانوراما
                 new THREE.TextureLoader().load('panorama.jpg', texture => {
                     texture.wrapS = THREE.RepeatWrapping;
                     texture.wrapT = THREE.RepeatWrapping;
@@ -138,7 +126,6 @@ class TourExporter {
                     const sphere = new THREE.Mesh(geometry, material);
                     scene.add(sphere);
                     
-                    // إعادة بناء المسارات
                     pathsData.forEach(pathData => {
                         const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
                         
@@ -176,7 +163,6 @@ class TourExporter {
                     });
                 });
                 
-                // التحكم
                 const controls = new THREE.OrbitControls(camera, renderer.domElement);
                 controls.enableZoom = true;
                 controls.enablePan = false;
@@ -191,7 +177,6 @@ class TourExporter {
                 }
                 animate();
                 
-                // تغيير الحجم
                 window.addEventListener('resize', () => {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
@@ -229,7 +214,6 @@ class TourExporter {
 ### كيفية الاستخدام:
 1. افتح ملف \`index.html\` في المتصفح
 2. استخدم الفأرة للتحرك داخل الجولة
-3. المسارات الملونة تمثل أنظمة مختلفة
 
 ### الأنظمة:
 - 🟡 EL: كهرباء
@@ -237,11 +221,6 @@ class TourExporter {
 - 🔵 WP: مياه
 - 🔴 WA: صرف صحي
 - 🟢 GS: غاز
-
-### تقنيات مستخدمة:
-- Three.js للعرض ثلاثي الأبعاد
-- JavaScript ES6
-- HTML5/CSS3
 
 ### النشر على GitHub Pages:
 1. ارفع محتويات هذا المجلد إلى مستودع GitHub
@@ -288,15 +267,445 @@ window.setCurrentPathType = (t) => {
     }
 };
 
-// مدير المشاريع
 const projectManager = new ProjectManager();
 const tourExporter = new TourExporter();
 
 // =======================================
+// دوال الرسم
+// =======================================
+
+// إعداد معاينة المؤشر
+function setupMarkerPreview() {
+    const geometry = new THREE.SphereGeometry(8, 16, 16);
+    const material = new THREE.MeshStandardMaterial({
+        color: pathColors[currentPathType],
+        emissive: pathColors[currentPathType],
+        emissiveIntensity: 0.8
+    });
+    
+    markerPreview = new THREE.Mesh(geometry, material);
+    scene.add(markerPreview);
+    markerPreview.visible = false;
+}
+
+const mouse = new THREE.Vector2();
+const raycaster = new THREE.Raycaster();
+
+function onClick(e) {
+    if (!drawMode || !sphereMesh) return;
+    if (e.target !== renderer.domElement) return;
+
+    mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(sphereMesh);
+
+    if (hits.length) {
+        addPoint(hits[0].point.clone());
+    }
+}
+
+function onMouseMove(e) {
+    if (!drawMode || !sphereMesh || !markerPreview) {
+        if (markerPreview) markerPreview.visible = false;
+        return;
+    }
+    
+    if (e.target !== renderer.domElement) {
+        markerPreview.visible = false;
+        return;
+    }
+
+    mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(sphereMesh);
+
+    if (hits.length) {
+        markerPreview.position.copy(hits[0].point);
+        markerPreview.visible = true;
+    } else {
+        markerPreview.visible = false;
+    }
+}
+
+function addPoint(pos) {
+    selectedPoints.push(pos.clone());
+    console.log(`📍 نقطة ${selectedPoints.length} مضافة`);
+    
+    addPointMarker(pos);
+    updateTempLine();
+}
+
+function addPointMarker(position) {
+    const geometry = new THREE.SphereGeometry(6, 16, 16);
+    const material = new THREE.MeshStandardMaterial({
+        color: pathColors[currentPathType],
+        emissive: pathColors[currentPathType],
+        emissiveIntensity: 0.6
+    });
+    
+    const marker = new THREE.Mesh(geometry, material);
+    marker.position.copy(position);
+    scene.add(marker);
+    pointMarkers.push(marker);
+}
+
+function updateTempLine() {
+    if (tempLine) {
+        scene.remove(tempLine);
+        tempLine.geometry.dispose();
+        tempLine = null;
+    }
+    
+    if (selectedPoints.length >= 2) {
+        const geometry = new THREE.BufferGeometry().setFromPoints(selectedPoints);
+        const material = new THREE.LineBasicMaterial({ 
+            color: pathColors[currentPathType]
+        });
+        tempLine = new THREE.Line(geometry, material);
+        scene.add(tempLine);
+    }
+}
+
+function clearCurrentDrawing() {
+    selectedPoints = [];
+    
+    pointMarkers.forEach(marker => scene.remove(marker));
+    pointMarkers = [];
+    
+    if (tempLine) {
+        scene.remove(tempLine);
+        tempLine.geometry.dispose();
+        tempLine = null;
+    }
+}
+
+function saveCurrentPath() {
+    if (selectedPoints.length < 2) {
+        alert('⚠️ أضف نقطتين على الأقل');
+        return;
+    }
+
+    try {
+        if (tempLine) {
+            scene.remove(tempLine);
+            tempLine.geometry.dispose();
+            tempLine = null;
+        }
+        
+        createStraightPath(selectedPoints);
+        clearCurrentDrawing();
+        
+        console.log('✅ تم حفظ المسار');
+        
+    } catch (error) {
+        console.error('❌ خطأ في حفظ المسار:', error);
+    }
+}
+
+function createStraightPath(points) {
+    if (points.length < 2) return;
+    
+    const color = pathColors[currentPathType];
+    const pathId = `path-${Date.now()}-${Math.random()}`;
+    
+    for (let i = 0; i < points.length - 1; i++) {
+        const start = points[i];
+        const end = points[i + 1];
+        
+        const direction = new THREE.Vector3().subVectors(end, start);
+        const distance = direction.length();
+        
+        if (distance < 5) continue;
+        
+        const cylinderRadius = 3.5;
+        const cylinderHeight = distance;
+        const cylinderGeo = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight, 12);
+        
+        const quaternion = new THREE.Quaternion();
+        const defaultDir = new THREE.Vector3(0, 1, 0);
+        const targetDir = direction.clone().normalize();
+        
+        quaternion.setFromUnitVectors(defaultDir, targetDir);
+        
+        const material = new THREE.MeshStandardMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: 0.4,
+            roughness: 0.2,
+            metalness: 0.3
+        });
+        
+        const cylinder = new THREE.Mesh(cylinderGeo, material);
+        cylinder.applyQuaternion(quaternion);
+        
+        const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+        cylinder.position.copy(center);
+        
+        cylinder.userData = {
+            type: currentPathType,
+            pathId: pathId,
+            points: [start.clone(), end.clone()]
+        };
+        
+        scene.add(cylinder);
+        paths.push(cylinder);
+    }
+    
+    if (points.length > 0) {
+        const sphereGeo = new THREE.SphereGeometry(6, 24, 24);
+        const sphereMat = new THREE.MeshStandardMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: 0.5
+        });
+        
+        const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+        sphere.position.copy(points[0]);
+        
+        sphere.userData = {
+            type: currentPathType,
+            pathId: pathId,
+            points: [points[0].clone()]
+        };
+        
+        scene.add(sphere);
+        paths.push(sphere);
+    }
+    
+    console.log(`✅ تم إنشاء مسار بـ ${points.length-1} أجزاء`);
+}
+
+function onKeyDown(e) {
+    if (!drawMode) return;
+
+    switch(e.key) {
+        case 'Enter':
+            e.preventDefault();
+            saveCurrentPath();
+            break;
+            
+        case 'Backspace':
+            e.preventDefault();
+            if (selectedPoints.length > 0) {
+                selectedPoints.pop();
+                const last = pointMarkers.pop();
+                if (last) scene.remove(last);
+                updateTempLine();
+            }
+            break;
+            
+        case 'Escape':
+            e.preventDefault();
+            clearCurrentDrawing();
+            break;
+            
+        case 'n':
+        case 'N':
+            e.preventDefault();
+            clearCurrentDrawing();
+            break;
+            
+        case '1': currentPathType = 'EL'; window.setCurrentPathType('EL'); break;
+        case '2': currentPathType = 'AC'; window.setCurrentPathType('AC'); break;
+        case '3': currentPathType = 'WP'; window.setCurrentPathType('WP'); break;
+        case '4': currentPathType = 'WA'; window.setCurrentPathType('WA'); break;
+        case '5': currentPathType = 'GS'; window.setCurrentPathType('GS'); break;
+    }
+}
+
+function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// =======================================
+// دوال التصدير
+// =======================================
+
+function setupExportCanvas() {
+    exportCanvas = document.createElement('canvas');
+    exportCanvas.width = 4096;
+    exportCanvas.height = 2048;
+    exportContext = exportCanvas.getContext('2d');
+}
+
+async function exportCompleteTour() {
+    if (!sphereMesh || !sphereMesh.material || !sphereMesh.material.map) {
+        alert('❌ الصورة البانورامية غير متوفرة');
+        return;
+    }
+
+    showLoader('جاري تحضير الجولة...');
+
+    try {
+        const texture = sphereMesh.material.map;
+        const image = texture.image;
+        const imageWidth = image.width;
+        const imageHeight = image.height;
+
+        exportCanvas.width = imageWidth;
+        exportCanvas.height = imageHeight;
+        exportContext.clearRect(0, 0, imageWidth, imageHeight);
+        exportContext.drawImage(image, 0, 0, imageWidth, imageHeight);
+
+        const imageData = exportCanvas.toDataURL('image/jpeg', 0.95);
+        const projectName = projectManager.currentProject?.name || `tour-${Date.now()}`;
+
+        await tourExporter.exportTour(projectName, imageData, paths, imageWidth, imageHeight);
+
+        hideLoader();
+        alert(`✅ تم تصدير الجولة بنجاح!\n📁 الملف: ${projectName}.zip`);
+
+    } catch (error) {
+        console.error('❌ خطأ في التصدير:', error);
+        alert('حدث خطأ في التصدير');
+        hideLoader();
+    }
+}
+
+function showLoader(message) {
+    const loader = document.getElementById('loader');
+    loader.style.display = 'flex';
+    loader.textContent = message || '⏳ جاري التحميل...';
+}
+
+function hideLoader() {
+    document.getElementById('loader').style.display = 'none';
+}
+
+// =======================================
+// تحميل المشروع
+// =======================================
+function loadProject(project) {
+    projectManager.currentProject = project;
+    
+    if (project.imageData) {
+        const img = new Image();
+        img.onload = () => {
+            const texture = new THREE.CanvasTexture(img);
+            sphereMesh.material.map = texture;
+            sphereMesh.material.needsUpdate = true;
+            
+            paths.forEach(p => scene.remove(p));
+            paths = [];
+            
+            project.paths.forEach(pathData => {
+                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                currentPathType = pathData.type;
+                createStraightPath(points);
+            });
+        };
+        img.src = project.imageData;
+    }
+    
+    document.getElementById('projectPanel').style.display = 'none';
+    alert(`✅ تم تحميل المشروع: ${project.name}`);
+}
+
+// =======================================
+// إعداد الأحداث (مرة واحدة فقط)
+// =======================================
+function setupEvents() {
+    renderer.domElement.addEventListener('click', onClick);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onResize);
+    
+    document.getElementById('toggleRotate').onclick = () => {
+        autorotate = !autorotate;
+        controls.autoRotate = autorotate;
+        document.getElementById('toggleRotate').textContent = 
+            autorotate ? '⏸️ إيقاف التدوير' : '▶️ تشغيل التدوير';
+    };
+
+    document.getElementById('toggleDraw').onclick = () => {
+        drawMode = !drawMode;
+        const btn = document.getElementById('toggleDraw');
+        
+        if (drawMode) {
+            btn.textContent = '⛔ إيقاف الرسم';
+            btn.style.background = '#aa3333';
+            document.body.style.cursor = 'crosshair';
+            if (markerPreview) markerPreview.visible = true;
+            controls.autoRotate = false;
+        } else {
+            btn.textContent = '✏️ تفعيل الرسم';
+            btn.style.background = '#8f6c4a';
+            document.body.style.cursor = 'default';
+            if (markerPreview) markerPreview.visible = false;
+            controls.autoRotate = autorotate;
+            clearCurrentDrawing();
+        }
+    };
+
+    document.getElementById('finalizePath').onclick = saveCurrentPath;
+
+    document.getElementById('clearAll').onclick = () => {
+        if (confirm('هل أنت متأكد من مسح جميع المسارات؟')) {
+            paths.forEach(path => scene.remove(path));
+            paths = [];
+            clearCurrentDrawing();
+        }
+    };
+
+    document.getElementById('newProject').onclick = () => {
+        const name = prompt('أدخل اسم المشروع:');
+        if (name) {
+            projectManager.newProject(name);
+            alert(`✅ مشروع جديد: ${name}`);
+        }
+    };
+
+    document.getElementById('openProject').onclick = () => {
+        const panel = document.getElementById('projectPanel');
+        const list = document.getElementById('projectList');
+        
+        list.innerHTML = '';
+        projectManager.projects.forEach(project => {
+            const item = document.createElement('div');
+            item.className = 'project-item';
+            item.innerHTML = `
+                <strong>${project.name}</strong><br>
+                <small>${new Date(project.created).toLocaleDateString()}</small>
+            `;
+            item.onclick = () => loadProject(project);
+            list.appendChild(item);
+        });
+        
+        panel.style.display = 'block';
+    };
+
+    document.getElementById('saveProject').onclick = () => {
+        if (!projectManager.currentProject) {
+            const name = prompt('أدخل اسم المشروع:');
+            if (name) projectManager.newProject(name);
+        }
+        
+        if (projectManager.currentProject && sphereMesh?.material?.map) {
+            const image = sphereMesh.material.map.image;
+            exportCanvas.width = image.width;
+            exportCanvas.height = image.height;
+            exportContext.drawImage(image, 0, 0, image.width, image.height);
+            
+            projectManager.saveCurrentProject(
+                paths, 
+                exportCanvas.toDataURL('image/jpeg', 0.95)
+            );
+            alert('✅ تم حفظ المشروع');
+        }
+    };
+
+    document.getElementById('exportTour').onclick = exportCompleteTour;
+}
+
+// =======================================
 // تهيئة المشهد
 // =======================================
-init();
-
 function init() {
     console.log('🚀 بدء التهيئة...');
     
@@ -379,358 +788,8 @@ function loadPanorama() {
 }
 
 // =======================================
-// باقي الدوال (نفس الكود السابق للرسم)
-// =======================================
-// [هنا نضع دوال الرسم كما كانت - onClick, onMouseMove, addPoint, saveCurrentPath, createStraightPath, etc.]
-// (لن أكررها هنا للاختصار ولكنها نفس الكود السابق)
-
-// =======================================
-// إعداد Canvas للتصدير
-// =======================================
-function setupExportCanvas() {
-    exportCanvas = document.createElement('canvas');
-    exportCanvas.width = 4096;
-    exportCanvas.height = 2048;
-    exportContext = exportCanvas.getContext('2d');
-}
-
-// =======================================
-// تصدير الجولة كاملة
-// =======================================
-async function exportCompleteTour() {
-    if (!sphereMesh || !sphereMesh.material || !sphereMesh.material.map) {
-        alert('❌ الصورة البانورامية غير متوفرة');
-        return;
-    }
-
-    showLoader('جاري تحضير الجولة...');
-
-    try {
-        // الحصول على الصورة
-        const texture = sphereMesh.material.map;
-        const image = texture.image;
-        const imageWidth = image.width;
-        const imageHeight = image.height;
-
-        // رسم الصورة على Canvas
-        exportCanvas.width = imageWidth;
-        exportCanvas.height = imageHeight;
-        exportContext.clearRect(0, 0, imageWidth, imageHeight);
-        exportContext.drawImage(image, 0, 0, imageWidth, imageHeight);
-
-        // الحصول على DataURL
-        const imageData = exportCanvas.toDataURL('image/jpeg', 0.95);
-
-        // اسم المشروع
-        const projectName = projectManager.currentProject?.name || `tour-${Date.now()}`;
-
-        // تصدير
-        await tourExporter.exportTour(projectName, imageData, paths, imageWidth, imageHeight);
-
-        hideLoader();
-        alert(`✅ تم تصدير الجولة بنجاح!\n📁 الملف: ${projectName}.zip`);
-
-    } catch (error) {
-        console.error('❌ خطأ في التصدير:', error);
-        alert('حدث خطأ في التصدير');
-        hideLoader();
-    }
-}
-
-// =======================================
-// دوال المساعدة
-// =======================================
-function showLoader(message) {
-    const loader = document.getElementById('loader');
-    loader.style.display = 'flex';
-    loader.textContent = message || '⏳ جاري التحميل...';
-}
-
-function hideLoader() {
-    document.getElementById('loader').style.display = 'none';
-}
-
-// =======================================
-// إعداد الأحداث
-// =======================================
-function setupEvents() {
-    // ... الأحداث السابقة ...
-
-    // أزرار جديدة
-    document.getElementById('newProject').onclick = () => {
-        const name = prompt('أدخل اسم المشروع:');
-        if (name) {
-            projectManager.newProject(name);
-            alert(`✅ مشروع جديد: ${name}`);
-        }
-    };
-
-    document.getElementById('exportTour').onclick = exportCompleteTour;
-}
-
-// =======================================
-// باقي الكود (animate, onResize, etc.)
-// =======================================
-// =======================================
-// إضافة هذه الدوال بعد المتغيرات وقبل init()
-// =======================================
-
-// إعداد معاينة المؤشر
-function setupMarkerPreview() {
-    const geometry = new THREE.SphereGeometry(8, 16, 16);
-    const material = new THREE.MeshStandardMaterial({
-        color: pathColors[currentPathType],
-        emissive: pathColors[currentPathType],
-        emissiveIntensity: 0.8
-    });
-    
-    markerPreview = new THREE.Mesh(geometry, material);
-    scene.add(markerPreview);
-    markerPreview.visible = false;
-}
-
-// أحداث الماوس
-const mouse = new THREE.Vector2();
-const raycaster = new THREE.Raycaster();
-
-function onClick(e) {
-    if (!drawMode || !sphereMesh) return;
-    if (e.target !== renderer.domElement) return;
-
-    mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
-    mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    const hits = raycaster.intersectObject(sphereMesh);
-
-    if (hits.length) {
-        addPoint(hits[0].point.clone());
-    }
-}
-
-function onMouseMove(e) {
-    if (!drawMode || !sphereMesh || !markerPreview) {
-        if (markerPreview) markerPreview.visible = false;
-        return;
-    }
-    
-    if (e.target !== renderer.domElement) {
-        markerPreview.visible = false;
-        return;
-    }
-
-    mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
-    mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    const hits = raycaster.intersectObject(sphereMesh);
-
-    if (hits.length) {
-        markerPreview.position.copy(hits[0].point);
-        markerPreview.visible = true;
-    } else {
-        markerPreview.visible = false;
-    }
-}
-
-// إدارة النقاط
-function addPoint(pos) {
-    selectedPoints.push(pos.clone());
-    console.log(`📍 نقطة ${selectedPoints.length} مضافة`);
-    
-    addPointMarker(pos);
-    updateTempLine();
-}
-
-function addPointMarker(position) {
-    const geometry = new THREE.SphereGeometry(6, 16, 16);
-    const material = new THREE.MeshStandardMaterial({
-        color: pathColors[currentPathType],
-        emissive: pathColors[currentPathType],
-        emissiveIntensity: 0.6
-    });
-    
-    const marker = new THREE.Mesh(geometry, material);
-    marker.position.copy(position);
-    scene.add(marker);
-    pointMarkers.push(marker);
-}
-
-function updateTempLine() {
-    if (tempLine) {
-        scene.remove(tempLine);
-        tempLine.geometry.dispose();
-        tempLine = null;
-    }
-    
-    if (selectedPoints.length >= 2) {
-        const geometry = new THREE.BufferGeometry().setFromPoints(selectedPoints);
-        const material = new THREE.LineBasicMaterial({ 
-            color: pathColors[currentPathType]
-        });
-        tempLine = new THREE.Line(geometry, material);
-        scene.add(tempLine);
-    }
-}
-
-function clearCurrentDrawing() {
-    selectedPoints = [];
-    
-    pointMarkers.forEach(marker => scene.remove(marker));
-    pointMarkers = [];
-    
-    if (tempLine) {
-        scene.remove(tempLine);
-        tempLine.geometry.dispose();
-        tempLine = null;
-    }
-}
-
-// حفظ المسار
-function saveCurrentPath() {
-    if (selectedPoints.length < 2) {
-        alert('⚠️ أضف نقطتين على الأقل');
-        return;
-    }
-
-    try {
-        if (tempLine) {
-            scene.remove(tempLine);
-            tempLine.geometry.dispose();
-            tempLine = null;
-        }
-        
-        createStraightPath(selectedPoints);
-        clearCurrentDrawing();
-        
-        console.log('✅ تم حفظ المسار');
-        
-    } catch (error) {
-        console.error('❌ خطأ في حفظ المسار:', error);
-    }
-}
-
-function createStraightPath(points) {
-    if (points.length < 2) return;
-    
-    const color = pathColors[currentPathType];
-    const pathId = `path-${Date.now()}-${Math.random()}`;
-    
-    for (let i = 0; i < points.length - 1; i++) {
-        const start = points[i];
-        const end = points[i + 1];
-        
-        const direction = new THREE.Vector3().subVectors(end, start);
-        const distance = direction.length();
-        
-        if (distance < 5) continue;
-        
-        const cylinderRadius = 3.5;
-        const cylinderHeight = distance;
-        const cylinderGeo = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight, 12);
-        
-        const quaternion = new THREE.Quaternion();
-        const defaultDir = new THREE.Vector3(0, 1, 0);
-        const targetDir = direction.clone().normalize();
-        
-        quaternion.setFromUnitVectors(defaultDir, targetDir);
-        
-        const material = new THREE.MeshStandardMaterial({
-            color: color,
-            emissive: color,
-            emissiveIntensity: 0.4,
-            roughness: 0.2,
-            metalness: 0.3
-        });
-        
-        const cylinder = new THREE.Mesh(cylinderGeo, material);
-        cylinder.applyQuaternion(quaternion);
-        
-        const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-        cylinder.position.copy(center);
-        
-        cylinder.userData = {
-            type: currentPathType,
-            pathId: pathId,
-            points: [start.clone(), end.clone()]
-        };
-        
-        scene.add(cylinder);
-        paths.push(cylinder);
-    }
-    
-    // أضف كرة عند نقطة البداية فقط
-    if (points.length > 0) {
-        const sphereGeo = new THREE.SphereGeometry(6, 24, 24);
-        const sphereMat = new THREE.MeshStandardMaterial({
-            color: color,
-            emissive: color,
-            emissiveIntensity: 0.5
-        });
-        
-        const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-        sphere.position.copy(points[0]);
-        
-        sphere.userData = {
-            type: currentPathType,
-            pathId: pathId,
-            points: [points[0].clone()]
-        };
-        
-        scene.add(sphere);
-        paths.push(sphere);
-    }
-    
-    console.log(`✅ تم إنشاء مسار بـ ${points.length-1} أجزاء`);
-}
-
-// أحداث لوحة المفاتيح
-function onKeyDown(e) {
-    if (!drawMode) return;
-
-    switch(e.key) {
-        case 'Enter':
-            e.preventDefault();
-            saveCurrentPath();
-            break;
-            
-        case 'Backspace':
-            e.preventDefault();
-            if (selectedPoints.length > 0) {
-                selectedPoints.pop();
-                const last = pointMarkers.pop();
-                if (last) scene.remove(last);
-                updateTempLine();
-            }
-            break;
-            
-        case 'Escape':
-            e.preventDefault();
-            clearCurrentDrawing();
-            break;
-            
-        case 'n':
-        case 'N':
-            e.preventDefault();
-            clearCurrentDrawing();
-            break;
-            
-        case '1': currentPathType = 'EL'; window.setCurrentPathType('EL'); break;
-        case '2': currentPathType = 'AC'; window.setCurrentPathType('AC'); break;
-        case '3': currentPathType = 'WP'; window.setCurrentPathType('WP'); break;
-        case '4': currentPathType = 'WA'; window.setCurrentPathType('WA'); break;
-        case '5': currentPathType = 'GS'; window.setCurrentPathType('GS'); break;
-    }
-}
-
-// تغيير الحجم
-function onResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
 // الرسوم المتحركة
+// =======================================
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
@@ -738,131 +797,6 @@ function animate() {
 }
 
 // =======================================
-// إعداد الأحداث الكامل
+// بدء التشغيل
 // =======================================
-function setupEvents() {
-    renderer.domElement.addEventListener('click', onClick);
-    renderer.domElement.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('resize', onResize);
-    
-    // أزرار الرسم
-    document.getElementById('toggleRotate').onclick = () => {
-        autorotate = !autorotate;
-        controls.autoRotate = autorotate;
-        document.getElementById('toggleRotate').textContent = 
-            autorotate ? '⏸️ إيقاف التدوير' : '▶️ تشغيل التدوير';
-    };
-
-    document.getElementById('toggleDraw').onclick = () => {
-        drawMode = !drawMode;
-        const btn = document.getElementById('toggleDraw');
-        
-        if (drawMode) {
-            btn.textContent = '⛔ إيقاف الرسم';
-            btn.style.background = '#aa3333';
-            document.body.style.cursor = 'crosshair';
-            if (markerPreview) markerPreview.visible = true;
-            controls.autoRotate = false;
-        } else {
-            btn.textContent = '✏️ تفعيل الرسم';
-            btn.style.background = '#8f6c4a';
-            document.body.style.cursor = 'default';
-            if (markerPreview) markerPreview.visible = false;
-            controls.autoRotate = autorotate;
-            clearCurrentDrawing();
-        }
-    };
-
-    document.getElementById('finalizePath').onclick = saveCurrentPath;
-
-    document.getElementById('clearAll').onclick = () => {
-        if (confirm('هل أنت متأكد من مسح جميع المسارات؟')) {
-            paths.forEach(path => scene.remove(path));
-            paths = [];
-            clearCurrentDrawing();
-        }
-    };
-
-    // أزرار المشاريع
-    document.getElementById('newProject').onclick = () => {
-        const name = prompt('أدخل اسم المشروع:');
-        if (name) {
-            projectManager.newProject(name);
-            alert(`✅ مشروع جديد: ${name}`);
-        }
-    };
-
-    document.getElementById('openProject').onclick = () => {
-        // عرض لوحة المشاريع
-        const panel = document.getElementById('projectPanel');
-        const list = document.getElementById('projectList');
-        
-        list.innerHTML = '';
-        projectManager.projects.forEach(project => {
-            const item = document.createElement('div');
-            item.className = 'project-item';
-            item.innerHTML = `
-                <strong>${project.name}</strong><br>
-                <small>${new Date(project.created).toLocaleDateString()}</small>
-            `;
-            item.onclick = () => loadProject(project);
-            list.appendChild(item);
-        });
-        
-        panel.style.display = 'block';
-    };
-
-    document.getElementById('saveProject').onclick = () => {
-        if (!projectManager.currentProject) {
-            const name = prompt('أدخل اسم المشروع:');
-            if (name) projectManager.newProject(name);
-        }
-        
-        if (projectManager.currentProject && sphereMesh?.material?.map) {
-            // رسم الصورة على Canvas
-            const image = sphereMesh.material.map.image;
-            exportCanvas.width = image.width;
-            exportCanvas.height = image.height;
-            exportContext.drawImage(image, 0, 0, image.width, image.height);
-            
-            projectManager.saveCurrentProject(
-                paths, 
-                exportCanvas.toDataURL('image/jpeg', 0.95)
-            );
-            alert('✅ تم حفظ المشروع');
-        }
-    };
-
-    document.getElementById('exportTour').onclick = exportCompleteTour;
-}
-
-// تحميل مشروع
-function loadProject(project) {
-    projectManager.currentProject = project;
-    
-    if (project.imageData) {
-        // تحميل الصورة
-        const img = new Image();
-        img.onload = () => {
-            // إنشاء نسيج جديد
-            const texture = new THREE.CanvasTexture(img);
-            sphereMesh.material.map = texture;
-            sphereMesh.material.needsUpdate = true;
-            
-            // إعادة بناء المسارات
-            paths.forEach(p => scene.remove(p));
-            paths = [];
-            
-            project.paths.forEach(pathData => {
-                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                currentPathType = pathData.type;
-                createStraightPath(points);
-            });
-        };
-        img.src = project.imageData;
-    }
-    
-    document.getElementById('projectPanel').style.display = 'none';
-    alert(`✅ تم تحميل المشروع: ${project.name}`);
-}
+init();
