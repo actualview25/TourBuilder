@@ -585,6 +585,7 @@ class TourExporter {
                                                         <span class='hotspot-icon scene-icon'>🚪</span>
                                                         <span class='hotspot-glow'></span>
                                                     </div>
+                                                `;
                                                     <div class='hotspot-tooltip'>
                                                         <div class='tooltip-arrow'></div>
                                                         <div class='tooltip-header'>
