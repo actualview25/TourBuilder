@@ -495,65 +495,56 @@ if (sceneData.hotspots && sceneData.hotspots.length > 0) {
             hotspot.position.z
         ).project(camera);
         
-        const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-        const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-        
-        // التأكد من أن الإحداثيات ضمن الشاشة
-        if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) return;
-        
-        const div = document.createElement('div');
-        div.className = 'hotspot';
-        div.style.left = x + 'px';
-        div.style.top = y + 'px';
-        
-        if (hotspot.type === 'INFO') {
-            div.style.color = '#ffaa44';
-            div.setAttribute('data-type', 'info');
-            div.setAttribute('data-title', hotspot.data.title || 'معلومات');
-            div.setAttribute('data-content', hotspot.data.content || '');
-            
-            // ✅ HTML بشكل صحيح ومنظم
-           
-        div.innerHTML = `
-    <span className="hotspot-icon">ℹ️</span>
-    <div className="hotspot-tooltip">
-        <strong>${hotspot.data.title || 'معلومات'}</strong>
-        <p>${hotspot.data.content || ''}</p>
-    </div>
-`;
-            
-            div.onclick = function() {
-                alert(`${hotspot.data.title}\n\n${hotspot.data.content}`);
-            };
-            
+      const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+
+if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) return;
+
+const div = document.createElement('div');
+div.className = 'hotspot';
+div.style.left = x + 'px';
+div.style.top = y + 'px';
+
+if (hotspot.type === 'INFO') {
+    div.style.color = '#ffaa44';
+    div.setAttribute('data-type', 'info');
+    div.setAttribute('data-title', hotspot.data.title || 'معلومات');
+    div.setAttribute('data-content', hotspot.data.content || '');
+    
+    // ✅ الطريقة الصحيحة - استخدام علامات التنصيص الفردية داخل `
+    div.innerHTML = `
+        <span class='hotspot-icon'>ℹ️</span>
+        <div class='hotspot-tooltip'>
+            <strong>${hotspot.data.title || 'معلومات'}</strong>
+            <p>${hotspot.data.content || ''}</p>
+        </div>
+    `;
+    
+    div.onclick = function() {
+        alert(`${hotspot.data.title}\n\n${hotspot.data.content}`);
+    };
+    
+} else {
+    div.style.color = '#44aaff';
+    div.innerHTML = `
+        <span class='hotspot-icon'>🚪</span>
+        <div class='hotspot-tooltip'>
+            <strong>انتقال إلى: ${hotspot.data.targetSceneName || 'مشهد آخر'}</strong>
+            <p>${hotspot.data.description || ''}</p>
+        </div>
+    `;
+    
+    div.onclick = function() {
+        const targetIndex = scenes.findIndex(s => s.id === hotspot.data.targetSceneId);
+        if (targetIndex !== -1) {
+            loadScene(targetIndex);
         } else {
-            div.style.color = '#44aaff';
-            div.setAttribute('data-type', 'scene');
-            div.setAttribute('data-target', hotspot.data.targetSceneName || '');
-            div.setAttribute('data-target-id', hotspot.data.targetSceneId || '');
-            
-            // ✅ HTML للانتقال
-            div.innerHTML = `
-                <span class="hotspot-icon">🚪</span>
-                <div class="hotspot-tooltip">
-                    <strong>انتقال إلى: ${hotspot.data.targetSceneName || 'مشهد آخر'}</strong>
-                    <p>${hotspot.data.description || ''}</p>
-                </div>
-            `;
-            
-            div.onclick = function() {
-                const targetIndex = scenes.findIndex(s => s.id === hotspot.data.targetSceneId);
-                if (targetIndex !== -1) {
-                    loadScene(targetIndex);
-                } else {
-                    alert('المشهد المطلوب غير موجود');
-                }
-            };
+            alert('المشهد المطلوب غير موجود');
         }
-        
-        document.body.appendChild(div);
-    });
+    };
 }
+
+document.body.appendChild(div);
         } else {
             div.style.color = '#44aaff';
             div.setAttribute('data-type', 'scene');
