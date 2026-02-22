@@ -545,13 +545,14 @@ class TourExporter {
                                             div.style.left = x + 'px';
                                             div.style.top = y + 'px';
                                             
-                                            if (hotspot.type === 'INFO') {
+                       if (hotspot.type === 'INFO') {
     div.style.color = '#ffaa44';
     
     const title = hotspot.data?.title || 'معلومات';
     const content = hotspot.data?.content || '';
     
-    div.innerHTML = `
+    // ✅ تأكد أن السطر 554 ليس به innerHTML مكرر
+    div.innerHTML = `  // <-- هذا يجب أن يكون مرة واحدة فقط
         <div class='hotspot-icon-wrapper'>
             <span class='hotspot-icon info-icon'>ℹ️</span>
             <span class='hotspot-glow'></span>
@@ -566,7 +567,8 @@ class TourExporter {
                 <p>${content}</p>
             </div>
         </div>
-    `;
+    `;  // <-- السطر 555
+}
     
     div.onclick = (e) => {
         e.stopPropagation();
