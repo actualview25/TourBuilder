@@ -156,9 +156,9 @@ class SceneManager {
 
         this.currentScene = sceneData;
 
-        paths.forEach(p => scene.remove(p));
-        paths = [];
-        clearCurrentDrawing();
+        paths.forEach(p => scene3D.remove(p));  // ✅ استخدم scene3D بدلاً من scene
+paths = [];
+clearCurrentDrawing();
 
         if (sphereMesh && sphereMesh.material) {
             const img = new Image();
