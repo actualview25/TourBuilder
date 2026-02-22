@@ -1273,3 +1273,31 @@ function animate() {
 // بدء التشغيل
 // =======================================
 init();
+// =======================================
+// دالة عرض Hotspot بشكل جميل في المشغل
+// (هذه الدالة ستستخدم في الجولة المصدرة)
+// =======================================
+
+function generateHotspotHTML(hotspot) {
+    if (hotspot.type === 'INFO') {
+        return `
+            <div class="hotspot info" style="color: #ffaa44;">
+                <span class="hotspot-icon">ℹ️</span>
+                <div class="hotspot-tooltip">
+                    <strong>${hotspot.data.title}</strong>
+                    <p>${hotspot.data.content}</p>
+                </div>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="hotspot scene" style="color: #44aaff;">
+                <span class="hotspot-icon">🚪</span>
+                <div class="hotspot-tooltip">
+                    <strong>انتقال إلى: ${hotspot.data.targetSceneName}</strong>
+                    <p>${hotspot.data.description}</p>
+                </div>
+            </div>
+        `;
+    }
+}
