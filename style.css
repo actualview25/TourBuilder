@@ -656,3 +656,45 @@ body {
 .controls button:active {
     transform: scale(0.95) translateY(-1px);
 }
+/* =======================================
+   أزرار الحذف
+   ======================================= */
+.delete-scene-btn {
+    background: none;
+    border: none;
+    color: #ff8888;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+}
+
+.delete-scene-btn:hover {
+    background: rgba(255, 0, 0, 0.2);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* تلميح لحذف hotspot */
+.hint kbd {
+    background: #333;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+/* تحسين التلميحات */
+.hint small {
+    display: block;
+    margin-top: 10px;
+    color: #ffaa44;
+    font-size: 12px;
+}
