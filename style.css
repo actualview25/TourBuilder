@@ -481,3 +481,178 @@ body {
 /* ألوان مختلفة للـ hotspots */
 .hotspot.scene { color: #44aaff; text-shadow: 0 0 10px #44aaff; }
 .hotspot.info { color: #ffaa44; text-shadow: 0 0 10px #ffaa44; }
+
+/* تحسين شكل Hotspots - إضافة هذه التعديلات في نهاية الملف */
+
+/* =======================================
+   تحسينات إضافية للـ Hotspots
+   ======================================= */
+
+/* تحسين ظهور الـ hotspot عند التحميل */
+.hotspot {
+    filter: drop-shadow(0 0 15px currentColor);
+    animation: pulse 2s infinite;
+    transition: all 0.3s ease;
+    z-index: 1000; /* تأكيد الظهور فوق كل شيء */
+}
+
+/* تحسين شكل الأيقونة */
+.hotspot-icon {
+    font-size: 36px; /* تكبير الأيقونة قليلاً */
+    display: block;
+    text-align: center;
+    line-height: 1;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+/* تحسين شكل الـ tooltip */
+.hotspot-tooltip {
+    position: absolute;
+    background: rgba(20, 30, 40, 0.95); /* تغيير للون أغمق قليلاً */
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    min-width: 220px;
+    max-width: 320px;
+    display: none;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 100%;
+    margin-bottom: 15px;
+    border: 2px solid currentColor;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 1001;
+    direction: rtl; /* للغة العربية */
+    text-align: right;
+}
+
+/* تحسين عنوان الـ tooltip */
+.hotspot-tooltip strong {
+    display: block;
+    margin-bottom: 8px;
+    color: currentColor;
+    font-size: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 5px;
+}
+
+/* تحسين نص الـ tooltip */
+.hotspot-tooltip p {
+    margin: 0;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.9);
+}
+
+/* تحسين ظهور الـ tooltip */
+.hotspot:hover .hotspot-tooltip {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* تحسين ألوان الـ hotspots */
+.hotspot.scene { 
+    color: #44aaff; 
+    text-shadow: 0 0 15px #44aaff, 0 0 30px rgba(68, 170, 255, 0.5);
+}
+.hotspot.info { 
+    color: #ffaa44; 
+    text-shadow: 0 0 15px #ffaa44, 0 0 30px rgba(255, 170, 68, 0.5);
+}
+
+/* تحسين حركة النبض */
+@keyframes pulse {
+    0% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.15);
+        opacity: 0.9;
+    }
+    100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* إضافة حركة ظهور للـ tooltip */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* تحسين للشاشات الصغيرة */
+@media (max-width: 768px) {
+    .hotspot-icon {
+        font-size: 28px;
+    }
+    
+    .hotspot-tooltip {
+        min-width: 160px;
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+}
+
+/* تحسين لوحة المشاهد */
+.scene-panel {
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    border-color: #88aaff;
+}
+
+.scene-item {
+    border-right: 3px solid transparent;
+}
+
+.scene-item:hover {
+    border-right-color: #88aaff;
+}
+
+/* تحسين لوحة المشاريع */
+.project-panel {
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+}
+
+.project-item {
+    border-right: 3px solid transparent;
+}
+
+.project-item:hover {
+    border-right-color: #ffaa44;
+}
+
+/* تحسين شريط الحالة */
+.status-bar {
+    border-color: #88aaff;
+    background: rgba(20, 30, 40, 0.9);
+}
+
+/* تحسين لوحة الألوان */
+.color-btn {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.color-btn:active {
+    transform: scale(0.95);
+}
+
+/* تحسين شريط الأدوات */
+.toolbar {
+    background: rgba(20, 30, 40, 0.98);
+}
+
+.controls button {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.controls button:active {
+    transform: scale(0.95) translateY(-1px);
+}
