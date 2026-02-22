@@ -524,34 +524,31 @@ if (sceneData.hotspots && sceneData.hotspots.length > 0) {
                 if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) return;
                 
                 const div = document.createElement('div');
-                div.className = 'hotspot';
-                div.style.left = x + 'px';
-                div.style.top = y + 'px';
-                
-                if (hotspot.type === 'INFO') {
-                    div.style.color = '#ffaa44';
-                    
-                    const title = hotspot.data?.title || 'معلومات';
-                    const content = hotspot.data?.content || '';
-                    
-                    // أيقونة احترافية مع tooltip
-                    div.innerHTML = `
-                        <div class="hotspot-icon-wrapper">
-                            <span class="hotspot-icon info-icon">ℹ️</span>
-                            <span class="hotspot-glow"></span>
-                        </div>
-                        <div class="hotspot-tooltip">
-                            <div class="tooltip-arrow"></div>
-                            <div class="tooltip-header">
-                                <span class="tooltip-icon">📌</span>
-                                <strong>${title}</strong>
-                            </div>
-                            <div class="tooltip-body">
-                                <p>${content}</p>
-                            </div>
-                        </div>
-                    `;
-                    
+div.className = 'hotspot';
+div.style.left = x + 'px';
+div.style.top = y + 'px';
+
+if (hotspot.type === 'INFO') {
+    div.style.color = '#ffaa44';
+    
+    const title = hotspot.data?.title || 'معلومات';
+    const content = hotspot.data?.content || '';
+    
+    // ✅ استخدم علامات تنصيص مفردة
+    div.innerHTML = `
+        <div class='hotspot-icon-wrapper'>
+            <span class='hotspot-icon info-icon'>ℹ️</span>
+            <span class='hotspot-glow'></span>
+        </div>
+        <div class='hotspot-tooltip'>
+            <div class='tooltip-arrow'></div>
+            <div class='tooltip-header'>
+                <span class='tooltip-icon'>📌</span>
+                <strong>${title}</strong>
+            </div>
+        </div>
+    `;
+}
                     // حدث النقر
                     div.onclick = function(e) {
                         e.stopPropagation();
