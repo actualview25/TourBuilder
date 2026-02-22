@@ -67,6 +67,9 @@ class ProjectManager {
 // =======================================
 // إدارة المشاهد المتعددة (باستخدام IndexedDB)
 // =======================================
+// =======================================
+// إدارة المشاهد المتعددة (مصححة)
+// =======================================
 class SceneManager {
     constructor() {
         this.scenes = [];
@@ -84,14 +87,12 @@ class SceneManager {
             if (!db.objectStoreNames.contains('scenes')) {
                 db.createObjectStore('scenes', { keyPath: 'id' });
             }
-            if (!db.objectStoreNames.contains('projects')) {
-                db.createObjectStore('projects', { keyPath: 'id' });
-            }
         };
 
         request.onsuccess = (e) => {
             this.db = e.target.result;
             this.loadScenes();
+            console.log('✅ IndexedDB initialized');
         };
 
         request.onerror = (e) => {
@@ -109,6 +110,9 @@ class SceneManager {
         request.onsuccess = () => {
             this.scenes = request.result || [];
             console.log(`✅ تم تحميل ${this.scenes.length} مشهد`);
+            
+            // عرض المشاهد في اللوحة
+            updateScenePanel();
         };
     }
 
@@ -118,40 +122,40 @@ class SceneManager {
         const tx = this.db.transaction('scenes', 'readwrite');
         const store = tx.objectStore('scenes');
         
-        // مسح القديم
         store.clear();
         
-        // إضافة الجديد
         this.scenes.forEach(scene => {
             store.add(scene);
         });
 
         console.log('✅ تم حفظ المشاهد');
+        
+        // تحديث اللوحة
+        updateScenePanel();
     }
 
     async addScene(name, imageFile) {
-        return new Promise((resolve) => {
+        // التأكد أن imageFile هو ملف حقيقي
+        if (!(imageFile instanceof Blob)) {
+            console.error('❌ الملف ليس من نوع Blob:', imageFile);
+            return null;
+        }
+
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
+            
             reader.onload = (e) => {
-                // تقليل حجم الصورة قبل التخزين
+                const imageData = e.target.result;
+                
+                // إنشاء صورة مؤقتة للحصول على الأبعاد
                 const img = new Image();
                 img.onload = () => {
-                    // رسم الصورة بحجم أصغر للتخزين
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // تصغير الصورة إلى 50% من الحجم للتخزين
-                    canvas.width = img.width / 2;
-                    canvas.height = img.height / 2;
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
-                    
+                    // تخزين الصورة الأصلية كاملة
                     const scene = {
-                        id: `scene-${Date.now()}-${this.scenes.length}`,
+                        id: `scene-${Date.now()}-${Math.random()}`,
                         name: name,
-                        image: compressedImage, // صورة مصغرة للتخزين فقط
-                        originalImage: e.target.result, // الصورة الأصلية للتصدير
+                        originalImage: imageData, // الصورة الأصلية كاملة
+                        thumbnail: imageData, // للتبسيط نستخدم نفس الصورة
                         paths: [],
                         hotspots: [],
                         created: new Date().toISOString()
@@ -159,10 +163,24 @@ class SceneManager {
                     
                     this.scenes.push(scene);
                     this.saveScenes();
+                    
+                    console.log(`✅ تم إضافة مشهد: ${name}`);
                     resolve(scene);
                 };
-                img.src = e.target.result;
+                
+                img.onerror = (err) => {
+                    console.error('❌ خطأ في تحميل الصورة:', err);
+                    reject(err);
+                };
+                
+                img.src = imageData;
             };
+            
+            reader.onerror = (err) => {
+                console.error('❌ خطأ في قراءة الملف:', err);
+                reject(err);
+            };
+            
             reader.readAsDataURL(imageFile);
         });
     }
@@ -203,6 +221,95 @@ class SceneManager {
         const scene = this.scenes.find(s => s.id === sceneId);
         return scene ? scene.originalImage : null;
     }
+
+    switchToScene(sceneId) {
+        const sceneData = this.scenes.find(s => s.id === sceneId);
+        if (!sceneData) {
+            console.log('❌ مشهد غير موجود');
+            return false;
+        }
+
+        // حفظ المسارات الحالية إذا كان هناك مشهد نشط
+        if (this.currentScene && paths.length > 0) {
+            this.updateScenePaths(this.currentScene.id, paths);
+        }
+
+        this.currentScene = sceneData;
+        this.currentSceneIndex = this.scenes.indexOf(sceneData);
+
+        // مسح المشهد الحالي
+        paths.forEach(p => scene.remove(p));
+        paths = [];
+        clearCurrentDrawing();
+
+        // تحميل الصورة الجديدة
+        if (sphereMesh && sphereMesh.material) {
+            const img = new Image();
+            img.onload = () => {
+                const texture = new THREE.CanvasTexture(img);
+                sphereMesh.material.map = texture;
+                sphereMesh.material.needsUpdate = true;
+            };
+            img.src = sceneData.originalImage;
+        }
+
+        // إعادة بناء المسارات
+        if (sceneData.paths) {
+            sceneData.paths.forEach(pathData => {
+                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                const oldType = currentPathType;
+                currentPathType = pathData.type;
+                createStraightPath(points);
+                currentPathType = oldType;
+            });
+        }
+
+        // إعادة بناء hotspots
+        if (sceneData.hotspots) {
+            rebuildHotspots(sceneData.hotspots);
+        }
+
+        console.log(`✅ تم التبديل إلى: ${sceneData.name}`);
+        return true;
+    }
+}
+
+// =======================================
+// تحديث لوحة المشاهد
+// =======================================
+function updateScenePanel() {
+    const list = document.getElementById('sceneList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    
+    if (!sceneManager || !sceneManager.scenes) return;
+    
+    sceneManager.scenes.forEach(scene => {
+        const item = document.createElement('div');
+        item.className = 'scene-item';
+        
+        // تمييز المشهد النشط
+        if (sceneManager.currentScene && sceneManager.currentScene.id === scene.id) {
+            item.style.background = 'rgba(74, 108, 143, 0.7)';
+            item.style.border = '2px solid #88aaff';
+        }
+        
+        item.innerHTML = `
+            <span class="scene-icon">🌄</span>
+            <span class="scene-name">${scene.name}</span>
+            <span class="scene-hotspots">${scene.hotspots?.length || 0} نقطة</span>
+        `;
+
+        item.onclick = () => {
+            if (sceneManager) {
+                sceneManager.switchToScene(scene.id);
+                updateScenePanel(); // تحديث التمييز
+            }
+        };
+        
+        list.appendChild(item);
+    });
 }
 // =======================================
 // مصدر الجولات (مطور)
@@ -910,7 +1017,6 @@ function addHotspot(position) {
 // =======================================
 // دوال إدارة المشاهد
 // =======================================
-
 function addNewScene() {
     const name = prompt('أدخل اسم المشهد:');
     if (!name) return;
@@ -919,27 +1025,31 @@ function addNewScene() {
     input.type = 'file';
     input.accept = 'image/*';
 
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            // حفظ المشهد الحالي إذا وجد
-            if (sceneManager.currentScene && paths.length > 0) {
-                sceneManager.updateScenePaths(sceneManager.currentScene.id, paths);
-            }
+        showLoader('جاري إضافة المشهد...');
 
-            // إضافة المشهد الجديد
-            const scene = sceneManager.addScene(name, event.target.result);
+        try {
+            // إضافة المشهد باستخدام SceneManager
+            const scene = await sceneManager.addScene(name, file);
             
-            // إضافة للوحة
-            addSceneToPanel(scene);
-            
-            // التبديل للمشهد الجديد
-            switchToScene(scene.id);
-        };
-        reader.readAsDataURL(file);
+            if (scene) {
+                // التبديل للمشهد الجديد
+                sceneManager.switchToScene(scene.id);
+                
+                // تحديث اللوحة
+                updateScenePanel();
+                
+                hideLoader();
+                alert(`✅ تم إضافة المشهد: ${name}`);
+            }
+        } catch (error) {
+            console.error('❌ خطأ:', error);
+            alert('فشل إضافة المشهد');
+            hideLoader();
+        }
     };
 
     input.click();
