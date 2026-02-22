@@ -512,13 +512,47 @@ if (sceneData.hotspots && sceneData.hotspots.length > 0) {
             div.setAttribute('data-title', hotspot.data.title || 'معلومات');
             div.setAttribute('data-content', hotspot.data.content || '');
             
-               div.innerHTML = `
-    <span class="hotspot-icon">ℹ️</span>
-    <div class="hotspot-tooltip">
-        <strong>${hotspot.data.title || 'معلومات'}</strong>
-        <p>${hotspot.data.content || ''}</p>
-    </div>
-`;
+            // ✅ HTML بشكل صحيح ومنظم
+            div.innerHTML = `
+                <span class="hotspot-icon">ℹ️</span>
+                <div class="hotspot-tooltip">
+                    <strong>${hotspot.data.title || 'معلومات'}</strong>
+                    <p>${hotspot.data.content || ''}</p>
+                </div>
+            `;
+            
+            div.onclick = function() {
+                alert(`${hotspot.data.title}\n\n${hotspot.data.content}`);
+            };
+            
+        } else {
+            div.style.color = '#44aaff';
+            div.setAttribute('data-type', 'scene');
+            div.setAttribute('data-target', hotspot.data.targetSceneName || '');
+            div.setAttribute('data-target-id', hotspot.data.targetSceneId || '');
+            
+            // ✅ HTML للانتقال
+            div.innerHTML = `
+                <span class="hotspot-icon">🚪</span>
+                <div class="hotspot-tooltip">
+                    <strong>انتقال إلى: ${hotspot.data.targetSceneName || 'مشهد آخر'}</strong>
+                    <p>${hotspot.data.description || ''}</p>
+                </div>
+            `;
+            
+            div.onclick = function() {
+                const targetIndex = scenes.findIndex(s => s.id === hotspot.data.targetSceneId);
+                if (targetIndex !== -1) {
+                    loadScene(targetIndex);
+                } else {
+                    alert('المشهد المطلوب غير موجود');
+                }
+            };
+        }
+        
+        document.body.appendChild(div);
+    });
+}
         } else {
             div.style.color = '#44aaff';
             div.setAttribute('data-type', 'scene');
