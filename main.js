@@ -546,75 +546,73 @@ class TourExporter {
                                             div.style.top = y + 'px';
                                             
                                             if (hotspot.type === 'INFO') {
-                                                div.style.color = '#ffaa44';
-                                                
-                                                const title = hotspot.data?.title || 'معلومات';
-                                                const content = hotspot.data?.content || '';
-                                                
-                                                div.innerHTML = `
-                                                    div.innerHTML = `
-                                                     <div class='hotspot-icon-wrapper'>  // ✅ استخدم علامات تنصيص مفردة
-                                                        <span class='hotspot-icon info-icon'>ℹ️</span>
-                                                        <span class='hotspot-glow'></span>
-                                                    </div>
-                                                    <div class='hotspot-tooltip'>
-                                                        <div class='tooltip-arrow'></div>
-                                                        <div class='tooltip-header'>
-                                                            <span class='tooltip-icon'>📌</span>
-                                                            <strong>${title}</strong>
-                                                        </div>
-                                                        <div class='tooltip-body'>
-                                                            <p>${content}</p>
-                                                        </div>
-                                                    </div>
-                                                `;
-                                                
-                                                div.onclick = (e) => {
-                                                    e.stopPropagation();
-                                                    alert(`📌 ${title}\n\n${content}`);
-                                                };
-                                                
-                                            } else if (hotspot.type === 'SCENE') {
-                                                div.style.color = '#44aaff';
-                                                
-                                                const targetName = hotspot.data?.targetSceneName || 'مشهد آخر';
-                                                const description = hotspot.data?.description || '';
-                                                const targetId = hotspot.data?.targetSceneId;
-                                                
-                                                div.innerHTML = `
-                                                    <div class='hotspot-icon-wrapper'>
-                                                        <span class='hotspot-icon scene-icon'>🚪</span>
-                                                        <span class='hotspot-glow'></span>
-                                                    </div>
-                                                `;
-                                                    <div class='hotspot-tooltip'>
-                                                        <div class='tooltip-arrow'></div>
-                                                        <div class='tooltip-header'>
-                                                            <span class='tooltip-icon'>🚶</span>
-                                                            <strong>انتقال إلى: ${targetName}</strong>
-                                                        </div>
-                                                        <div class='tooltip-body'>
-                                                            <p>${description || 'اضغط للانتقال'}</p>
-                                                        </div>
-                                                    </div>
-                                                `;
-                                                
-                                                div.onclick = (e) => {
-                                                    e.stopPropagation();
-                                                    if (targetId) {
-                                                        const targetIndex = scenes.findIndex(s => s.id === targetId);
-                                                        if (targetIndex !== -1) {
-                                                            div.style.transform = 'scale(1.5)';
-                                                            div.style.transition = 'all 0.3s ease';
-                                                            setTimeout(() => {
-                                                                loadScene(targetIndex);
-                                                            }, 300);
-                                                        } else {
-                                                            alert('المشهد المطلوب غير موجود');
-                                                        }
-                                                    }
-                                                };
-                                            }
+    div.style.color = '#ffaa44';
+    
+    const title = hotspot.data?.title || 'معلومات';
+    const content = hotspot.data?.content || '';
+    
+    div.innerHTML = `
+        <div class='hotspot-icon-wrapper'>
+            <span class='hotspot-icon info-icon'>ℹ️</span>
+            <span class='hotspot-glow'></span>
+        </div>
+        <div class='hotspot-tooltip'>
+            <div class='tooltip-arrow'></div>
+            <div class='tooltip-header'>
+                <span class='tooltip-icon'>📌</span>
+                <strong>${title}</strong>
+            </div>
+            <div class='tooltip-body'>
+                <p>${content}</p>
+            </div>
+        </div>
+    `;
+    
+    div.onclick = (e) => {
+        e.stopPropagation();
+        alert(`📌 ${title}\n\n${content}`);
+    };
+    
+} else if (hotspot.type === 'SCENE') {
+    div.style.color = '#44aaff';
+    
+    const targetName = hotspot.data?.targetSceneName || 'مشهد آخر';
+    const description = hotspot.data?.description || '';
+    const targetId = hotspot.data?.targetSceneId;
+    
+    div.innerHTML = `
+        <div class='hotspot-icon-wrapper'>
+            <span class='hotspot-icon scene-icon'>🚪</span>
+            <span class='hotspot-glow'></span>
+        </div>
+        <div class='hotspot-tooltip'>
+            <div class='tooltip-arrow'></div>
+            <div class='tooltip-header'>
+                <span class='tooltip-icon'>🚶</span>
+                <strong>انتقال إلى: ${targetName}</strong>
+            </div>
+            <div class='tooltip-body'>
+                <p>${description || 'اضغط للانتقال'}</p>
+            </div>
+        </div>
+    `;
+    
+    div.onclick = (e) => {
+        e.stopPropagation();
+        if (targetId) {
+            const targetIndex = scenes.findIndex(s => s.id === targetId);
+            if (targetIndex !== -1) {
+                div.style.transform = 'scale(1.5)';
+                div.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    loadScene(targetIndex);
+                }, 300);
+            } else {
+                alert('المشهد المطلوب غير موجود');
+            }
+        }
+    };
+}
                                             
                                             document.body.appendChild(div);
                                             
