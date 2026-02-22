@@ -251,6 +251,9 @@ class SceneManager {
 // =======================================
 // تحديث لوحة المشاهد
 // =======================================
+// =======================================
+// تحديث لوحة المشاهد (مع زر حذف)
+// =======================================
 function updateScenePanel() {
     const list = document.getElementById('sceneList');
     if (!list) return;
@@ -278,19 +281,29 @@ function updateScenePanel() {
             <span class="scene-hotspots" title="معلومات: ${infoCount} | انتقال: ${sceneCount}">
                 ${totalPoints} نقطة
             </span>
+            <button class="delete-scene-btn" data-id="${scene.id}" title="حذف المشهد">🗑️</button>
         `;
 
-        item.onclick = () => {
-            if (sceneManager) {
-                sceneManager.switchToScene(scene.id);
-                updateScenePanel();
+        // النقر على المشهد (وليس زر الحذف)
+        item.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('delete-scene-btn')) {
+                if (sceneManager) {
+                    sceneManager.switchToScene(scene.id);
+                    updateScenePanel();
+                }
             }
-        };
+        });
+        
+        // زر حذف المشهد
+        const deleteBtn = item.querySelector('.delete-scene-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteScene(scene.id);
+        });
         
         list.appendChild(item);
     });
 }
-
 // =======================================
 // مصدر الجولات
 // =======================================
@@ -673,10 +686,42 @@ function setupMarkerPreview() {
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 
+// تعديل دالة onClick لدعم حذف hotspots
 function onClick(e) {
     if (!sphereMesh) return;
     if (e.target !== renderer.domElement) return;
 
+    // التحقق من النقر على hotspot
+    raycaster.setFromCamera(mouse, camera);
+    const hotspotHits = raycaster.intersectObjects(scene.children.filter(c => c.userData?.type === 'hotspot'));
+    
+    if (hotspotHits.length > 0) {
+        const hotspot = hotspotHits[0].object;
+        
+        // إذا كان Ctrl مضغوطاً، احذف
+        if (e.ctrlKey) {
+            if (confirm('حذف هذه النقطة؟')) {
+                deleteHotspot(hotspot.userData.hotspotId);
+                scene.remove(hotspot);
+            }
+            return;
+        }
+        
+        // وإلا، نفذ الإجراء العادي
+        if (hotspot.userData.hotspotType === 'INFO') {
+            const data = hotspot.userData.hotspotData;
+            alert(`${data.title}\n\n${data.content}`);
+        } else if (hotspot.userData.hotspotType === 'SCENE') {
+            const data = hotspot.userData.hotspotData;
+            const targetIndex = sceneManager.scenes.findIndex(s => s.id === data.targetSceneId);
+            if (targetIndex !== -1) {
+                sceneManager.switchToScene(data.targetSceneId);
+            }
+        }
+        return;
+    }
+
+    // باقي الكود للنقر على الكرة
     mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
     mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
 
@@ -972,9 +1017,13 @@ function addHotspot(position) {
     document.body.style.cursor = 'default';
 }
 
+// =======================================
+// إعادة بناء Hotspots في المشهد (مع إمكانية الحذف)
+// =======================================
 function rebuildHotspots(hotspots) {
     if (!scene) return;
     
+    // مسح الـ hotspots القديمة
     scene.children.forEach(child => {
         if (child.userData && child.userData.type === 'hotspot') {
             scene.remove(child);
@@ -1001,6 +1050,16 @@ function rebuildHotspots(hotspots) {
             hotspotId: hotspot.id,
             hotspotType: hotspot.type,
             hotspotData: hotspot.data
+        };
+        
+        // إضافة حدث النقر للحذف (مع Ctrl)
+        marker.userData.handleClick = (ctrlKey) => {
+            if (ctrlKey) {
+                if (confirm('حذف هذه النقطة؟')) {
+                    deleteHotspot(hotspot.id);
+                    scene.remove(marker);
+                }
+            }
         };
         
         scene.add(marker);
@@ -1380,3 +1439,67 @@ function animate() {
 // بدء التشغيل
 // =======================================
 init();
+
+// =======================================
+// حذف Hotspot
+// =======================================
+function deleteHotspot(hotspotId) {
+    if (!sceneManager || !sceneManager.currentScene) return;
+    
+    // البحث عن الـ hotspot في المشهد الحالي
+    const scene = sceneManager.currentScene;
+    const hotspotIndex = scene.hotspots.findIndex(h => h.id === hotspotId);
+    
+    if (hotspotIndex !== -1) {
+        // إزالة من البيانات
+        scene.hotspots.splice(hotspotIndex, 1);
+        
+        // إزالة من المشهد ثلاثي الأبعاد
+        scene.children.forEach(child => {
+            if (child.userData && child.userData.hotspotId === hotspotId) {
+                scene.remove(child);
+            }
+        });
+        
+        // حفظ التغييرات
+        sceneManager.saveScenes();
+        updateScenePanel();
+        
+        console.log(`✅ تم حذف الـ hotspot`);
+    }
+}
+
+// =======================================
+// حذف مشهد
+// =======================================
+function deleteScene(sceneId) {
+    if (!sceneManager) return;
+    
+    if (confirm('هل أنت متأكد من حذف هذا المشهد؟')) {
+        // البحث عن المشهد
+        const sceneIndex = sceneManager.scenes.findIndex(s => s.id === sceneId);
+        
+        if (sceneIndex !== -1) {
+            // إزالة من البيانات
+            sceneManager.scenes.splice(sceneIndex, 1);
+            
+            // إذا كان المشهد الحالي هو المحذوف، انتقل لمشهد آخر
+            if (sceneManager.currentScene && sceneManager.currentScene.id === sceneId) {
+                if (sceneManager.scenes.length > 0) {
+                    sceneManager.switchToScene(sceneManager.scenes[0].id);
+                } else {
+                    // لا يوجد مشاهد - أعد تحميل الصورة الافتراضية
+                    loadPanorama();
+                    sceneManager.currentScene = null;
+                }
+            }
+            
+            // حفظ التغييرات
+            sceneManager.saveScenes();
+            updateScenePanel();
+            
+            console.log(`✅ تم حذف المشهد`);
+        }
+    }
+}
+
