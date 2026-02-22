@@ -1017,41 +1017,73 @@ function addHotspot(position) {
 // =======================================
 // دوال إدارة المشاهد
 // =======================================
+// =======================================
+// إضافة مشهد جديد (مصححة)
+// =======================================
 function addNewScene() {
     const name = prompt('أدخل اسم المشهد:');
     if (!name) return;
 
+    // إنشاء عنصر input مخفي
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
+    input.style.display = 'none';
+    document.body.appendChild(input);
 
-    input.onchange = async (e) => {
+    // ربط الحدث قبل فتح النافذة
+    input.onchange = async function(e) {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {
+            document.body.removeChild(input);
+            return;
+        }
 
-        showLoader('جاري إضافة المشهد...');
+        // استخدم showLoader إذا كانت موجودة
+        if (typeof showLoader === 'function') {
+            showLoader('جاري إضافة المشهد...');
+        } else {
+            console.log('⏳ جاري إضافة المشهد...');
+        }
 
         try {
             // إضافة المشهد باستخدام SceneManager
+            if (!sceneManager) {
+                throw new Error('SceneManager غير موجود');
+            }
+            
             const scene = await sceneManager.addScene(name, file);
             
             if (scene) {
                 // التبديل للمشهد الجديد
-                sceneManager.switchToScene(scene.id);
+                if (typeof sceneManager.switchToScene === 'function') {
+                    sceneManager.switchToScene(scene.id);
+                }
                 
                 // تحديث اللوحة
-                updateScenePanel();
+                if (typeof updateScenePanel === 'function') {
+                    updateScenePanel();
+                }
                 
-                hideLoader();
+                if (typeof hideLoader === 'function') {
+                    hideLoader();
+                }
+                
                 alert(`✅ تم إضافة المشهد: ${name}`);
             }
         } catch (error) {
             console.error('❌ خطأ:', error);
-            alert('فشل إضافة المشهد');
-            hideLoader();
+            alert('فشل إضافة المشهد: ' + error.message);
+            if (typeof hideLoader === 'function') {
+                hideLoader();
+            }
         }
+
+        // تنظيف
+        document.body.removeChild(input);
     };
 
+    // فتح نافذة اختيار الملف (يجب أن يكون هنا بسبب user activation)
     input.click();
 }
 
@@ -1187,6 +1219,24 @@ async function exportCompleteTour() {
         console.error('❌ خطأ في التصدير:', error);
         alert('حدث خطأ في التصدير');
         hideLoader();
+    }
+}
+
+// =======================================
+// دوال التحميل (ضعها في قسم دوال التصدير)
+// =======================================
+function showLoader(message) {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'flex';
+        loader.textContent = message || '⏳ جاري التحميل...';
+    }
+}
+
+function hideLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
     }
 }
 // =======================================
