@@ -695,58 +695,126 @@ function createStraightPath(points) {
 // دوال Hotspots الجديدة
 // =======================================
 
+// =======================================
+// دوال Hotspots المطورة
+// =======================================
+
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
         alert('❌ لا يوجد مشهد نشط');
         return;
     }
 
-    let data = {};
-    
     if (hotspotMode === 'SCENE') {
         // قائمة المشاهد المتاحة
-        const sceneNames = sceneManager.scenes
-            .filter(s => s.id !== sceneManager.currentScene.id)
-            .map(s => s.name)
-            .join('\n');
+        const otherScenes = sceneManager.scenes.filter(s => s.id !== sceneManager.currentScene.id);
         
-        if (sceneNames.length === 0) {
+        if (otherScenes.length === 0) {
             alert('❌ لا يوجد مشاهد أخرى للانتقال إليها');
             return;
         }
-        
-        const targetScene = prompt(`أدخل اسم المشهد المستهدف:\nالمشاهد المتاحة:\n${sceneNames}`);
-        if (!targetScene) return;
-        
-        data = { text: `انتقال إلى ${targetScene}`, targetScene: targetScene };
-    } else {
-        const text = prompt('أدخل نص المعلومات:');
-        if (!text) return;
-        data = { text: text };
-    }
 
+        // نافذة مخصصة لاختيار المشهد
+        const sceneOptions = otherScenes.map((s, index) => `${index + 1}. ${s.name}`).join('\n');
+        const choice = prompt(
+            `اختر المشهد للانتقال إليه:\n${sceneOptions}\n\nأدخل رقم المشهد:`
+        );
+
+        if (!choice) return;
+
+        const selectedIndex = parseInt(choice) - 1;
+        if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= otherScenes.length) {
+            alert('❌ اختيار غير صالح');
+            return;
+        }
+
+        const targetScene = otherScenes[selectedIndex];
+        
+        // إضافة وصف للانتقال
+        const description = prompt('أدخل وصفاً لهذه النقطة (مثال: "اضغط للذهاب إلى الاستقبال"):');
+        
+        const data = {
+            type: 'SCENE',
+            targetSceneId: targetScene.id,
+            targetSceneName: targetScene.name,
+            description: description || `انتقال إلى ${targetScene.name}`,
+            title: '🚪 انتقال إلى مشهد آخر'
+        };
+
+        createHotspot(position, 'SCENE', data);
+
+    } else if (hotspotMode === 'INFO') {
+        // نافذة متطورة للمعلومات
+        const title = prompt('أدخل عنوان المعلومات:');
+        if (!title) return;
+
+        const content = prompt('أدخل نص المعلومات:');
+        if (!content) return;
+
+        const data = {
+            type: 'INFO',
+            title: title,
+            content: content,
+            icon: 'ℹ️'
+        };
+
+        createHotspot(position, 'INFO', data);
+    }
+}
+
+function createHotspot(position, type, data) {
+    // حفظ في SceneManager
     const hotspot = sceneManager.addHotspot(
         sceneManager.currentScene.id,
-        hotspotMode,
+        type,
         position,
         data
     );
 
     if (hotspot) {
-        // إنشاء كرة ملونة تمثل hotspot
-        const geometry = new THREE.SphereGeometry(12, 24, 24);
+        // اختيار اللون حسب النوع
+        let color, icon;
+        if (type === 'SCENE') {
+            color = 0x44aaff; // أزرق
+            icon = '🚪';
+        } else {
+            color = 0xffaa44; // برتقالي
+            icon = 'ℹ️';
+        }
+
+        // إنشاء كرة ملونة
+        const geometry = new THREE.SphereGeometry(14, 32, 32);
         const material = new THREE.MeshStandardMaterial({
-            color: hotspot.color,
-            emissive: hotspot.color,
-            emissiveIntensity: 0.5
+            color: color,
+            emissive: color,
+            emissiveIntensity: 0.6,
+            transparent: true,
+            opacity: 0.9
         });
 
         const marker = new THREE.Mesh(geometry, material);
         marker.position.copy(position);
-        marker.userData = { type: 'hotspot', hotspotId: hotspot.id };
-        scene.add(marker);
+        marker.userData = { 
+            type: 'hotspot', 
+            hotspotId: hotspot.id,
+            hotspotType: type 
+        };
+        
+        // إضافة حلقة حول الكرة
+        const ringGeo = new THREE.TorusGeometry(16, 1, 16, 32);
+        const ringMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            emissive: color,
+            emissiveIntensity: 0.3,
+            transparent: true,
+            opacity: 0.5
+        });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        marker.add(ring);
 
-        console.log(`✅ تم إضافة ${hotspotMode === 'SCENE' ? 'نقطة انتقال' : 'نقطة معلومات'}`);
+        scene.add(marker);
+        console.log(`✅ تم إضافة ${type === 'SCENE' ? 'نقطة انتقال' : 'نقطة معلومات'}`);
     }
 }
 
