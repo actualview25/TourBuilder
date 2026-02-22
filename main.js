@@ -336,18 +336,28 @@ class TourExporter {
         const content = await this.zip.generateAsync({ type: 'blob' });
         saveAs(content, `${projectName}.zip`);
     }
-
-    generatePlayerHTML(projectName) {
-        return `<!DOCTYPE html>
+generatePlayerHTML(projectName) {
+    return `<!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
     <title>${projectName} - جولة افتراضية</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
+        canvas { display: block; }
+        .info {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 18px;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
         #autoRotateBtn {
             position: fixed;
             bottom: 20px;
@@ -370,9 +380,7 @@ class TourExporter {
             z-index: 10;
             filter: drop-shadow(0 0 10px currentColor);
         }
-        .hotspot:hover {
-            transform: translate(-50%, -50%) scale(1.2);
-        }
+        .hotspot:hover { transform: translate(-50%, -50%) scale(1.2); }
         .hotspot-tooltip {
             position: absolute;
             background: rgba(0,0,0,0.9);
@@ -389,19 +397,120 @@ class TourExporter {
             border: 2px solid currentColor;
             box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
-        .hotspot:hover .hotspot-tooltip {
-            display: block;
-        }
-        .hotspot-icon {
-            font-size: 30px;
-        }
+        .hotspot:hover .hotspot-tooltip { display: block; }
+        .hotspot-icon { font-size: 30px; }
     </style>
 </head>
 <body>
-    <div class="info">🏗️ ${projectName}</div>
-    <div id="container"></div>
-    <button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
+<div class="info">🏗️ ${projectName}</div>
+<div id="container"></div>
+<button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
 
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
+
+let autoRotate = true;
+let currentSceneIndex = 0;
+let scenes = [];
+let scene3D, camera, renderer, controls, sphereMesh;
+
+fetch('tour-data.json')
+    .then(res => res.json())
+    .then(data => {
+        scenes = data;
+
+        // =====================
+        // إعداد المشهد
+        // =====================
+        scene3D = new THREE.Scene();
+        scene3D.background = new THREE.Color(0x000000);
+
+        // الكاميرا
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 0.1);
+
+        // المعالج
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        // الإضاءة
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+        scene3D.add(ambientLight);
+        const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight1.position.set(1,1,1);
+        scene3D.add(dirLight1);
+        const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight2.position.set(-1,-1,-0.5);
+        scene3D.add(dirLight2);
+
+        // التحكم
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableZoom = true;
+        controls.enablePan = false;
+        controls.enableDamping = true;
+        controls.autoRotate = autoRotate;
+        controls.autoRotateSpeed = 0.5;
+        controls.target.set(0,0,0);
+
+        // زر التحكم بالدوران
+        document.getElementById('autoRotateBtn').onclick = () => {
+            autoRotate = !autoRotate;
+            controls.autoRotate = autoRotate;
+            document.getElementById('autoRotateBtn').textContent = autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
+        };
+
+        // مثال على إضافة hotspot
+        addHotspot(window.innerWidth/2, window.innerHeight/2, {
+            title: 'نقطة معلومات',
+            description: 'يمكنك إضافة نصوص، صور، وروابط هنا.',
+            image: '',
+            link: ''
+        });
+
+        // تغيير الحجم
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // حلقة الرسم
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene3D, camera);
+        }
+        animate();
+    });
+
+// =====================
+// دالة إضافة hotspot مع معلومات
+// =====================
+function addHotspot(x, y, options) {
+    const hotspot = document.createElement('div');
+    hotspot.className = 'hotspot';
+    hotspot.innerHTML = `
+        <span class="hotspot-icon">📍</span>
+        <div class="hotspot-tooltip">
+            <h3>${options.title || 'عنوان'}</h3>
+            <p>${options.description || ''}</p>
+            ${options.image ? `<img src="${options.image}" style="width:100%;border-radius:6px;margin-top:5px;">` : ''}
+            ${options.link ? `<a href="${options.link}" target="_blank">🔗 رابط</a>` : ''}
+        </div>
+    `;
+    hotspot.style.left = x + 'px';
+    hotspot.style.top = y + 'px';
+    document.getElementById('container').appendChild(hotspot);
+}
+
+</script>
+</body>
+</html>
+`;
+}
     <script>
         let autoRotate = true;
         let currentSceneIndex = 0;
