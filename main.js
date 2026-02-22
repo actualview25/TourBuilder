@@ -552,7 +552,8 @@ class TourExporter {
                                                 const content = hotspot.data?.content || '';
                                                 
                                                 div.innerHTML = `
-                                                    <div class='hotspot-icon-wrapper'>
+                                                    div.innerHTML = `
+                                                     <div class='hotspot-icon-wrapper'>  // ✅ استخدم علامات تنصيص مفردة
                                                         <span class='hotspot-icon info-icon'>ℹ️</span>
                                                         <span class='hotspot-glow'></span>
                                                     </div>
