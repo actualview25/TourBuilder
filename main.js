@@ -513,12 +513,13 @@ if (sceneData.hotspots && sceneData.hotspots.length > 0) {
             div.setAttribute('data-content', hotspot.data.content || '');
             
             // ✅ HTML بشكل صحيح ومنظم
-            div.innerHTML = `
-                <span class="hotspot-icon">ℹ️</span>
-                <div class="hotspot-tooltip">
-                    <strong>${hotspot.data.title || 'معلومات'}</strong>
-                    <p>${hotspot.data.content || ''}</p>
-                </div>
+           
+        div.innerHTML = `
+            <span class="hotspot-icon">ℹ️</span>
+            <div class="hotspot-tooltip">
+            <strong>${hotspot.data.title || 'معلومات'}</strong>
+            <p>${hotspot.data.content || ''}</p>
+            </div>
             `;
             
             div.onclick = function() {
