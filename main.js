@@ -491,9 +491,8 @@ class TourExporter {
 2. فعل GitHub Pages
 3. الجولة متاحة على: \`https://[اسمك].github.io/[المشروع]\`
 
----
-تم إنشاؤها باستخدام Virtual Tour Studio © 2026`;
-    
+---تم إنشاؤها باستخدام Virtual Tour Studio © 2026`;
+    }
 }
 
 // =======================================
