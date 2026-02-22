@@ -511,13 +511,14 @@ if (sceneData.hotspots && sceneData.hotspots.length > 0) {
             div.setAttribute('data-type', 'info');
             div.setAttribute('data-title', hotspot.data.title || 'معلومات');
             div.setAttribute('data-content', hotspot.data.content || '');
-            div.innerHTML = `
-                <span class="hotspot-icon">ℹ️</span>
-                <div class="hotspot-tooltip">
-                    <strong>${hotspot.data.title || 'معلومات'}</strong>
-                    <p>${hotspot.data.content || ''}</p>
-                </div>
-            `;
+            
+               div.innerHTML = `
+    <span class="hotspot-icon">ℹ️</span>
+    <div class="hotspot-tooltip">
+        <strong>${hotspot.data.title || 'معلومات'}</strong>
+        <p>${hotspot.data.content || ''}</p>
+    </div>
+`;
         } else {
             div.style.color = '#44aaff';
             div.setAttribute('data-type', 'scene');
