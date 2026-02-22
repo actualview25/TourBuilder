@@ -511,7 +511,7 @@ if (hotspot.type === 'INFO') {
     div.setAttribute('data-title', hotspot.data.title || 'معلومات');
     div.setAttribute('data-content', hotspot.data.content || '');
     
-    // ✅ الطريقة الصحيحة - استخدام علامات التنصيص الفردية داخل `
+    // ✅ استخدم class مع علامات تنصيص مفردة
     div.innerHTML = `
         <span class='hotspot-icon'>ℹ️</span>
         <div class='hotspot-tooltip'>
@@ -526,6 +526,10 @@ if (hotspot.type === 'INFO') {
     
 } else {
     div.style.color = '#44aaff';
+    div.setAttribute('data-type', 'scene');
+    div.setAttribute('data-target', hotspot.data.targetSceneName || '');
+    div.setAttribute('data-target-id', hotspot.data.targetSceneId || '');
+    
     div.innerHTML = `
         <span class='hotspot-icon'>🚪</span>
         <div class='hotspot-tooltip'>
