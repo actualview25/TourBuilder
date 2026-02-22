@@ -142,47 +142,48 @@ class SceneManager {
         return hotspot;
     }
 
-    switchToScene(sceneId) {
-        const sceneData = this.scenes.find(s => s.id === sceneId);
-        if (!sceneData) return false;
+switchToScene(sceneId) {
+    const sceneData = this.scenes.find(s => s.id === sceneId);
+    if (!sceneData) return false;
 
-        if (this.currentScene && paths.length > 0) {
-            this.currentScene.paths = paths.map(p => ({
-                type: p.userData.type,
-                color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
-                points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
-            }));
-        }
-
-        this.currentScene = sceneData;
-
-        paths.forEach(p => scene3D.remove(p));  // ✅ استخدم scene3D بدلاً من scene
-paths = [];
-clearCurrentDrawing();
-
-        if (sphereMesh && sphereMesh.material) {
-            const img = new Image();
-            img.onload = () => {
-                const texture = new THREE.CanvasTexture(img);
-                sphereMesh.material.map = texture;
-                sphereMesh.material.needsUpdate = true;
-            };
-            img.src = sceneData.originalImage;
-        }
-
-        if (sceneData.paths) {
-            sceneData.paths.forEach(pathData => {
-                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                currentPathType = pathData.type;
-                createStraightPath(points);
-            });
-        }
-
-        if (sceneData.hotspots) rebuildHotspots(sceneData.hotspots);
-        updateScenePanel();
-        this.saveScenes();
-        return true;
+    if (this.currentScene && paths.length > 0) {
+        this.currentScene.paths = paths.map(p => ({
+            type: p.userData.type,
+            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
+            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
+        }));
     }
+
+    this.currentScene = sceneData;
+
+    // ✅ تصحيح: استخدم scene3D بدلاً من scene
+    paths.forEach(p => scene3D.remove(p));
+    paths = [];
+    clearCurrentDrawing();
+
+    if (sphereMesh && sphereMesh.material) {
+        const img = new Image();
+        img.onload = () => {
+            const texture = new THREE.CanvasTexture(img);
+            sphereMesh.material.map = texture;
+            sphereMesh.material.needsUpdate = true;
+        };
+        img.src = sceneData.originalImage;
+    }
+
+    if (sceneData.paths) {
+        sceneData.paths.forEach(pathData => {
+            const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+            currentPathType = pathData.type;
+            createStraightPath(points);
+        });
+    }
+
+    if (sceneData.hotspots) rebuildHotspots(sceneData.hotspots);
+    updateScenePanel();
+    this.saveScenes();
+    return true;
+}
 
     deleteScene(sceneId) {
         const index = this.scenes.findIndex(s => s.id === sceneId);
