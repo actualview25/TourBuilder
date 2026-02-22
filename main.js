@@ -888,6 +888,9 @@ function createStraightPath(points) {
 // =======================================
 // دوال Hotspots المطورة (INFO و SCENE)
 // =======================================
+// =======================================
+// دوال Hotspots المطورة (INFO و SCENE)
+// =======================================
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
         alert('❌ لا يوجد مشهد نشط. أضف مشهداً أولاً');
@@ -938,6 +941,9 @@ function addHotspot(position) {
             scene.add(marker);
 
             alert(`✅ تم إضافة نقطة معلومات: "${title}"`);
+            
+            // تحديث لوحة المشاهد
+            updateScenePanel();
         }
 
     } else if (hotspotMode === 'SCENE') {
@@ -1006,6 +1012,9 @@ function addHotspot(position) {
             scene.add(marker);
 
             alert(`✅ تم إضافة نقطة انتقال إلى "${targetScene.name}"`);
+            
+            // تحديث لوحة المشاهد
+            updateScenePanel();
         }
     }
 
@@ -1136,7 +1145,12 @@ function loadSceneImage(imageData) {
     img.src = imageData;
 }
 
+// =======================================
+// إعادة بناء Hotspots في المشهد
+// =======================================
 function rebuildHotspots(hotspots) {
+    if (!scene) return;
+    
     // مسح الـ hotspots القديمة
     scene.children.forEach(child => {
         if (child.userData && child.userData.type === 'hotspot') {
@@ -1144,38 +1158,54 @@ function rebuildHotspots(hotspots) {
         }
     });
 
+    if (!hotspots || hotspots.length === 0) return;
+
     // إضافة الـ hotspots الجديدة
-    hotspots.forEach(hotspot => {
-        const geometry = new THREE.SphereGeometry(12, 24, 24);
+    hotspots.forEach((hotspot, index) => {
+        // تحديد اللون حسب النوع
+        const color = hotspot.type === 'SCENE' ? 0x44aaff : 0xffaa44;
+        
+        const geometry = new THREE.SphereGeometry(14, 32, 32);
         const material = new THREE.MeshStandardMaterial({
-            color: hotspot.color,
-            emissive: hotspot.color,
-            emissiveIntensity: 0.5
+            color: color,
+            emissive: color,
+            emissiveIntensity: 0.5,
+            transparent: true,
+            opacity: 0.9
         });
 
         const marker = new THREE.Mesh(geometry, material);
-        marker.position.set(hotspot.position.x, hotspot.position.y, hotspot.position.z);
-        marker.userData = { type: 'hotspot', hotspotId: hotspot.id };
+        marker.position.set(
+            hotspot.position.x, 
+            hotspot.position.y, 
+            hotspot.position.z
+        );
+        
+        // إضافة حلقة حول الكرة
+        const ringGeo = new THREE.TorusGeometry(16, 1, 16, 32);
+        const ringMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            emissive: color,
+            emissiveIntensity: 0.3,
+            transparent: true,
+            opacity: 0.5
+        });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        marker.add(ring);
+        
+        marker.userData = { 
+            type: 'hotspot', 
+            hotspotId: hotspot.id,
+            hotspotType: hotspot.type,
+            hotspotData: hotspot.data
+        };
+        
         scene.add(marker);
     });
+    
+    console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة`);
 }
-
-function addSceneToPanel(sceneData) {
-    const list = document.getElementById('sceneList');
-    if (!list) return;
-
-    const item = document.createElement('div');
-    item.className = 'scene-item';
-    item.innerHTML = `
-        <span class="scene-icon">🌄</span>
-        <span class="scene-name">${sceneData.name}</span>
-        <span class="scene-hotspots">${sceneData.hotspots?.length || 0} نقطة</span>
-    `;
-
-    item.onclick = () => switchToScene(sceneData.id);
-    list.appendChild(item);
-}
-
 // =======================================
 // دوال التصدير (مطورة)
 // =======================================
