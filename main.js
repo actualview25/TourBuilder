@@ -523,7 +523,7 @@ if (sceneData.hotspots && sceneData.hotspots.length > 0) {
                 
                 if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) return;
                 
-                const div = document.createElement('div');
+               const div = document.createElement('div');
 div.className = 'hotspot';
 div.style.left = x + 'px';
 div.style.top = y + 'px';
@@ -534,7 +534,7 @@ if (hotspot.type === 'INFO') {
     const title = hotspot.data?.title || 'معلومات';
     const content = hotspot.data?.content || '';
     
-    // ✅ استخدم علامات تنصيص مفردة
+    // أيقونة احترافية مع tooltip
     div.innerHTML = `
         <div class='hotspot-icon-wrapper'>
             <span class='hotspot-icon info-icon'>ℹ️</span>
@@ -546,60 +546,59 @@ if (hotspot.type === 'INFO') {
                 <span class='tooltip-icon'>📌</span>
                 <strong>${title}</strong>
             </div>
+            <div class='tooltip-body'>
+                <p>${content}</p>
+            </div>
         </div>
     `;
+    
+    div.onclick = function(e) {
+        e.stopPropagation();
+        alert(`📌 ${title}\n\n${content}`);
+    };
+    
+} else if (hotspot.type === 'SCENE') {
+    div.style.color = '#44aaff';
+    
+    const targetName = hotspot.data?.targetSceneName || 'مشهد آخر';
+    const description = hotspot.data?.description || '';
+    const targetId = hotspot.data?.targetSceneId;
+    
+    div.innerHTML = `
+        <div class='hotspot-icon-wrapper'>
+            <span class='hotspot-icon scene-icon'>🚪</span>
+            <span class='hotspot-glow'></span>
+        </div>
+        <div class='hotspot-tooltip'>
+            <div class='tooltip-arrow'></div>
+            <div class='tooltip-header'>
+                <span class='tooltip-icon'>🚶</span>
+                <strong>انتقال إلى: ${targetName}</strong>
+            </div>
+            <div class='tooltip-body'>
+                <p>${description || 'اضغط للانتقال'}</p>
+            </div>
+        </div>
+    `;
+    
+    div.onclick = function(e) {
+        e.stopPropagation();
+        if (targetId) {
+            const targetIndex = scenes.findIndex(s => s.id === targetId);
+            if (targetIndex !== -1) {
+                div.style.transform = 'scale(1.5)';
+                div.style.transition = 'all 0.3s';
+                setTimeout(() => {
+                    loadScene(targetIndex);
+                }, 300);
+            } else {
+                alert('المشهد المطلوب غير موجود');
+            }
+        }
+    };
 }
-                    // حدث النقر
-                    div.onclick = function(e) {
-                        e.stopPropagation();
-                        alert(`📌 ${title}\n\n${content}`);
-                    };
-                    
-                } else if (hotspot.type === 'SCENE') {
-                    div.style.color = '#44aaff';
-                    
-                    const targetName = hotspot.data?.targetSceneName || 'مشهد آخر';
-                    const description = hotspot.data?.description || '';
-                    const targetId = hotspot.data?.targetSceneId;
-                    
-                    // أيقونة انتقال احترافية
-                    div.innerHTML = `
-                        <div class="hotspot-icon-wrapper">
-                            <span class="hotspot-icon scene-icon">🚪</span>
-                            <span class="hotspot-glow"></span>
-                        </div>
-                        <div class="hotspot-tooltip">
-                            <div class="tooltip-arrow"></div>
-                            <div class="tooltip-header">
-                                <span class="tooltip-icon">🚶</span>
-                                <strong>انتقال إلى: ${targetName}</strong>
-                            </div>
-                            <div class="tooltip-body">
-                                <p>${description || 'اضغط للانتقال'}</p>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // حدث النقر للانتقال
-                    div.onclick = function(e) {
-                        e.stopPropagation();
-                        if (targetId) {
-                            const targetIndex = scenes.findIndex(s => s.id === targetId);
-                            if (targetIndex !== -1) {
-                                // إظهار تأثير قبل الانتقال
-                                div.style.transform = 'scale(1.5)';
-                                div.style.transition = 'all 0.3s';
-                                setTimeout(() => {
-                                    loadScene(targetIndex);
-                                }, 300);
-                            } else {
-                                alert('المشهد المطلوب غير موجود');
-                            }
-                        }
-                    };
-                }
-                
-                document.body.appendChild(div);
+
+document.body.appendChild(div);
                 
             } catch (error) {
                 console.error('خطأ في إضافة hotspot:', error);
