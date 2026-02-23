@@ -86,7 +86,7 @@ class SceneManager {
         request.onsuccess = () => {
             this.scenes = request.result || [];
             console.log(`✅ تم تحميل ${this.scenes.length} مشهد`);
-            updateScenePanel();
+            if (typeof updateScenePanel === 'function') updateScenePanel();
         };
     }
 
@@ -97,7 +97,7 @@ class SceneManager {
         store.clear();
         this.scenes.forEach(scene => store.add(scene));
         console.log('✅ تم حفظ المشاهد');
-        updateScenePanel();
+        if (typeof updateScenePanel === 'function') updateScenePanel();
     }
 
     async addScene(name, imageFile) {
@@ -142,48 +142,48 @@ class SceneManager {
         return hotspot;
     }
 
-switchToScene(sceneId) {
-    const sceneData = this.scenes.find(s => s.id === sceneId);
-    if (!sceneData) return false;
+    switchToScene(sceneId) {
+        const sceneData = this.scenes.find(s => s.id === sceneId);
+        if (!sceneData) return false;
 
-    if (this.currentScene && paths.length > 0) {
-        this.currentScene.paths = paths.map(p => ({
-            type: p.userData.type,
-            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
-            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
-        }));
+        if (this.currentScene && paths.length > 0) {
+            this.currentScene.paths = paths.map(p => ({
+                type: p.userData.type,
+                color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
+                points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
+            }));
+        }
+
+        this.currentScene = sceneData;
+
+        // تصحيح: استخدام scene بدلاً من scene3D
+        paths.forEach(p => scene.remove(p));
+        paths = [];
+        clearCurrentDrawing();
+
+        if (sphereMesh && sphereMesh.material) {
+            const img = new Image();
+            img.onload = () => {
+                const texture = new THREE.CanvasTexture(img);
+                sphereMesh.material.map = texture;
+                sphereMesh.material.needsUpdate = true;
+            };
+            img.src = sceneData.originalImage;
+        }
+
+        if (sceneData.paths) {
+            sceneData.paths.forEach(pathData => {
+                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                currentPathType = pathData.type;
+                createStraightPath(points);
+            });
+        }
+
+        if (sceneData.hotspots) rebuildHotspots(sceneData.hotspots);
+        if (typeof updateScenePanel === 'function') updateScenePanel();
+        this.saveScenes();
+        return true;
     }
-
-    this.currentScene = sceneData;
-
-    // ✅ تصحيح: استخدم scene3D بدلاً من scene
-    paths.forEach(p => scene3D.remove(p));
-    paths = [];
-    clearCurrentDrawing();
-
-    if (sphereMesh && sphereMesh.material) {
-        const img = new Image();
-        img.onload = () => {
-            const texture = new THREE.CanvasTexture(img);
-            sphereMesh.material.map = texture;
-            sphereMesh.material.needsUpdate = true;
-        };
-        img.src = sceneData.originalImage;
-    }
-
-    if (sceneData.paths) {
-        sceneData.paths.forEach(pathData => {
-            const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-            currentPathType = pathData.type;
-            createStraightPath(points);
-        });
-    }
-
-    if (sceneData.hotspots) rebuildHotspots(sceneData.hotspots);
-    updateScenePanel();
-    this.saveScenes();
-    return true;
-}
 
     deleteScene(sceneId) {
         const index = this.scenes.findIndex(s => s.id === sceneId);
@@ -194,11 +194,11 @@ switchToScene(sceneId) {
                     this.switchToScene(this.scenes[0].id);
                 } else {
                     this.currentScene = null;
-                    loadPanorama();
+                    if (typeof loadPanorama === 'function') loadPanorama();
                 }
             }
             this.saveScenes();
-            updateScenePanel();
+            if (typeof updateScenePanel === 'function') updateScenePanel();
         }
     }
 }
@@ -211,37 +211,36 @@ class TourExporter {
         this.zip = new JSZip();
     }
 
-   async exportTour(projectName, scenes) {
-    const folder = this.zip.folder(projectName);
-    
-    scenes.forEach((scene, index) => {
-        const imageData = scene.image.split(',')[1];
-        folder.file(`scene-${index}.jpg`, imageData, { base64: true });
-    });
-    
-    // ✅ هذا هو الجزء المعدل
-    const scenesData = scenes.map((scene, index) => ({
-        id: scene.id,
-        name: scene.name,
-        image: `scene-${index}.jpg`,
-        paths: scene.paths || [],
-        hotspots: (scene.hotspots || []).map(h => ({
-        id: h.id,
-        type: h.type,
-        position: h.position,
-        data: h.data || {}
-     }))
-    
- }));
-    
-    folder.file('tour-data.json', JSON.stringify(scenesData, null, 2));
-    folder.file('index.html', this.generatePlayerHTML(projectName));
-    folder.file('style.css', this.generatePlayerCSS());
-    folder.file('README.md', this.generateReadme(projectName));
-    
-    const content = await this.zip.generateAsync({ type: 'blob' });
-    saveAs(content, `${projectName}.zip`);
-}
+    async exportTour(projectName, scenes) {
+        const folder = this.zip.folder(projectName);
+        
+        scenes.forEach((scene, index) => {
+            const imageData = scene.image.split(',')[1];
+            folder.file(`scene-${index}.jpg`, imageData, { base64: true });
+        });
+        
+        const scenesData = scenes.map((scene, index) => ({
+            id: scene.id,
+            name: scene.name,
+            image: `scene-${index}.jpg`,
+            paths: scene.paths || [],
+            hotspots: (scene.hotspots || []).map(h => ({
+                id: h.id,
+                type: h.type,
+                position: h.position,
+                data: h.data || {}
+            }))
+        }));
+        
+        folder.file('tour-data.json', JSON.stringify(scenesData, null, 2));
+        folder.file('index.html', this.generatePlayerHTML(projectName));
+        folder.file('style.css', this.generatePlayerCSS());
+        folder.file('README.md', this.generateReadme(projectName));
+        
+        const content = await this.zip.generateAsync({ type: 'blob' });
+        saveAs(content, `${projectName}.zip`);
+    }
+
     generatePlayerHTML(projectName) {
         return `<!DOCTYPE html>
 <html lang="ar">
@@ -455,8 +454,7 @@ class TourExporter {
     </script>
 </body>
 </html>`;
-    
-}
+    }
 
     generatePlayerCSS() {
         return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
@@ -492,7 +490,7 @@ class TourExporter {
 - 🔵 WP: مياه
 - 🔴 WA: صرف صحي
 - 🟢 GS: غاز
-
+-
 ### النشر على GitHub Pages:
 1. ارفع المحتويات إلى GitHub
 2. فعل GitHub Pages
@@ -530,10 +528,10 @@ window.setCurrentPathType = (t) => {
 };
 
 const projectManager = new ProjectManager();
-const tourExporter = new TourExporter(); // ✅ الآن يعمل بشكل صحيح
+const tourExporter = new TourExporter();
 
 // =======================================
-// ٥. دوال الرسم
+// ٥. دوال الرسم الأساسية
 // =======================================
 function setupMarkerPreview() {
     const geometry = new THREE.SphereGeometry(8, 16, 16);
@@ -568,81 +566,6 @@ function onClick(e) {
     }
 }
 
-// =======================================
-// ٦. بدء التشغيل
-// =======================================
-function init() {
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
-    camera.position.set(0, 0, 0.1);
-    
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('container').appendChild(renderer.domElement);
-    
-    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-    
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableZoom = true;
-    controls.enablePan = false;
-    controls.enableDamping = true;
-    controls.autoRotate = autorotate;
-    
-    sceneManager = new SceneManager();
-    loadPanorama();
-    setupEvents();
-    animate();
-}
-
-function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-}
-// =======================================
-// تحميل البانوراما
-// =======================================
-function loadPanorama() {
-    console.log('🔄 جاري تحميل البانوراما...');
-    
-    const loader = new THREE.TextureLoader();
-    loader.load(
-        './textures/StartPoint.jpg',
-        (texture) => {
-            console.log('✅ تم تحميل الصورة');
-            texture.colorSpace = THREE.SRGBColorSpace;
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.x = -1;
-
-            const geometry = new THREE.SphereGeometry(500, 128, 128);
-            const material = new THREE.MeshBasicMaterial({
-                map: texture,
-                side: THREE.BackSide
-            });
-
-            sphereMesh = new THREE.Mesh(geometry, material);
-            scene.add(sphereMesh);
-            
-            const loaderEl = document.getElementById('loader');
-            if (loaderEl) loaderEl.style.display = 'none';
-            
-            setupMarkerPreview();
-        },
-        (progress) => {
-            console.log(`⏳ التحميل: ${Math.round((progress.loaded / progress.total) * 100)}%`);
-        },
-        (error) => {
-            console.error('❌ فشل تحميل الصورة:', error);
-        }
-    );
-}
-// =======================================
-// دوال الرسم (كانت ناقصة)
-// =======================================
-
-// دالة حركة الماوس
 function onMouseMove(e) {
     if (!drawMode || !sphereMesh || !markerPreview) {
         if (markerPreview) markerPreview.visible = false;
@@ -668,67 +591,124 @@ function onMouseMove(e) {
     }
 }
 
-// =======================================
-// تحديث لوحة المشاهد
-// =======================================
-function updateScenePanel() {
-    const list = document.getElementById('sceneList');
-    if (!list) return;
+function addPoint(pos) {
+    selectedPoints.push(pos.clone());
+    console.log(`📍 نقطة ${selectedPoints.length} مضافة`);
+    addPointMarker(pos);
+    updateTempLine();
+}
 
-    list.innerHTML = '';
-    
-    if (!sceneManager || !sceneManager.scenes) return;
-    
-    sceneManager.scenes.forEach(scene => {
-        const item = document.createElement('div');
-        item.className = 'scene-item';
-        
-        // تمييز المشهد الحالي
-        if (sceneManager.currentScene && sceneManager.currentScene.id === scene.id) {
-            item.style.background = 'rgba(74, 108, 143, 0.7)';
-            item.style.border = '2px solid #88aaff';
-        }
-        
-        // تمييز نقطة البداية
-        if (scene.id === 'start-point') {
-            item.style.background = 'rgba(255, 215, 0, 0.2)';
-            item.style.borderRight = '3px solid gold';
-        }
-        
-        const infoCount = scene.hotspots?.filter(h => h.type === 'INFO').length || 0;
-        const sceneCount = scene.hotspots?.filter(h => h.type === 'SCENE').length || 0;
-        const totalPoints = infoCount + sceneCount;
-        
-        item.innerHTML = `
-            <span class='scene-icon'>🌄</span>
-            <span class='scene-name'>${scene.name}</span>
-            <span class='scene-hotspots' title='معلومات: ${infoCount} | انتقال: ${sceneCount}'>
-                ${totalPoints} نقطة
-            </span>
-            <button class='delete-scene-btn' data-id='${scene.id}' title='حذف المشهد'>🗑️</button>
-        `;
+function addPointMarker(position) {
+    const geometry = new THREE.SphereGeometry(6, 16, 16);
+    const material = new THREE.MeshStandardMaterial({
+        color: pathColors[currentPathType],
+        emissive: pathColors[currentPathType],
+        emissiveIntensity: 0.6
+    });
+    const marker = new THREE.Mesh(geometry, material);
+    marker.position.copy(position);
+    scene.add(marker);
+    pointMarkers.push(marker);
+}
 
-        item.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('delete-scene-btn')) {
-                if (sceneManager) {
-                    sceneManager.switchToScene(scene.id);
-                    updateScenePanel();
-                }
-            }
-        });
+function updateTempLine() {
+    if (tempLine) {
+        scene.remove(tempLine);
+        tempLine.geometry.dispose();
+        tempLine = null;
+    }
+    if (selectedPoints.length >= 2) {
+        const geometry = new THREE.BufferGeometry().setFromPoints(selectedPoints);
+        const material = new THREE.LineBasicMaterial({ color: pathColors[currentPathType] });
+        tempLine = new THREE.Line(geometry, material);
+        scene.add(tempLine);
+    }
+}
+
+function clearCurrentDrawing() {
+    selectedPoints = [];
+    pointMarkers.forEach(m => scene.remove(m));
+    pointMarkers = [];
+    if (tempLine) {
+        scene.remove(tempLine);
+        tempLine.geometry.dispose();
+        tempLine = null;
+    }
+}
+
+function saveCurrentPath() {
+    if (selectedPoints.length < 2) {
+        alert('⚠️ أضف نقطتين على الأقل');
+        return;
+    }
+    if (tempLine) scene.remove(tempLine);
+    createStraightPath(selectedPoints);
+    clearCurrentDrawing();
+    
+    if (sceneManager && sceneManager.currentScene) {
+        sceneManager.currentScene.paths = paths.map(p => ({
+            type: p.userData.type,
+            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
+            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
+        }));
+        sceneManager.saveScenes();
+    }
+    console.log('✅ تم حفظ المسار');
+}
+
+function createStraightPath(points) {
+    if (points.length < 2) return;
+    
+    const color = pathColors[currentPathType];
+    const pathId = `path-${Date.now()}-${Math.random()}`;
+    
+    for (let i = 0; i < points.length - 1; i++) {
+        const start = points[i];
+        const end = points[i + 1];
         
-        const deleteBtn = item.querySelector('.delete-scene-btn');
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (sceneManager) sceneManager.deleteScene(scene.id);
-        });
+        const direction = new THREE.Vector3().subVectors(end, start);
+        const distance = direction.length();
+        if (distance < 5) continue;
         
-        list.appendChild(item);
+        const cylinderGeo = new THREE.CylinderGeometry(3.5, 3.5, distance, 12);
+        const quaternion = new THREE.Quaternion();
+        quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+        
+        const cylinder = new THREE.Mesh(cylinderGeo, new THREE.MeshStandardMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: 0.4
+        }));
+        cylinder.applyQuaternion(quaternion);
+        
+        const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+        cylinder.position.copy(center);
+        
+        cylinder.userData = { type: currentPathType, pathId: pathId, points: [start.clone(), end.clone()] };
+        scene.add(cylinder);
+        paths.push(cylinder);
+    }
+}
+
+function rebuildHotspots(hotspots) {
+    if (!scene) return;
+    scene.children.forEach(child => {
+        if (child.userData?.type === 'hotspot') scene.remove(child);
+    });
+    if (!hotspots?.length) return;
+    hotspots.forEach(h => {
+        const color = h.type === 'SCENE' ? 0x44aaff : 0xffaa44;
+        const geometry = new THREE.SphereGeometry(14, 32, 32);
+        const material = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.5 });
+        const marker = new THREE.Mesh(geometry, material);
+        marker.position.set(h.position.x, h.position.y, h.position.z);
+        marker.userData = { type: 'hotspot', hotspotId: h.id, hotspotType: h.type, hotspotData: h.data };
+        scene.add(marker);
     });
 }
 
 // =======================================
-// دالة addHotspot (كانت ناقصة)
+// ٦. دوال Hotspots
 // =======================================
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
@@ -765,7 +745,7 @@ function addHotspot(position) {
             scene.add(marker);
 
             alert(`✅ تم إضافة نقطة معلومات`);
-            updateScenePanel();
+            if (typeof updateScenePanel === 'function') updateScenePanel();
         }
 
     } else if (hotspotMode === 'SCENE') {
@@ -823,7 +803,7 @@ function addHotspot(position) {
             scene.add(marker);
 
             alert(`✅ تم إضافة نقطة انتقال`);
-            updateScenePanel();
+            if (typeof updateScenePanel === 'function') updateScenePanel();
         }
     }
 
@@ -832,7 +812,7 @@ function addHotspot(position) {
 }
 
 // =======================================
-// تحديث لوحة المشاهد (أضفها هنا)
+// ٧. تحديث لوحة المشاهد
 // =======================================
 function updateScenePanel() {
     const list = document.getElementById('sceneList');
@@ -883,8 +863,151 @@ function updateScenePanel() {
         list.appendChild(item);
     });
 }
+
 // =======================================
-// إعداد الأحداث
+// ٨. إضافة مشهد جديد
+// =======================================
+function addNewScene() {
+    const name = prompt('أدخل اسم المشهد:');
+    if (!name) return;
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.style.display = 'none';
+    document.body.appendChild(input);
+
+    input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            document.body.removeChild(input);
+            return;
+        }
+
+        if (typeof showLoader === 'function') showLoader('جاري إضافة المشهد...');
+
+        try {
+            const scene = await sceneManager.addScene(name, file);
+            if (scene) {
+                sceneManager.switchToScene(scene.id);
+                if (typeof updateScenePanel === 'function') updateScenePanel();
+                if (typeof hideLoader === 'function') hideLoader();
+                alert(`✅ تم إضافة المشهد: ${name}`);
+            }
+        } catch (error) {
+            console.error('❌ خطأ:', error);
+            alert('فشل إضافة المشهد');
+            if (typeof hideLoader === 'function') hideLoader();
+        }
+
+        document.body.removeChild(input);
+    };
+
+    input.click();
+}
+
+// =======================================
+// ٩. دوال التحميل والتصدير
+// =======================================
+function showLoader(message) {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'flex';
+        loader.textContent = message || '⏳ جاري التحميل...';
+    }
+}
+
+function hideLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+}
+
+async function exportCompleteTour() {
+    if (!sceneManager || sceneManager.scenes.length === 0) {
+        alert('❌ لا توجد مشاهد للتصدير');
+        return;
+    }
+
+    showLoader('جاري تحضير الجولة...');
+
+    try {
+        const exportScenes = sceneManager.scenes.map(s => ({
+            id: s.id,
+            name: s.name,
+            image: s.originalImage,
+            paths: s.paths || [],
+            hotspots: (s.hotspots || []).map(h => ({
+                id: h.id,
+                type: h.type,
+                position: h.position,
+                data: h.data || {}
+            }))
+        }));
+
+        const projectName = projectManager.currentProject?.name || `tour-${Date.now()}`;
+        await tourExporter.exportTour(projectName, exportScenes);
+
+        hideLoader();
+        alert(`✅ تم تصدير الجولة بنجاح!\n📁 الملف: ${projectName}.zip`);
+
+    } catch (error) {
+        console.error('❌ خطأ في التصدير:', error);
+        alert('حدث خطأ في التصدير');
+        hideLoader();
+    }
+}
+
+function clearAllPaths() {
+    if (confirm('هل أنت متأكد من مسح جميع المسارات؟')) {
+        paths.forEach(p => scene.remove(p));
+        paths = [];
+        clearCurrentDrawing();
+    }
+}
+
+// =======================================
+// ١٠. تحميل البانوراما
+// =======================================
+function loadPanorama() {
+    console.log('🔄 جاري تحميل البانوراما...');
+    
+    const loader = new THREE.TextureLoader();
+    loader.load(
+        './textures/StartPoint.jpg',
+        (texture) => {
+            console.log('✅ تم تحميل الصورة');
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.x = -1;
+
+            const geometry = new THREE.SphereGeometry(500, 128, 128);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide
+            });
+
+            sphereMesh = new THREE.Mesh(geometry, material);
+            scene.add(sphereMesh);
+            
+            const loaderEl = document.getElementById('loader');
+            if (loaderEl) loaderEl.style.display = 'none';
+            
+            setupMarkerPreview();
+        },
+        (progress) => {
+            console.log(`⏳ التحميل: ${Math.round((progress.loaded / progress.total) * 100)}%`);
+        },
+        (error) => {
+            console.error('❌ فشل تحميل الصورة:', error);
+        }
+    );
+}
+
+// =======================================
+// ١١. إعداد الأحداث
 // =======================================
 function setupEvents() {
     renderer.domElement.addEventListener('click', onClick);
@@ -893,43 +1016,59 @@ function setupEvents() {
     window.addEventListener('resize', onResize);
     
     // أزرار التحكم
-    document.getElementById('toggleRotate').onclick = () => {
-        autorotate = !autorotate;
-        controls.autoRotate = autorotate;
-        document.getElementById('toggleRotate').textContent = 
-            autorotate ? '⏸️ إيقاف التدوير' : '▶️ تشغيل التدوير';
-    };
+    const toggleRotate = document.getElementById('toggleRotate');
+    if (toggleRotate) {
+        toggleRotate.onclick = () => {
+            autorotate = !autorotate;
+            controls.autoRotate = autorotate;
+            toggleRotate.textContent = autorotate ? '⏸️ إيقاف التدوير' : '▶️ تشغيل التدوير';
+        };
+    }
 
-    document.getElementById('toggleDraw').onclick = () => {
-        drawMode = !drawMode;
-        const btn = document.getElementById('toggleDraw');
-        btn.textContent = drawMode ? '⛔ إيقاف الرسم' : '✏️ تفعيل الرسم';
-        btn.style.background = drawMode ? '#aa3333' : '#8f6c4a';
-        document.body.style.cursor = drawMode ? 'crosshair' : 'default';
-        if (markerPreview) markerPreview.visible = drawMode;
-        controls.autoRotate = drawMode ? false : autorotate;
-        if (!drawMode) clearCurrentDrawing();
-    };
+    const toggleDraw = document.getElementById('toggleDraw');
+    if (toggleDraw) {
+        toggleDraw.onclick = () => {
+            drawMode = !drawMode;
+            toggleDraw.textContent = drawMode ? '⛔ إيقاف الرسم' : '✏️ تفعيل الرسم';
+            toggleDraw.style.background = drawMode ? '#aa3333' : '#8f6c4a';
+            document.body.style.cursor = drawMode ? 'crosshair' : 'default';
+            if (markerPreview) markerPreview.visible = drawMode;
+            controls.autoRotate = drawMode ? false : autorotate;
+            if (!drawMode) clearCurrentDrawing();
+        };
+    }
 
-    document.getElementById('finalizePath').onclick = saveCurrentPath;
-    document.getElementById('clearAll').onclick = clearAllPaths;
-    
-    document.getElementById('hotspotScene').onclick = () => {
-        hotspotMode = 'SCENE';
-        document.body.style.cursor = 'cell';
-    };
+    const finalizePath = document.getElementById('finalizePath');
+    if (finalizePath) finalizePath.onclick = saveCurrentPath;
 
-    document.getElementById('hotspotInfo').onclick = () => {
-        hotspotMode = 'INFO';
-        document.body.style.cursor = 'cell';
-    };
+    const clearAll = document.getElementById('clearAll');
+    if (clearAll) clearAll.onclick = clearAllPaths;
 
-    document.getElementById('addSceneBtn').onclick = addNewScene;
-    document.getElementById('exportTour').onclick = exportCompleteTour;
+    const hotspotScene = document.getElementById('hotspotScene');
+    if (hotspotScene) {
+        hotspotScene.onclick = () => {
+            hotspotMode = 'SCENE';
+            document.body.style.cursor = 'cell';
+        };
+    }
+
+    const hotspotInfo = document.getElementById('hotspotInfo');
+    if (hotspotInfo) {
+        hotspotInfo.onclick = () => {
+            hotspotMode = 'INFO';
+            document.body.style.cursor = 'cell';
+        };
+    }
+
+    const addSceneBtn = document.getElementById('addSceneBtn');
+    if (addSceneBtn) addSceneBtn.onclick = addNewScene;
+
+    const exportTour = document.getElementById('exportTour');
+    if (exportTour) exportTour.onclick = exportCompleteTour;
 }
 
 // =======================================
-// أحداث لوحة المفاتيح
+// ١٢. أحداث لوحة المفاتيح
 // =======================================
 function onKeyDown(e) {
     if (!drawMode) return;
@@ -961,14 +1100,65 @@ function onResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-function clearAllPaths() {
-    if (confirm('هل أنت متأكد من مسح جميع المسارات؟')) {
-        paths.forEach(p => scene.remove(p));
-        paths = [];
-        clearCurrentDrawing();
-    }
-}
 // =======================================
-// بدء التشغيل
+// ١٣. التهيئة والتشغيل
+// =======================================
+function init() {
+    console.log('🚀 بدء التهيئة...');
+    
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(0, 0, 0.1);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.getElementById('container').appendChild(renderer.domElement);
+
+    // إضاءة
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight1.position.set(1, 1, 1);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight2.position.set(-1, -1, -0.5);
+    scene.add(dirLight2);
+
+    // تحكم
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableZoom = true;
+    controls.enablePan = false;
+    controls.enableDamping = true;
+    controls.autoRotate = autorotate;
+    controls.autoRotateSpeed = 0.5;
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    // تهيئة المدير
+    sceneManager = new SceneManager();
+    
+    // تحميل الصورة
+    loadPanorama();
+    
+    // إعداد الأحداث
+    setupEvents();
+    
+    // بدء الرسم
+    animate();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+// =======================================
+// ١٤. بدء التشغيل
 // =======================================
 init();
