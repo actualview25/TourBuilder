@@ -638,7 +638,198 @@ function loadPanorama() {
         }
     );
 }
+// =======================================
+// دوال الرسم (كانت ناقصة)
+// =======================================
 
+// دالة حركة الماوس
+function onMouseMove(e) {
+    if (!drawMode || !sphereMesh || !markerPreview) {
+        if (markerPreview) markerPreview.visible = false;
+        return;
+    }
+    
+    if (e.target !== renderer.domElement) {
+        markerPreview.visible = false;
+        return;
+    }
+
+    mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(sphereMesh);
+
+    if (hits.length) {
+        markerPreview.position.copy(hits[0].point);
+        markerPreview.visible = true;
+    } else {
+        markerPreview.visible = false;
+    }
+}
+
+// =======================================
+// تحديث لوحة المشاهد
+// =======================================
+function updateScenePanel() {
+    const list = document.getElementById('sceneList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    
+    if (!sceneManager || !sceneManager.scenes) return;
+    
+    sceneManager.scenes.forEach(scene => {
+        const item = document.createElement('div');
+        item.className = 'scene-item';
+        
+        // تمييز المشهد الحالي
+        if (sceneManager.currentScene && sceneManager.currentScene.id === scene.id) {
+            item.style.background = 'rgba(74, 108, 143, 0.7)';
+            item.style.border = '2px solid #88aaff';
+        }
+        
+        // تمييز نقطة البداية
+        if (scene.id === 'start-point') {
+            item.style.background = 'rgba(255, 215, 0, 0.2)';
+            item.style.borderRight = '3px solid gold';
+        }
+        
+        const infoCount = scene.hotspots?.filter(h => h.type === 'INFO').length || 0;
+        const sceneCount = scene.hotspots?.filter(h => h.type === 'SCENE').length || 0;
+        const totalPoints = infoCount + sceneCount;
+        
+        item.innerHTML = `
+            <span class='scene-icon'>🌄</span>
+            <span class='scene-name'>${scene.name}</span>
+            <span class='scene-hotspots' title='معلومات: ${infoCount} | انتقال: ${sceneCount}'>
+                ${totalPoints} نقطة
+            </span>
+            <button class='delete-scene-btn' data-id='${scene.id}' title='حذف المشهد'>🗑️</button>
+        `;
+
+        item.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('delete-scene-btn')) {
+                if (sceneManager) {
+                    sceneManager.switchToScene(scene.id);
+                    updateScenePanel();
+                }
+            }
+        });
+        
+        const deleteBtn = item.querySelector('.delete-scene-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (sceneManager) sceneManager.deleteScene(scene.id);
+        });
+        
+        list.appendChild(item);
+    });
+}
+
+// =======================================
+// دالة addHotspot (كانت ناقصة)
+// =======================================
+function addHotspot(position) {
+    if (!sceneManager || !sceneManager.currentScene) {
+        alert('❌ لا يوجد مشهد نشط');
+        return;
+    }
+
+    if (hotspotMode === 'INFO') {
+        const title = prompt('أدخل عنوان المعلومات:');
+        if (!title) return;
+        const content = prompt('أدخل نص المعلومات:');
+        if (!content) return;
+
+        const data = { title, content };
+
+        const hotspot = sceneManager.addHotspot(
+            sceneManager.currentScene.id,
+            'INFO',
+            position,
+            data
+        );
+
+        if (hotspot) {
+            const geometry = new THREE.SphereGeometry(14, 32, 32);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xffaa44,
+                emissive: 0xffaa44,
+                emissiveIntensity: 0.5
+            });
+
+            const marker = new THREE.Mesh(geometry, material);
+            marker.position.copy(position);
+            marker.userData = { type: 'hotspot', hotspotId: hotspot.id, hotspotType: 'INFO' };
+            scene.add(marker);
+
+            alert(`✅ تم إضافة نقطة معلومات`);
+            updateScenePanel();
+        }
+
+    } else if (hotspotMode === 'SCENE') {
+        const otherScenes = sceneManager.scenes.filter(s => s.id !== sceneManager.currentScene.id);
+        
+        if (otherScenes.length === 0) {
+            alert('❌ لا يوجد مشاهد أخرى');
+            return;
+        }
+
+        let sceneList = '';
+        otherScenes.forEach((s, index) => {
+            sceneList += `${index + 1}. ${s.name}\n`;
+        });
+
+        const choice = prompt(
+            `اختر المشهد للانتقال إليه:\n\n${sceneList}\nأدخل رقم المشهد:`
+        );
+
+        if (!choice) return;
+
+        const selectedIndex = parseInt(choice) - 1;
+        if (selectedIndex < 0 || selectedIndex >= otherScenes.length) {
+            alert('❌ اختيار غير صالح');
+            return;
+        }
+
+        const targetScene = otherScenes[selectedIndex];
+        const description = prompt(`أدخل وصفاً لهذه النقطة:`) || `انتقال إلى ${targetScene.name}`;
+        
+        const data = {
+            targetSceneId: targetScene.id,
+            targetSceneName: targetScene.name,
+            description
+        };
+
+        const hotspot = sceneManager.addHotspot(
+            sceneManager.currentScene.id,
+            'SCENE',
+            position,
+            data
+        );
+
+        if (hotspot) {
+            const geometry = new THREE.SphereGeometry(14, 32, 32);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x44aaff,
+                emissive: 0x44aaff,
+                emissiveIntensity: 0.5
+            });
+
+            const marker = new THREE.Mesh(geometry, material);
+            marker.position.copy(position);
+            marker.userData = { type: 'hotspot', hotspotId: hotspot.id, hotspotType: 'SCENE' };
+            scene.add(marker);
+
+            alert(`✅ تم إضافة نقطة انتقال`);
+            updateScenePanel();
+        }
+    }
+
+    hotspotMode = null;
+    document.body.style.cursor = 'default';
+}
 // =======================================
 // إعداد الأحداث
 // =======================================
