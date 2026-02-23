@@ -830,6 +830,89 @@ function addHotspot(position) {
     hotspotMode = null;
     document.body.style.cursor = 'default';
 }
+
+// =======================================
+// دوال الرسم الأساسية (أضفها هنا)
+// =======================================
+
+// دالة حركة الماوس
+function onMouseMove(e) {
+    if (!drawMode || !sphereMesh || !markerPreview) {
+        if (markerPreview) markerPreview.visible = false;
+        return;
+    }
+    
+    if (e.target !== renderer.domElement) {
+        markerPreview.visible = false;
+        return;
+    }
+
+    mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(sphereMesh);
+
+    if (hits.length) {
+        markerPreview.position.copy(hits[0].point);
+        markerPreview.visible = true;
+    } else {
+        markerPreview.visible = false;
+    }
+}
+
+// =======================================
+// تحديث لوحة المشاهد (أضفها هنا)
+// =======================================
+function updateScenePanel() {
+    const list = document.getElementById('sceneList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    
+    if (!sceneManager || !sceneManager.scenes) return;
+    
+    sceneManager.scenes.forEach(scene => {
+        const item = document.createElement('div');
+        item.className = 'scene-item';
+        
+        // تمييز المشهد الحالي
+        if (sceneManager.currentScene && sceneManager.currentScene.id === scene.id) {
+            item.style.background = 'rgba(74, 108, 143, 0.7)';
+            item.style.border = '2px solid #88aaff';
+        }
+        
+        const infoCount = scene.hotspots?.filter(h => h.type === 'INFO').length || 0;
+        const sceneCount = scene.hotspots?.filter(h => h.type === 'SCENE').length || 0;
+        const totalPoints = infoCount + sceneCount;
+        
+        item.innerHTML = `
+            <span class='scene-icon'>🌄</span>
+            <span class='scene-name'>${scene.name}</span>
+            <span class='scene-hotspots' title='معلومات: ${infoCount} | انتقال: ${sceneCount}'>
+                ${totalPoints} نقطة
+            </span>
+            <button class='delete-scene-btn' data-id='${scene.id}' title='حذف المشهد'>🗑️</button>
+        `;
+
+        item.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('delete-scene-btn')) {
+                if (sceneManager) {
+                    sceneManager.switchToScene(scene.id);
+                    updateScenePanel();
+                }
+            }
+        });
+        
+        const deleteBtn = item.querySelector('.delete-scene-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (sceneManager) sceneManager.deleteScene(scene.id);
+        });
+        
+        list.appendChild(item);
+    });
+}
 // =======================================
 // إعداد الأحداث
 // =======================================
