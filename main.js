@@ -832,36 +832,6 @@ function addHotspot(position) {
 }
 
 // =======================================
-// دوال الرسم الأساسية (أضفها هنا)
-// =======================================
-
-// دالة حركة الماوس
-function onMouseMove(e) {
-    if (!drawMode || !sphereMesh || !markerPreview) {
-        if (markerPreview) markerPreview.visible = false;
-        return;
-    }
-    
-    if (e.target !== renderer.domElement) {
-        markerPreview.visible = false;
-        return;
-    }
-
-    mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
-    mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    const hits = raycaster.intersectObject(sphereMesh);
-
-    if (hits.length) {
-        markerPreview.position.copy(hits[0].point);
-        markerPreview.visible = true;
-    } else {
-        markerPreview.visible = false;
-    }
-}
-
-// =======================================
 // تحديث لوحة المشاهد (أضفها هنا)
 // =======================================
 function updateScenePanel() {
