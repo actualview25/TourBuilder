@@ -211,31 +211,37 @@ class TourExporter {
         this.zip = new JSZip();
     }
 
-    async exportTour(projectName, scenes) {
-        const folder = this.zip.folder(projectName);
-        
-        scenes.forEach((scene, index) => {
-            const imageData = scene.image.split(',')[1];
-            folder.file(`scene-${index}.jpg`, imageData, { base64: true });
-        });
-        
-        const scenesData = scenes.map((scene, index) => ({
-            id: scene.id,
-            name: scene.name,
-            image: `scene-${index}.jpg`,
-            paths: scene.paths || [],
-            hotspots: scene.hotspots || []
-        }));
-        
-        folder.file('tour-data.json', JSON.stringify(scenesData, null, 2));
-        folder.file('index.html', this.generatePlayerHTML(projectName));
-        folder.file('style.css', this.generatePlayerCSS());
-        folder.file('README.md', this.generateReadme(projectName));
-        
-        const content = await this.zip.generateAsync({ type: 'blob' });
-        saveAs(content, `${projectName}.zip`);
-    }
-
+   async exportTour(projectName, scenes) {
+    const folder = this.zip.folder(projectName);
+    
+    scenes.forEach((scene, index) => {
+        const imageData = scene.image.split(',')[1];
+        folder.file(`scene-${index}.jpg`, imageData, { base64: true });
+    });
+    
+    // ✅ هذا هو الجزء المعدل
+    const scenesData = scenes.map((scene, index) => ({
+        id: scene.id,
+        name: scene.name,
+        image: `scene-${index}.jpg`,
+        paths: scene.paths || [],
+        hotspots: (scene.hotspots || []).map(h => ({
+        id: h.id,
+        type: h.type,
+        position: h.position,
+        data: h.data || {}
+     }))
+    
+ }));
+    
+    folder.file('tour-data.json', JSON.stringify(scenesData, null, 2));
+    folder.file('index.html', this.generatePlayerHTML(projectName));
+    folder.file('style.css', this.generatePlayerCSS());
+    folder.file('README.md', this.generateReadme(projectName));
+    
+    const content = await this.zip.generateAsync({ type: 'blob' });
+    saveAs(content, `${projectName}.zip`);
+}
     generatePlayerHTML(projectName) {
         return `<!DOCTYPE html>
 <html lang="ar">
@@ -594,7 +600,130 @@ function animate() {
     controls.update();
     renderer.render(scene, camera);
 }
+// =======================================
+// تحميل البانوراما
+// =======================================
+function loadPanorama() {
+    console.log('🔄 جاري تحميل البانوراما...');
+    
+    const loader = new THREE.TextureLoader();
+    loader.load(
+        './textures/StartPoint.jpg',
+        (texture) => {
+            console.log('✅ تم تحميل الصورة');
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.x = -1;
 
+            const geometry = new THREE.SphereGeometry(500, 128, 128);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide
+            });
+
+            sphereMesh = new THREE.Mesh(geometry, material);
+            scene.add(sphereMesh);
+            
+            const loaderEl = document.getElementById('loader');
+            if (loaderEl) loaderEl.style.display = 'none';
+            
+            setupMarkerPreview();
+        },
+        (progress) => {
+            console.log(`⏳ التحميل: ${Math.round((progress.loaded / progress.total) * 100)}%`);
+        },
+        (error) => {
+            console.error('❌ فشل تحميل الصورة:', error);
+        }
+    );
+}
+
+// =======================================
+// إعداد الأحداث
+// =======================================
+function setupEvents() {
+    renderer.domElement.addEventListener('click', onClick);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onResize);
+    
+    // أزرار التحكم
+    document.getElementById('toggleRotate').onclick = () => {
+        autorotate = !autorotate;
+        controls.autoRotate = autorotate;
+        document.getElementById('toggleRotate').textContent = 
+            autorotate ? '⏸️ إيقاف التدوير' : '▶️ تشغيل التدوير';
+    };
+
+    document.getElementById('toggleDraw').onclick = () => {
+        drawMode = !drawMode;
+        const btn = document.getElementById('toggleDraw');
+        btn.textContent = drawMode ? '⛔ إيقاف الرسم' : '✏️ تفعيل الرسم';
+        btn.style.background = drawMode ? '#aa3333' : '#8f6c4a';
+        document.body.style.cursor = drawMode ? 'crosshair' : 'default';
+        if (markerPreview) markerPreview.visible = drawMode;
+        controls.autoRotate = drawMode ? false : autorotate;
+        if (!drawMode) clearCurrentDrawing();
+    };
+
+    document.getElementById('finalizePath').onclick = saveCurrentPath;
+    document.getElementById('clearAll').onclick = clearAllPaths;
+    
+    document.getElementById('hotspotScene').onclick = () => {
+        hotspotMode = 'SCENE';
+        document.body.style.cursor = 'cell';
+    };
+
+    document.getElementById('hotspotInfo').onclick = () => {
+        hotspotMode = 'INFO';
+        document.body.style.cursor = 'cell';
+    };
+
+    document.getElementById('addSceneBtn').onclick = addNewScene;
+    document.getElementById('exportTour').onclick = exportCompleteTour;
+}
+
+// =======================================
+// أحداث لوحة المفاتيح
+// =======================================
+function onKeyDown(e) {
+    if (!drawMode) return;
+    switch(e.key) {
+        case 'Enter': e.preventDefault(); saveCurrentPath(); break;
+        case 'Backspace': e.preventDefault(); undoLastPoint(); break;
+        case 'Escape': e.preventDefault(); clearCurrentDrawing(); break;
+        case 'n': case 'N': e.preventDefault(); clearCurrentDrawing(); break;
+        case '1': currentPathType = 'EL'; window.setCurrentPathType('EL'); break;
+        case '2': currentPathType = 'AC'; window.setCurrentPathType('AC'); break;
+        case '3': currentPathType = 'WP'; window.setCurrentPathType('WP'); break;
+        case '4': currentPathType = 'WA'; window.setCurrentPathType('WA'); break;
+        case '5': currentPathType = 'GS'; window.setCurrentPathType('GS'); break;
+    }
+}
+
+function undoLastPoint() {
+    if (selectedPoints.length > 0) {
+        selectedPoints.pop();
+        const last = pointMarkers.pop();
+        if (last) scene.remove(last);
+        updateTempLine();
+    }
+}
+
+function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function clearAllPaths() {
+    if (confirm('هل أنت متأكد من مسح جميع المسارات؟')) {
+        paths.forEach(p => scene.remove(p));
+        paths = [];
+        clearCurrentDrawing();
+    }
+}
 // =======================================
 // بدء التشغيل
 // =======================================
