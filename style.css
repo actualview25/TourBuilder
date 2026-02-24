@@ -602,10 +602,61 @@ body {
     }
 }
 
-/* تحسين لوحة المشاهد */
+/* =======================================
+   لوحة المشاهد - منتصف اليمين
+   ======================================= */
 .scene-panel {
-    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-    border-color: #88aaff;
+    position: fixed;
+    top: 50%;                    /* منتصف الشاشة عمودياً */
+    right: 20px;
+    transform: translateY(-50%);  /* تعديل للمنتصف بالضبط */
+    width: 280px;
+    max-height: 70vh;             /* أقصى ارتفاع 70% من الشاشة */
+    background: rgba(20, 30, 40, 0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid #4a6c8f;
+    border-radius: 15px;
+    color: white;
+    z-index: 900;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+/* رأس اللوحة */
+.scene-panel .panel-header {
+    padding: 15px;
+    border-bottom: 1px solid #4a6c8f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;  /* يمنع انكماش الرأس */
+}
+
+/* قائمة المشاهد - مع إمكانية التمرير */
+.scene-list {
+    max-height: calc(70vh - 80px);  /* حساب الارتفاع المناسب */
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* تحسين شريط التمرير */
+.scene-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scene-list::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+}
+
+.scene-list::-webkit-scrollbar-thumb {
+    background: #4a6c8f;
+    border-radius: 3px;
+}
+
+.scene-list::-webkit-scrollbar-thumb:hover {
+    background: #88aaff;
 }
 
 .scene-item {
@@ -871,11 +922,24 @@ body {
 /* =======================================
    نظام الوضعيات المتقدم
    ======================================= */
+/* =======================================
+   شريط الوضعيات - مخفي ويظهر عند التحويم
+   ======================================= */
 
-/* شريط الوضعيات العلوي */
+/* الحاوية الخارجية للشريط */
+.mode-bar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;  /* منطقة صغيرة للكشف عن الماوس */
+    z-index: 2000;
+}
+
+/* الشريط نفسه - مخفي في البداية */
 .mode-bar {
     position: fixed;
-    top: 60px;
+    top: -60px;  /* مخفي خارج الشاشة */
     left: 0;
     right: 0;
     height: 50px;
@@ -885,9 +949,58 @@ body {
     align-items: center;
     justify-content: center;
     gap: 20px;
-    z-index: 2000; /* زيادة الز-index */
+    z-index: 2000;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     backdrop-filter: blur(10px);
+    transition: top 0.3s ease;  /* حركة ناعمة */
+}
+
+/* عند تمرير الماوس على الحاوية، يظهر الشريط */
+.mode-bar-container:hover .mode-bar {
+    top: 0;  /* يظهر في مكانه */
+}
+
+/* أزرار الوضعيات */
+.mode-btn {
+    padding: 8px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid #4a6c8f;
+}
+
+.mode-btn:hover {
+    background: #4a6c8f;
+    transform: translateY(-2px);
+}
+
+.mode-btn.active {
+    background: #4a6c8f;
+    border-color: #88aaff;
+    box-shadow: 0 0 15px rgba(68, 170, 255, 0.5);
+}
+
+/* تحسين للشاشات الصغيرة */
+@media (max-width: 768px) {
+    .mode-bar-container {
+        height: 25px;
+    }
+    
+    .mode-bar {
+        height: 45px;
+        gap: 5px;
+        padding: 0 5px;
+    }
+    
+    .mode-btn {
+        padding: 5px 12px;
+        font-size: 12px;
+    }
 }
 
 .mode-btn {
