@@ -1022,18 +1022,6 @@ function clearAllPaths() {
         clearCurrentDrawing();
     }
 }
-// كرة اختبارية بسيطة (بدون صورة)
-function addTestSphere() {
-    const geometry = new THREE.SphereGeometry(500, 64, 64);
-    const material = new THREE.MeshBasicMaterial({ 
-        color: 0x44aaff,
-        wireframe: true,
-        side: THREE.BackSide
-    });
-    const testSphere = new THREE.Mesh(geometry, material);
-    scene.add(testSphere);
-    console.log('✅ كرة اختبارية مضافة');
-}
 // =======================================
 // ١١. تحميل البانوراما
 // =======================================
