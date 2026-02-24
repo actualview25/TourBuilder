@@ -387,48 +387,79 @@ class TourExporter {
                             });
                         }
                         
-                        if (sceneData.hotspots && sceneData.hotspots.length > 0) {
+                        // داخل generatePlayerHTML، ابحث عن هذا الجزء:
+if (sceneData.hotspots && sceneData.hotspots.length > 0) {
+    setTimeout(() => {
+        sceneData.hotspots.forEach(hotspot => {
+            const vector = new THREE.Vector3(hotspot.position.x, hotspot.position.y, hotspot.position.z).project(camera);
+            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+            
+            if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) return;
+            
+            const div = document.createElement('div');
+            div.className = 'hotspot';
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            
+            if (hotspot.type === 'INFO') {
+                div.style.color = '#ffaa44';
+                div.setAttribute('data-type', 'info');
+                
+                const title = hotspot.data?.title || 'معلومات';
+                const content = hotspot.data?.content || '';
+                
+                div.innerHTML = \`
+                    <span class='hotspot-icon'>ℹ️</span>
+                    <div class='hotspot-tooltip'>
+                        <strong>\${title}</strong>
+                        <p>\${content}</p>
+                    </div>
+                \`;
+                
+                div.onclick = function(e) {
+                    e.stopPropagation();
+                    alert(\`\${title}\n\n\${content}\`);
+                };
+                
+            } else {
+                div.style.color = '#44aaff';
+                div.setAttribute('data-type', 'scene');
+                
+                const targetName = hotspot.data?.targetSceneName || 'مشهد آخر';
+                const description = hotspot.data?.description || '';
+                const targetId = hotspot.data?.targetSceneId;
+                
+                div.innerHTML = \`
+                    <span class='hotspot-icon'>🚪</span>
+                    <div class='hotspot-tooltip'>
+                        <strong>انتقال إلى: \${targetName}</strong>
+                        <p>\${description}</p>
+                    </div>
+                \`;
+                
+                div.onclick = function(e) {
+                    e.stopPropagation();
+                    if (targetId) {
+                        const targetIndex = scenes.findIndex(s => s.id === targetId);
+                        if (targetIndex !== -1) {
+                            // تأثير انتقال
+                            div.style.transform = 'scale(1.5)';
+                            div.style.transition = 'all 0.3s ease';
                             setTimeout(() => {
-                                sceneData.hotspots.forEach(hotspot => {
-                                    const vector = new THREE.Vector3(hotspot.position.x, hotspot.position.y, hotspot.position.z).project(camera);
-                                    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                                    const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-                                    
-                                    if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) return;
-                                    
-                                    const div = document.createElement('div');
-                                    div.className = 'hotspot';
-                                    div.style.left = x + 'px';
-                                    div.style.top = y + 'px';
-                                    
-                                    if (hotspot.type === 'INFO') {
-                                        div.style.color = '#ffaa44';
-                                        div.innerHTML = \`
-                                            <span class='hotspot-icon'>ℹ️</span>
-                                            <div class='hotspot-tooltip'>
-                                                <strong>\${hotspot.data.title || 'معلومات'}</strong>
-                                                <p>\${hotspot.data.content || ''}</p>
-                                            </div>
-                                        \`;
-                                        div.onclick = () => alert(\`\${hotspot.data.title}\n\n\${hotspot.data.content}\`);
-                                    } else {
-                                        div.style.color = '#44aaff';
-                                        div.innerHTML = \`
-                                            <span class='hotspot-icon'>🚪</span>
-                                            <div class='hotspot-tooltip'>
-                                                <strong>انتقال إلى: \${hotspot.data.targetSceneName || 'مشهد آخر'}</strong>
-                                                <p>\${hotspot.data.description || ''}</p>
-                                            </div>
-                                        \`;
-                                        div.onclick = () => {
-                                            const targetIndex = scenes.findIndex(s => s.id === hotspot.data.targetSceneId);
-                                            if (targetIndex !== -1) loadScene(targetIndex);
-                                        };
-                                    }
-                                    document.body.appendChild(div);
-                                });
-                            }, 200);
+                                loadScene(targetIndex);
+                            }, 300);
+                        } else {
+                            alert('المشهد المطلوب غير موجود');
                         }
+                    }
+                };
+            }
+            
+            document.body.appendChild(div);
+        });
+    }, 200);
+}
                     });
                 }
                 
@@ -888,8 +919,12 @@ function updateScenePanel() {
 // ٩. إضافة مشهد جديد
 // =======================================
 function addNewScene() {
-    const name = prompt('أدخل اسم المشهد:');
-    if (!name) return;
+    // استخدام prompt عادي، يجب أن يقبل أي عدد من الأحرف
+    const name = prompt('📝 أدخل اسم المشهد:');
+    if (!name || name.trim() === '') {
+        alert('❌ الرجاء إدخال اسم صحيح');
+        return;
+    }
 
     const input = document.createElement('input');
     input.type = 'file';
@@ -904,20 +939,21 @@ function addNewScene() {
             return;
         }
 
-        if (typeof showLoader === 'function') showLoader('جاري إضافة المشهد...');
+        showLoader('جاري إضافة المشهد...');
 
         try {
-            const scene = await sceneManager.addScene(name, file);
+            // استخدام name.trim() لإزالة المسافات الزائدة
+            const scene = await sceneManager.addScene(name.trim(), file);
             if (scene) {
                 sceneManager.switchToScene(scene.id);
-                if (typeof updateScenePanel === 'function') updateScenePanel();
-                if (typeof hideLoader === 'function') hideLoader();
-                alert(`✅ تم إضافة المشهد: ${name}`);
+                updateScenePanel();
+                hideLoader();
+                alert(`✅ تم إضافة المشهد: "${name.trim()}"`);
             }
         } catch (error) {
             console.error('❌ خطأ:', error);
             alert('فشل إضافة المشهد');
-            if (typeof hideLoader === 'function') hideLoader();
+            hideLoader();
         }
 
         document.body.removeChild(input);
