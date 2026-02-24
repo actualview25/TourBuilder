@@ -68,19 +68,30 @@
     <button id="generateReport">📊 توليد تقرير</button>
 </div>
     <!-- شريط Hotspots الجديد -->
-    <div class="hotspot-toolbar">
-        <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">🚪</button>
-        <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">ℹ️</button>
-    </div>
+<div class="hotspot-toolbar">
+    <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">🚪</button>
+    <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">ℹ️</button>
+</div>
 
-    <div class="hint">
-        🖱 Click: إضافة نقطة<br>
-        ⌫ Backspace: حذف آخر نقطة<br>
-        ⏎ Enter: اعتماد المسار<br>
-        🖼️ Esc: إلغاء الرسم<br>
-        🔴 وضع Hotspot: اختر نوعاً ثم انقر
-        <small>⌃ Ctrl + Click على نقطة: حذفها</small>
+<!-- ✅ هنا أضف الكود الجديد -->
+<!-- حاوية شريط الوضعيات - للكشف عن الماوس -->
+<div class="mode-bar-container">
+    <!-- شريط الوضعيات -->
+    <div class="mode-bar">
+        <button id="modeDraw" class="mode-btn active">🎨 الرسم</button>
+        <button id="modeMeasure" class="mode-btn">📏 القياس</button>
+        <button id="modeView" class="mode-btn">👁️ العرض</button>
     </div>
+</div>
+
+<div class="hint">
+    🖱 Click: إضافة نقطة<br>
+    ⌫ Backspace: حذف آخر نقطة<br>
+    ⏎ Enter: اعتماد المسار<br>
+    🖼️ Esc: إلغاء الرسم<br>
+    🔴 وضع Hotspot: اختر نوعاً ثم انقر
+    <small>⌃ Ctrl + Click على نقطة: حذفها</small>
+</div>
 
     <div class="project-panel" id="projectPanel" style="display: none;">
         <div class="panel-header">
