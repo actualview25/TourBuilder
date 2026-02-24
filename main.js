@@ -1025,45 +1025,42 @@ function clearAllPaths() {
 // =======================================
 // ١١. تحميل البانوراما
 // =======================================
-function loadPanorama() {
-    console.log('🔄 جاري تحميل البانوراما...');
+function loadPanorama(path) {
+    console.log('🔄 جاري تحميل البانوراما...', path);
     
     const loader = new THREE.TextureLoader();
     loader.load(
-        './textures/StartPoint.jpg',
+        path,
         (texture) => {
-            console.log('✅ تم تحميل الصورة');
+            console.log('✅ تم تحميل الصورة:', path);
             
-            // ضبط مساحة اللون
+            // ضبط اللون
             texture.colorSpace = THREE.SRGBColorSpace;
 
-            // إصلاح مشكلة الانعكاس (عكس المحور الأفقي)
+            // عكس الصورة أفقياً
             texture.wrapS = THREE.RepeatWrapping;
             texture.repeat.x = -1;
-            
+
             // إنشاء الكرة
             const geometry = new THREE.SphereGeometry(500, 64, 64);
-            
-            // مادة بسيطة جداً
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
                 side: THREE.BackSide
             });
-            
+
             // إنشاء المجسم
-            sphereMesh = new THREE.Mesh(geometry, material);
-            
+            const newSphere = new THREE.Mesh(geometry, material);
+
+            // إزالة أي مشهد سابق إذا أردت
+            if (sphereMesh) scene.remove(sphereMesh);
+
+            // حفظ المرجع للمشهد الحالي
+            sphereMesh = newSphere;
+
             // إضافته للمشهد
             scene.add(sphereMesh);
-            
-            console.log('✅ sphereMesh position:', sphereMesh.position);
-            console.log('✅ scene children:', scene.children.length);
-            
-            // إخفاء اللودر
-            const loaderEl = document.getElementById('loader');
-            if (loaderEl) loaderEl.style.display = 'none';
-            
-            setupMarkerPreview();
+
+            console.log('✅ تم إضافة المشهد بنجاح');
         },
         (progress) => {
             console.log(`⏳ التحميل: ${Math.round((progress.loaded / progress.total) * 100)}%`);
