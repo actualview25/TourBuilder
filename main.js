@@ -1036,14 +1036,13 @@ function loadPanorama() {
             console.log('✅ تم تحميل الصورة');
             texture.colorSpace = THREE.SRGBColorSpace;
             
-            // ✅ الأهم: ارجع إلى الإعدادات الأصلية
-            texture.wrapS = THREE.RepeatWrapping;      // العودة إلى RepeatWrapping
-            texture.wrapT = THREE.ClampToEdgeWrapping; // يمكن ترك Clamp للعمودي
-            texture.repeat.x = -1;                     // هذا يعكس الصورة أفقياً
+            // ✅ إعدادات مضمونة
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.x = 1;  // لا عكس
             
             const geometry = new THREE.SphereGeometry(500, 128, 128);
-            // ❌ لا تستخدم scale(-1,1,1) مع repeat.x = -1 (يسبب تضاعف العكس)
-            // geometry.scale(-1, 1, 1); 
+            geometry.scale(-1, 1, 1); // العكس هنا فقط
 
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
