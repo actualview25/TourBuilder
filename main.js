@@ -999,11 +999,15 @@ function loadPanorama() {
         (texture) => {
             console.log('✅ تم تحميل الصورة');
             texture.colorSpace = THREE.SRGBColorSpace;
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.x = -1;
-
+            
+            // ✅ التعديل المهم - إزالة الـ repeat.x = -1
+            texture.wrapS = THREE.ClampToEdgeWrapping; // تغيير من RepeatWrapping
+            texture.wrapT = THREE.ClampToEdgeWrapping; // تغيير من RepeatWrapping
+            // texture.repeat.x = -1; // ❌ احذف هذا السطر
+            
             const geometry = new THREE.SphereGeometry(500, 128, 128);
+            geometry.scale(-1, 1, 1); // ✅ هذه هي الطريقة الصحيحة لعكس الكرة
+
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
                 side: THREE.BackSide
@@ -1025,7 +1029,6 @@ function loadPanorama() {
         }
     );
 }
-
 // =======================================
 // ١٢. إعداد الأحداث
 // =======================================
