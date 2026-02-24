@@ -1036,10 +1036,10 @@ function loadPanorama() {
             console.log('✅ تم تحميل الصورة');
             texture.colorSpace = THREE.SRGBColorSpace;
             
-            // ✅ إعدادات مضمونة
+            // ✅ الإعدادات الصحيحة 100%
             texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.x = 1;  // لا عكس
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            texture.repeat.x = 1;  // لا عكس هنا
             
             const geometry = new THREE.SphereGeometry(500, 128, 128);
             geometry.scale(-1, 1, 1); // العكس هنا فقط
