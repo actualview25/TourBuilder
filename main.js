@@ -1034,23 +1034,27 @@ function loadPanorama() {
         './textures/StartPoint.jpg',
         (texture) => {
             console.log('✅ تم تحميل الصورة');
+            
+            // ✅ أبسط إعدادات ممكنة
             texture.colorSpace = THREE.SRGBColorSpace;
             
-            // ✅ الإعدادات الصحيحة 100%
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.ClampToEdgeWrapping;
-            texture.repeat.x = 1;  // لا عكس هنا
+            // 1. إنشاء الكرة
+            const geometry = new THREE.SphereGeometry(500, 64, 64);
             
-            const geometry = new THREE.SphereGeometry(500, 128, 128);
-            geometry.scale(-1, 1, 1); // العكس هنا فقط
-
+            // 2. مادة بسيطة جداً
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
-                side: THREE.BackSide
+                side: THREE.BackSide  // هذا هو المهم فقط
             });
-
+            
+            // 3. إنشاء المجسم
             sphereMesh = new THREE.Mesh(geometry, material);
+            
+            // 4. إضافته للمشهد
             scene.add(sphereMesh);
+            
+            console.log('✅ sphereMesh position:', sphereMesh.position);
+            console.log('✅ scene children:', scene.children.length);
             
             const loaderEl = document.getElementById('loader');
             if (loaderEl) loaderEl.style.display = 'none';
@@ -1065,7 +1069,6 @@ function loadPanorama() {
         }
     );
 }
-// =======================================
 // ١٢. إعداد الأحداث
 // =======================================
 function setupEvents() {
