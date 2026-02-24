@@ -50,7 +50,23 @@
         <button id="finalizePath">💾 تثبيت المسار</button>
         <button id="clearAll">🗑️ مسح الكل</button>
     </div>
+<!-- أدوات القياس (مخفية في البداية) -->
+<div class="measure-tools" style="display: none;">
+    <button id="calibrateBtn">📐 معايرة</button>
+    <button id="measureDistance">📏 قياس مسافة</button>
+    <button id="measureArea">🔲 قياس مساحة</button>
+    <button id="saveMeasurement">💾 حفظ</button>
+    <button id="exportReport">📊 تقرير</button>
+    <div class="measure-info">
+        النتيجة: <span id="measureResult">---</span>
+    </div>
+</div>
 
+<!-- أدوات العرض (مخفية في البداية) -->
+<div class="view-tools" style="display: none;">
+    <button id="viewMeasurements">📋 عرض القياسات</button>
+    <button id="generateReport">📊 توليد تقرير</button>
+</div>
     <!-- شريط Hotspots الجديد -->
     <div class="hotspot-toolbar">
         <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">🚪</button>
