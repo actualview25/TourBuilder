@@ -529,7 +529,53 @@ window.setCurrentPathType = (t) => {
 
 const projectManager = new ProjectManager();
 const tourExporter = new TourExporter();
+// =======================================
+// نظام الوضعيات (Modes System) - أضف هنا
+// =======================================
+let currentMode = 'draw'; // 'draw', 'measure', 'view'
 
+// عناصر الوضعيات
+const modeButtons = {
+    draw: null,
+    measure: null,
+    view: null
+};
+
+// تبديل الوضعية
+function setMode(mode) {
+    currentMode = mode;
+    
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`).classList.add('active');
+    
+    document.body.classList.remove('mode-draw', 'mode-measure', 'mode-view');
+    document.body.classList.add(`mode-${mode}`);
+    
+    console.log(`🔄 تم التبديل إلى وضع: ${mode}`);
+}
+
+// تهيئة أزرار الوضعيات
+function initModeButtons() {
+    const modeBar = document.createElement('div');
+    modeBar.className = 'mode-bar';
+    modeBar.innerHTML = `
+        <button id="modeDraw" class="mode-btn active">🎨 الرسم</button>
+        <button id="modeMeasure" class="mode-btn">📏 القياس</button>
+        <button id="modeView" class="mode-btn">👁️ العرض</button>
+    `;
+    
+    const toolbar = document.querySelector('.toolbar');
+    toolbar.parentNode.insertBefore(modeBar, toolbar.nextSibling);
+    
+    document.getElementById('modeDraw').onclick = () => setMode('draw');
+    document.getElementById('modeMeasure').onclick = () => setMode('measure');
+    document.getElementById('modeView').onclick = () => setMode('view');
+}
+
+// استدعاء التهيئة بعد تحميل الصفحة
+window.addEventListener('load', initModeButtons);
 // =======================================
 // ٥. دوال الرسم الأساسية
 // =======================================
