@@ -868,3 +868,148 @@ body {
         padding: 10px;
     }
 }
+/* =======================================
+   شريط الوضعيات - أضف من هنا إلى النهاية
+   ======================================= */
+.mode-bar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: rgba(30, 40, 50, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #4a6c8f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 950;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.mode-btn {
+    padding: 8px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid #4a6c8f;
+}
+
+.mode-btn:hover {
+    background: #4a6c8f;
+    transform: translateY(-2px);
+}
+
+.mode-btn.active {
+    background: #4a6c8f;
+    border-color: #88aaff;
+    box-shadow: 0 0 15px rgba(68, 170, 255, 0.5);
+}
+
+.mode-draw .measure-tools,
+.mode-draw .view-tools {
+    display: none !important;
+}
+
+.mode-measure .drawing-tools,
+.mode-measure .view-tools {
+    display: none !important;
+}
+
+.mode-view .drawing-tools,
+.mode-view .measure-tools {
+    display: none !important;
+}
+
+.measure-tools {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 900;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: 2px solid #4a6c8f;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.measure-tools button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    min-width: 110px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.measure-tools button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+
+#calibrateBtn { background: #aa44aa; }
+#measureDistance { background: #44aaff; }
+#measureArea { background: #44aa44; }
+#saveMeasurement { background: #ffaa44; }
+#exportReport { background: #ff4444; }
+
+.measure-info {
+    background: rgba(0,0,0,0.5);
+    padding: 10px 20px;
+    border-radius: 30px;
+    color: #88aaff;
+    font-weight: bold;
+    min-width: 150px;
+    text-align: center;
+}
+
+.view-tools {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 900;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: 2px solid #4a6c8f;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.view-tools button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    min-width: 110px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.view-tools button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+
+#viewMeasurements { background: #44aaff; }
+#generateReport { background: #44aa44; }
