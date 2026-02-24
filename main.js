@@ -1036,13 +1036,14 @@ function loadPanorama() {
             console.log('✅ تم تحميل الصورة');
             texture.colorSpace = THREE.SRGBColorSpace;
             
-            // ✅ التعديل المهم - إزالة الـ repeat.x = -1
-            texture.wrapS = THREE.ClampToEdgeWrapping; // تغيير من RepeatWrapping
-            texture.wrapT = THREE.ClampToEdgeWrapping; // تغيير من RepeatWrapping
-            // texture.repeat.x = -1; // ❌ احذف هذا السطر
+            // ✅ الأهم: ارجع إلى الإعدادات الأصلية
+            texture.wrapS = THREE.RepeatWrapping;      // العودة إلى RepeatWrapping
+            texture.wrapT = THREE.ClampToEdgeWrapping; // يمكن ترك Clamp للعمودي
+            texture.repeat.x = -1;                     // هذا يعكس الصورة أفقياً
             
             const geometry = new THREE.SphereGeometry(500, 128, 128);
-            geometry.scale(-1, 1, 1); // ✅ هذه هي الطريقة الصحيحة لعكس الكرة
+            // ❌ لا تستخدم scale(-1,1,1) مع repeat.x = -1 (يسبب تضاعف العكس)
+            // geometry.scale(-1, 1, 1); 
 
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
