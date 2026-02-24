@@ -1034,27 +1034,32 @@ function loadPanorama() {
         (texture) => {
             console.log('✅ تم تحميل الصورة');
             
-            // ✅ أبسط إعدادات ممكنة
+            // ضبط مساحة اللون
             texture.colorSpace = THREE.SRGBColorSpace;
+
+            // إصلاح مشكلة الانعكاس (عكس المحور الأفقي)
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.repeat.x = -1;
             
-            // 1. إنشاء الكرة
+            // إنشاء الكرة
             const geometry = new THREE.SphereGeometry(500, 64, 64);
             
-            // 2. مادة بسيطة جداً
+            // مادة بسيطة جداً
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
-                side: THREE.BackSide  // هذا هو المهم فقط
+                side: THREE.BackSide
             });
             
-            // 3. إنشاء المجسم
+            // إنشاء المجسم
             sphereMesh = new THREE.Mesh(geometry, material);
             
-            // 4. إضافته للمشهد
+            // إضافته للمشهد
             scene.add(sphereMesh);
             
             console.log('✅ sphereMesh position:', sphereMesh.position);
             console.log('✅ scene children:', scene.children.length);
             
+            // إخفاء اللودر
             const loaderEl = document.getElementById('loader');
             if (loaderEl) loaderEl.style.display = 'none';
             
