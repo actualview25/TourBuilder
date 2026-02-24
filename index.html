@@ -30,6 +30,15 @@
         </div>
     </div>
 
+    <!-- حاوية شريط الوضعيات - للكشف عن الماوس -->
+    <div class="mode-bar-container">
+        <!-- شريط الوضعيات -->
+        <div class="mode-bar">
+            <button id="modeDraw" class="mode-btn active">🎨 الرسم</button>
+            <button id="modeView" class="mode-btn">👁️ العرض</button>
+        </div>
+    </div>
+
     <div class="status-bar" id="status">
         النوع الحالي: <span style="color:#ffcc00;">EL</span>
     </div>
@@ -50,48 +59,21 @@
         <button id="finalizePath">💾 تثبيت المسار</button>
         <button id="clearAll">🗑️ مسح الكل</button>
     </div>
-<!-- أدوات القياس (مخفية في البداية) -->
-<div class="measure-tools" style="display: none;">
-    <button id="calibrateBtn">📐 معايرة</button>
-    <button id="measureDistance">📏 قياس مسافة</button>
-    <button id="measureArea">🔲 قياس مساحة</button>
-    <button id="saveMeasurement">💾 حفظ</button>
-    <button id="exportReport">📊 تقرير</button>
-    <div class="measure-info">
-        النتيجة: <span id="measureResult">---</span>
+
+    <!-- شريط Hotspots -->
+    <div class="hotspot-toolbar">
+        <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">🚪</button>
+        <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">ℹ️</button>
     </div>
-</div>
 
-<!-- أدوات العرض (مخفية في البداية) -->
-<div class="view-tools" style="display: none;">
-    <button id="viewMeasurements">📋 عرض القياسات</button>
-    <button id="generateReport">📊 توليد تقرير</button>
-</div>
-    <!-- شريط Hotspots الجديد -->
-<div class="hotspot-toolbar">
-    <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">🚪</button>
-    <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">ℹ️</button>
-</div>
-
-<!-- ✅ هنا أضف الكود الجديد -->
-<!-- حاوية شريط الوضعيات - للكشف عن الماوس -->
-<div class="mode-bar-container">
-    <!-- شريط الوضعيات -->
-    <div class="mode-bar">
-        <button id="modeDraw" class="mode-btn active">🎨 الرسم</button>
-        <button id="modeMeasure" class="mode-btn">📏 القياس</button>
-        <button id="modeView" class="mode-btn">👁️ العرض</button>
+    <div class="hint">
+        🖱 Click: إضافة نقطة<br>
+        ⌫ Backspace: حذف آخر نقطة<br>
+        ⏎ Enter: اعتماد المسار<br>
+        🖼️ Esc: إلغاء الرسم<br>
+        🔴 وضع Hotspot: اختر نوعاً ثم انقر
+        <small>⌃ Ctrl + Click على نقطة: حذفها</small>
     </div>
-</div>
-
-<div class="hint">
-    🖱 Click: إضافة نقطة<br>
-    ⌫ Backspace: حذف آخر نقطة<br>
-    ⏎ Enter: اعتماد المسار<br>
-    🖼️ Esc: إلغاء الرسم<br>
-    🔴 وضع Hotspot: اختر نوعاً ثم انقر
-    <small>⌃ Ctrl + Click على نقطة: حذفها</small>
-</div>
 
     <div class="project-panel" id="projectPanel" style="display: none;">
         <div class="panel-header">
@@ -101,7 +83,7 @@
         <div class="project-list" id="projectList"></div>
     </div>
 
-    <!-- لوحة المشاهد الجديدة -->
+    <!-- لوحة المشاهد - منتصف اليمين -->
     <div class="scene-panel" id="scenePanel">
         <div class="panel-header">
             <h3>📋 المشاهد</h3>
