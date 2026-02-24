@@ -558,16 +558,27 @@ function setMode(mode) {
 
 // تهيئة أزرار الوضعيات
 function initModeButtons() {
+    console.log('🔄 تهيئة أزرار الوضعيات...');
+    
     // التأكد من وجود الأزرار قبل ربط الأحداث
     const modeDraw = document.getElementById('modeDraw');
     const modeMeasure = document.getElementById('modeMeasure');
     const modeView = document.getElementById('modeView');
     
-    if (modeDraw) modeDraw.onclick = () => setMode('draw');
-    if (modeMeasure) modeMeasure.onclick = () => setMode('measure');
-    if (modeView) modeView.onclick = () => setMode('view');
+    if (modeDraw) {
+        modeDraw.onclick = function() { setMode('draw'); };
+        console.log('✅ زر الرسم جاهز');
+    }
     
-    console.log('✅ أزرار الوضعيات جاهزة');
+    if (modeMeasure) {
+        modeMeasure.onclick = function() { setMode('measure'); };
+        console.log('✅ زر القياس جاهز');
+    }
+    
+    if (modeView) {
+        modeView.onclick = function() { setMode('view'); };
+        console.log('✅ زر العرض جاهز');
+    }
 }
 
 // استدعاء التهيئة بعد تحميل الصفحة
@@ -575,7 +586,8 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initModeButtons);
 } else {
     initModeButtons();
-}===============================
+}
+
 // ٥. دوال الرسم الأساسية
 // =======================================
 function setupMarkerPreview() {
