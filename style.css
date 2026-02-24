@@ -72,6 +72,81 @@ body {
 }
 
 /* =======================================
+   شريط الوضعيات - يظهر عند التحويم
+   ======================================= */
+.mode-bar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    z-index: 2000;
+}
+
+.mode-bar {
+    position: fixed;
+    top: -60px;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: rgba(20, 30, 40, 0.98);
+    border-bottom: 2px solid #4a6c8f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 2000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    transition: top 0.3s ease;
+}
+
+.mode-bar-container:hover .mode-bar {
+    top: 0;
+}
+
+.mode-btn {
+    padding: 8px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid #4a6c8f;
+}
+
+.mode-btn:hover {
+    background: #4a6c8f;
+    transform: translateY(-2px);
+}
+
+.mode-btn.active {
+    background: #4a6c8f;
+    border-color: #88aaff;
+    box-shadow: 0 0 15px rgba(68, 170, 255, 0.5);
+}
+
+/* وضع الرسم */
+.mode-draw .drawing-tools { display: flex; }
+.mode-draw .color-panel { display: flex; }
+.mode-draw .status-bar { display: block; }
+.mode-draw .hint { display: block; }
+.mode-draw .hotspot-toolbar { display: flex; }
+.mode-draw .scene-panel { display: block; }
+
+/* وضع العرض */
+.mode-view .drawing-tools { display: none; }
+.mode-view .color-panel { display: none; }
+.mode-view .status-bar { display: none; }
+.mode-view .hint { display: none; }
+.mode-view .hotspot-toolbar { display: none; }
+.mode-view .scene-panel { display: none; }
+.mode-view .project-panel { display: none; }
+
+/* =======================================
    شريط الحالة
    ======================================= */
 .status-bar {
@@ -171,7 +246,7 @@ body {
 #clearAll { background: #882222; }
 
 /* =======================================
-   شريط Hotspots الجديد
+   شريط Hotspots
    ======================================= */
 .hotspot-toolbar {
     position: fixed;
@@ -204,94 +279,7 @@ body {
 .hotspot-btn.info { background: #ffaa44; }
 
 /* =======================================
-   لوحة المشاهد الجديدة
-   ======================================= */
-.scene-panel {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    width: 280px;
-    background: rgba(20, 30, 40, 0.95);
-    backdrop-filter: blur(10px);
-    border: 2px solid #4a6c8f;
-    border-radius: 15px;
-    color: white;
-    z-index: 900;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-.scene-panel .panel-header {
-    padding: 15px;
-    border-bottom: 1px solid #4a6c8f;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.scene-panel h3 {
-    margin: 0;
-    color: #88aaff;
-}
-
-.add-scene-btn {
-    padding: 5px 15px;
-    background: #228822;
-    border: none;
-    border-radius: 20px;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    border: 1px solid #44ff44;
-}
-
-.add-scene-btn:hover {
-    background: #44aa44;
-}
-
-.scene-list {
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 10px;
-}
-
-.scene-item {
-    padding: 12px;
-    margin: 5px 0;
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
-
-.scene-item:hover {
-    background: rgba(74, 108, 143, 0.5);
-    transform: translateX(-5px);
-}
-
-.scene-icon {
-    font-size: 20px;
-}
-
-.scene-name {
-    flex: 1;
-    font-weight: bold;
-}
-
-.scene-hotspots {
-    font-size: 12px;
-    background: #4a6c8f;
-    padding: 3px 8px;
-    border-radius: 12px;
-}
-
-/* =======================================
-   التلميحات
-   ======================================= */
-/* =======================================
-   التلميحات - مصغرة وفي الأسفل
+   التلميحات (مصغرة وفي الأسفل)
    ======================================= */
 .hint {
     position: fixed;
@@ -341,12 +329,113 @@ body {
     font-size: 10px;
 }
 
-/* نسخة مصغرة للشاشات الصغيرة */
-@media (max-width: 768px) {
-    .hint {
-        display: none;  /* يخفي التعليمات في الشاشات الصغيرة */
-    }
+/* =======================================
+   لوحة المشاهد - منتصف اليمين
+   ======================================= */
+.scene-panel {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    width: 280px;
+    max-height: 70vh;
+    background: rgba(20, 30, 40, 0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid #4a6c8f;
+    border-radius: 15px;
+    color: white;
+    z-index: 900;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
 }
+
+.scene-panel .panel-header {
+    padding: 15px;
+    border-bottom: 1px solid #4a6c8f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.scene-panel h3 {
+    margin: 0;
+    color: #88aaff;
+}
+
+.add-scene-btn {
+    padding: 5px 15px;
+    background: #228822;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    border: 1px solid #44ff44;
+}
+
+.add-scene-btn:hover {
+    background: #44aa44;
+}
+
+.scene-list {
+    max-height: calc(70vh - 80px);
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.scene-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scene-list::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+}
+
+.scene-list::-webkit-scrollbar-thumb {
+    background: #4a6c8f;
+    border-radius: 3px;
+}
+
+.scene-list::-webkit-scrollbar-thumb:hover {
+    background: #88aaff;
+}
+
+.scene-item {
+    padding: 12px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.scene-item:hover {
+    background: rgba(74, 108, 143, 0.5);
+    transform: translateX(-5px);
+}
+
+.scene-icon {
+    font-size: 20px;
+}
+
+.scene-name {
+    flex: 1;
+    font-weight: bold;
+}
+
+.scene-hotspots {
+    font-size: 12px;
+    background: #4a6c8f;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
 /* =======================================
    لوحة المشاريع
    ======================================= */
@@ -428,6 +517,32 @@ body {
 }
 
 /* =======================================
+   أزرار الحذف
+   ======================================= */
+.delete-scene-btn {
+    background: none;
+    border: none;
+    color: #ff8888;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+}
+
+.delete-scene-btn:hover {
+    background: rgba(255, 0, 0, 0.2);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* =======================================
    توافق مع الشاشات الصغيرة
    ======================================= */
 @media (max-width: 1200px) {
@@ -458,812 +573,9 @@ body {
         width: 220px;
     }
 }
-/* تحسين شكل Hotspots */
-.hotspot {
-    filter: drop-shadow(0 0 15px currentColor);
-    animation: pulse 2s infinite;
-}
 
-.hotspot-icon {
-    font-size: 32px;
-    display: block;
-    text-align: center;
-}
-
-.hotspot-tooltip {
-    position: absolute;
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 14px;
-    min-width: 200px;
-    max-width: 300px;
-    display: none;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 100%;
-    margin-bottom: 10px;
-    border: 2px solid currentColor;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-}
-
-.hotspot-tooltip strong {
-    display: block;
-    margin-bottom: 5px;
-    color: currentColor;
-    font-size: 16px;
-}
-
-.hotspot-tooltip p {
-    margin: 0;
-    line-height: 1.5;
-}
-
-.hotspot:hover .hotspot-tooltip {
-    display: block;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-/* ألوان مختلفة للـ hotspots */
-.hotspot.scene { color: #44aaff; text-shadow: 0 0 10px #44aaff; }
-.hotspot.info { color: #ffaa44; text-shadow: 0 0 10px #ffaa44; }
-
-/* تحسين شكل Hotspots - إضافة هذه التعديلات في نهاية الملف */
-
-/* =======================================
-   تحسينات إضافية للـ Hotspots
-   ======================================= */
-
-/* تحسين ظهور الـ hotspot عند التحميل */
-.hotspot {
-    filter: drop-shadow(0 0 15px currentColor);
-    animation: pulse 2s infinite;
-    transition: all 0.3s ease;
-    z-index: 1000; /* تأكيد الظهور فوق كل شيء */
-}
-
-/* تحسين شكل الأيقونة */
-.hotspot-icon {
-    font-size: 36px; /* تكبير الأيقونة قليلاً */
-    display: block;
-    text-align: center;
-    line-height: 1;
-    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
-}
-
-/* تحسين شكل الـ tooltip */
-.hotspot-tooltip {
-    position: absolute;
-    background: rgba(20, 30, 40, 0.95); /* تغيير للون أغمق قليلاً */
-    color: white;
-    padding: 15px 20px;
-    border-radius: 12px;
-    font-size: 14px;
-    min-width: 220px;
-    max-width: 320px;
-    display: none;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 100%;
-    margin-bottom: 15px;
-    border: 2px solid currentColor;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    z-index: 1001;
-    direction: rtl; /* للغة العربية */
-    text-align: right;
-}
-
-/* تحسين عنوان الـ tooltip */
-.hotspot-tooltip strong {
-    display: block;
-    margin-bottom: 8px;
-    color: currentColor;
-    font-size: 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    padding-bottom: 5px;
-}
-
-/* تحسين نص الـ tooltip */
-.hotspot-tooltip p {
-    margin: 0;
-    line-height: 1.6;
-    color: rgba(255,255,255,0.9);
-}
-
-/* تحسين ظهور الـ tooltip */
-.hotspot:hover .hotspot-tooltip {
-    display: block;
-    animation: fadeIn 0.3s ease;
-}
-
-/* تحسين ألوان الـ hotspots */
-.hotspot.scene { 
-    color: #44aaff; 
-    text-shadow: 0 0 15px #44aaff, 0 0 30px rgba(68, 170, 255, 0.5);
-}
-.hotspot.info { 
-    color: #ffaa44; 
-    text-shadow: 0 0 15px #ffaa44, 0 0 30px rgba(255, 170, 68, 0.5);
-}
-
-/* تحسين حركة النبض */
-@keyframes pulse {
-    0% { 
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% { 
-        transform: scale(1.15);
-        opacity: 0.9;
-    }
-    100% { 
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* إضافة حركة ظهور للـ tooltip */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-}
-
-/* تحسين للشاشات الصغيرة */
 @media (max-width: 768px) {
-    .hotspot-icon {
-        font-size: 28px;
-    }
-    
-    .hotspot-tooltip {
-        min-width: 160px;
-        padding: 10px 15px;
-        font-size: 12px;
-    }
-}
-
-/* =======================================
-   لوحة المشاهد - منتصف اليمين
-   ======================================= */
-.scene-panel {
-    position: fixed;
-    top: 50%;                    /* منتصف الشاشة عمودياً */
-    right: 20px;
-    transform: translateY(-50%);  /* تعديل للمنتصف بالضبط */
-    width: 280px;
-    max-height: 70vh;             /* أقصى ارتفاع 70% من الشاشة */
-    background: rgba(20, 30, 40, 0.95);
-    backdrop-filter: blur(10px);
-    border: 2px solid #4a6c8f;
-    border-radius: 15px;
-    color: white;
-    z-index: 900;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    display: flex;
-    flex-direction: column;
-}
-
-/* رأس اللوحة */
-.scene-panel .panel-header {
-    padding: 15px;
-    border-bottom: 1px solid #4a6c8f;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;  /* يمنع انكماش الرأس */
-}
-
-/* قائمة المشاهد - مع إمكانية التمرير */
-.scene-list {
-    max-height: calc(70vh - 80px);  /* حساب الارتفاع المناسب */
-    overflow-y: auto;
-    padding: 10px;
-}
-
-/* تحسين شريط التمرير */
-.scene-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.scene-list::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.1);
-    border-radius: 3px;
-}
-
-.scene-list::-webkit-scrollbar-thumb {
-    background: #4a6c8f;
-    border-radius: 3px;
-}
-
-.scene-list::-webkit-scrollbar-thumb:hover {
-    background: #88aaff;
-}
-
-.scene-item {
-    border-right: 3px solid transparent;
-}
-
-.scene-item:hover {
-    border-right-color: #88aaff;
-}
-
-/* تحسين لوحة المشاريع */
-.project-panel {
-    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-}
-
-.project-item {
-    border-right: 3px solid transparent;
-}
-
-.project-item:hover {
-    border-right-color: #ffaa44;
-}
-
-/* تحسين شريط الحالة */
-.status-bar {
-    border-color: #88aaff;
-    background: rgba(20, 30, 40, 0.9);
-}
-
-/* تحسين لوحة الألوان */
-.color-btn {
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.color-btn:active {
-    transform: scale(0.95);
-}
-
-/* تحسين شريط الأدوات */
-.toolbar {
-    background: rgba(20, 30, 40, 0.98);
-}
-
-.controls button {
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.controls button:active {
-    transform: scale(0.95) translateY(-1px);
-}
-/* =======================================
-   أزرار الحذف
-   ======================================= */
-.delete-scene-btn {
-    background: none;
-    border: none;
-    color: #ff8888;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    opacity: 0.5;
-}
-
-.delete-scene-btn:hover {
-    background: rgba(255, 0, 0, 0.2);
-    opacity: 1;
-    transform: scale(1.1);
-}
-
-/* تلميح لحذف hotspot */
-.hint kbd {
-    background: #333;
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-family: monospace;
-}
-
-/* تحسين التلميحات */
-.hint small {
-    display: block;
-    margin-top: 10px;
-    color: #ffaa44;
-    font-size: 12px;
-}
-/* =======================================
-   Hotspots المحسنة
-   ======================================= */
-.hotspot {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    z-index: 1000;
-    filter: drop-shadow(0 0 15px currentColor);
-}
-
-.hotspot-icon-wrapper {
-    position: relative;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.hotspot-icon {
-    font-size: 32px;
-    z-index: 2;
-    transition: all 0.3s ease;
-}
-
-/* أيقونات مخصصة */
-.info-icon {
-    color: #ffaa44;
-    text-shadow: 0 0 20px #ffaa44;
-}
-
-.scene-icon {
-    color: #44aaff;
-    text-shadow: 0 0 20px #44aaff;
-}
-
-/* تأثير التوهج */
-.hotspot-glow {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.3;
-    animation: pulse 2s infinite;
-    z-index: 1;
-}
-
-/* تأثير التحويم */
-.hotspot:hover .hotspot-icon {
-    transform: scale(1.2);
-}
-
-.hotspot:hover .hotspot-glow {
-    opacity: 0.5;
-    animation: pulse 1s infinite;
-}
-
-/* Tooltip محسن */
-.hotspot-tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(20, 30, 40, 0.95);
-    backdrop-filter: blur(10px);
-    color: white;
-    padding: 15px;
-    border-radius: 12px;
-    min-width: 250px;
-    max-width: 350px;
-    margin-bottom: 15px;
-    border: 2px solid currentColor;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    pointer-events: none;
-    z-index: 1001;
-    direction: rtl;
-    text-align: right;
-}
-
-/* سهم الـ tooltip */
-.tooltip-arrow {
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 10px solid currentColor;
-}
-
-/* إظهار الـ tooltip عند التحويم */
-.hotspot:hover .hotspot-tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(-5px);
-}
-
-/* تنسيق رأس الـ tooltip */
-.tooltip-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-
-.tooltip-header strong {
-    color: currentColor;
-    font-size: 16px;
-}
-
-.tooltip-icon {
-    font-size: 18px;
-}
-
-/* تنسيق جسم الـ tooltip */
-.tooltip-body {
-    line-height: 1.6;
-}
-
-.tooltip-body p {
-    margin: 0;
-    color: rgba(255,255,255,0.9);
-}
-
-/* حركة النبض */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        opacity: 0.3;
-    }
-    50% {
-        transform: scale(1.2);
-        opacity: 0.5;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 0.3;
-    }
-}
-
-/* تأثير النقر */
-.hotspot:active {
-    transform: translate(-50%, -50%) scale(0.95);
-}
-
-/* تحسين للشاشات الصغيرة */
-@media (max-width: 768px) {
-    .hotspot-icon-wrapper {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .hotspot-icon {
-        font-size: 24px;
-    }
-    
-    .hotspot-tooltip {
-        min-width: 200px;
-        padding: 10px;
-    }
-}
-/* =======================================
-   نظام الوضعيات المتقدم
-   ======================================= */
-/* =======================================
-   شريط الوضعيات - مخفي ويظهر عند التحويم
-   ======================================= */
-
-/* الحاوية الخارجية للشريط */
-.mode-bar-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 30px;  /* منطقة صغيرة للكشف عن الماوس */
-    z-index: 2000;
-}
-
-/* الشريط نفسه - مخفي في البداية */
-.mode-bar {
-    position: fixed;
-    top: -60px;  /* مخفي خارج الشاشة */
-    left: 0;
-    right: 0;
-    height: 50px;
-    background: rgba(20, 30, 40, 0.98);
-    border-bottom: 2px solid #4a6c8f;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    z-index: 2000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    backdrop-filter: blur(10px);
-    transition: top 0.3s ease;  /* حركة ناعمة */
-}
-
-/* عند تمرير الماوس على الحاوية، يظهر الشريط */
-.mode-bar-container:hover .mode-bar {
-    top: 0;  /* يظهر في مكانه */
-}
-
-/* أزرار الوضعيات */
-.mode-btn {
-    padding: 8px 30px;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: white;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid #4a6c8f;
-}
-
-.mode-btn:hover {
-    background: #4a6c8f;
-    transform: translateY(-2px);
-}
-
-.mode-btn.active {
-    background: #4a6c8f;
-    border-color: #88aaff;
-    box-shadow: 0 0 15px rgba(68, 170, 255, 0.5);
-}
-
-/* تحسين للشاشات الصغيرة */
-@media (max-width: 768px) {
-    .mode-bar-container {
-        height: 25px;
-    }
-    
-    .mode-bar {
-        height: 45px;
-        gap: 5px;
-        padding: 0 5px;
-    }
-    
-    .mode-btn {
-        padding: 5px 12px;
-        font-size: 12px;
-    }
-}
-
-.mode-btn {
-    padding: 8px 30px;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: white;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid #4a6c8f;
-}
-
-.mode-btn:hover {
-    background: #4a6c8f;
-    transform: translateY(-2px);
-}
-
-.mode-btn.active {
-    background: #4a6c8f;
-    border-color: #88aaff;
-    box-shadow: 0 0 15px rgba(68, 170, 255, 0.5);
-}
-
-/* =======================================
-   إدارة العناصر حسب الوضعية
-   ======================================= */
-
-/* الوضع الافتراضي - الرسم */
-.mode-draw .drawing-tools { 
-    display: flex !important; 
-    position: fixed;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-}
-
-.mode-draw .color-panel { 
-    display: flex !important; 
-}
-.mode-draw .status-bar { 
-    display: block !important; 
-}
-.mode-draw .hint { 
-    display: block !important; 
-}
-.mode-draw .hotspot-toolbar { 
-    display: flex !important; 
-}
-.mode-draw .scene-panel { 
-    display: block !important; 
-}
-.mode-draw .measure-tools { 
-    display: none !important; 
-}
-.mode-draw .view-tools { 
-    display: none !important; 
-}
-
-/* وضع القياس */
-.mode-measure .measure-tools { 
-    display: flex !important; 
-    position: fixed;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    background: rgba(20, 30, 40, 0.98);
-    padding: 15px 25px;
-    border-radius: 50px;
-    border: 2px solid #4a6c8f;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 90%;
-    backdrop-filter: blur(10px);
-}
-
-.mode-measure .drawing-tools { 
-    display: none !important; 
-}
-.mode-measure .color-panel { 
-    display: none !important; 
-}
-.mode-measure .status-bar { 
-    display: none !important; 
-}
-.mode-measure .hint { 
-    display: none !important; 
-}
-.mode-measure .hotspot-toolbar { 
-    display: none !important; 
-}
-.mode-measure .scene-panel { 
-    display: none !important; 
-}
-.mode-measure .view-tools { 
-    display: none !important; 
-}
-
-/* وضع العرض */
-.mode-view .view-tools { 
-    display: flex !important; 
-    position: fixed;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    background: rgba(20, 30, 40, 0.98);
-    padding: 15px 25px;
-    border-radius: 50px;
-    border: 2px solid #4a6c8f;
-    gap: 15px;
-    backdrop-filter: blur(10px);
-}
-
-.mode-view .drawing-tools { 
-    display: none !important; 
-}
-.mode-view .measure-tools { 
-    display: none !important; 
-}
-.mode-view .color-panel { 
-    display: none !important; 
-}
-.mode-view .status-bar { 
-    display: none !important; 
-}
-.mode-view .hint { 
-    display: none !important; 
-}
-.mode-view .hotspot-toolbar { 
-    display: none !important; 
-}
-.mode-view .scene-panel { 
-    display: none !important; 
-}
-.mode-view .project-panel { 
-    display: none !important; 
-}
-
-/* =======================================
-   تنسيق أدوات القياس
-   ======================================= */
-.measure-tools button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 30px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: white;
-    border: 1px solid rgba(255,255,255,0.2);
-    white-space: nowrap;
-}
-
-.measure-tools button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-}
-
-#calibrateBtn { background: #aa44aa; }
-#measureDistance { background: #44aaff; }
-#measureArea { background: #44aa44; }
-#saveMeasurement { background: #ffaa44; }
-#exportReport { background: #ff4444; }
-
-.measure-info {
-    background: rgba(0,0,0,0.5);
-    padding: 10px 20px;
-    border-radius: 30px;
-    color: #88aaff;
-    font-weight: bold;
-    min-width: 150px;
-    text-align: center;
-}
-
-/* =======================================
-   تنسيق أدوات العرض
-   ======================================= */
-.view-tools button {
-    padding: 10px 25px;
-    border: none;
-    border-radius: 30px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: white;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.view-tools button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-}
-
-#viewMeasurements { background: #44aaff; }
-#generateReport { background: #44aa44; }
-
-/* =======================================
-   تحسين للشاشات الصغيرة
-   ======================================= */
-@media (max-width: 768px) {
-    .mode-bar {
-        gap: 5px;
-        padding: 0 5px;
-    }
-    
-    .mode-btn {
-        padding: 5px 12px;
-        font-size: 12px;
-    }
-    
-    .measure-tools {
-        padding: 10px 15px;
-        gap: 5px;
-    }
-    
-    .measure-tools button {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-    
-    .view-tools button {
-        padding: 6px 15px;
-        font-size: 13px;
-    }
+    .mode-bar-container { height: 25px; }
+    .mode-bar { height: 45px; gap: 10px; }
+    .mode-btn { padding: 5px 15px; font-size: 13px; }
 }
