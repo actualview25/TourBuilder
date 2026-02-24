@@ -869,23 +869,25 @@ body {
     }
 }
 /* =======================================
-   شريط الوضعيات - أضف من هنا إلى النهاية
+   نظام الوضعيات المتقدم
    ======================================= */
+
+/* شريط الوضعيات العلوي */
 .mode-bar {
     position: fixed;
     top: 60px;
     left: 0;
     right: 0;
     height: 50px;
-    background: rgba(30, 40, 50, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid #4a6c8f;
+    background: rgba(20, 30, 40, 0.98);
+    border-bottom: 2px solid #4a6c8f;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 20px;
-    z-index: 950;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 2000; /* زيادة الز-index */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
 }
 
 .mode-btn {
@@ -913,57 +915,128 @@ body {
 }
 
 /* =======================================
-   تحسين إخفاء العناصر حسب الوضعية
+   إدارة العناصر حسب الوضعية
    ======================================= */
 
-/* وضع الرسم - كل شيء يظهر طبيعي */
-.mode-draw .drawing-tools { display: flex; }
-.mode-draw .measure-tools { display: none; }
-.mode-draw .view-tools { display: none; }
-/* في وضع الرسم، كل العناصر الأخرى تبقى ظاهرة */
-
-/* وضع القياس - نخفي عناصر الرسم */
-.mode-measure .drawing-tools { display: none; }
-.mode-measure .measure-tools { display: flex; }
-.mode-measure .view-tools { display: none; }
-.mode-measure .color-panel { display: none; }           /* إخفاء لوحة الألوان */
-.mode-measure .status-bar { display: none; }            /* إخفاء شريط الحالة */
-.mode-measure .hint { display: none; }                  /* إخفاء التلميحات */
-.mode-measure .hotspot-toolbar { display: none; }       /* إخفاء شريط Hotspots */
-
-/* وضع العرض - نخفي كل أدوات التحرير */
-.mode-view .drawing-tools { display: none; }
-.mode-view .measure-tools { display: none; }
-.mode-view .view-tools { display: flex; }
-.mode-view .color-panel { display: none; }              /* إخفاء لوحة الألوان */
-.mode-view .status-bar { display: none; }               /* إخفاء شريط الحالة */
-.mode-view .hint { display: none; }                     /* إخفاء التلميحات */
-.mode-view .hotspot-toolbar { display: none; }          /* إخفاء شريط Hotspots */
-.mode-view .scene-panel { display: none; }              /* إخفاء لوحة المشاهد */
-.mode-view .project-panel { display: none; }            /* إخفاء لوحة المشاريع */
-
-/* تحسين مظهر شريط القياس */
-.measure-tools {
+/* الوضع الافتراضي - الرسم */
+.mode-draw .drawing-tools { 
+    display: flex !important; 
     position: fixed;
     bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
     z-index: 1000;
-    background: rgba(20, 30, 40, 0.95);
-    padding: 12px 20px;
-    border-radius: 50px;
-    border: 2px solid #4a6c8f;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    flex-wrap: wrap;
-    max-width: 90%;
-    justify-content: center;
 }
 
+.mode-draw .color-panel { 
+    display: flex !important; 
+}
+.mode-draw .status-bar { 
+    display: block !important; 
+}
+.mode-draw .hint { 
+    display: block !important; 
+}
+.mode-draw .hotspot-toolbar { 
+    display: flex !important; 
+}
+.mode-draw .scene-panel { 
+    display: block !important; 
+}
+.mode-draw .measure-tools { 
+    display: none !important; 
+}
+.mode-draw .view-tools { 
+    display: none !important; 
+}
+
+/* وضع القياس */
+.mode-measure .measure-tools { 
+    display: flex !important; 
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(20, 30, 40, 0.98);
+    padding: 15px 25px;
+    border-radius: 50px;
+    border: 2px solid #4a6c8f;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 90%;
+    backdrop-filter: blur(10px);
+}
+
+.mode-measure .drawing-tools { 
+    display: none !important; 
+}
+.mode-measure .color-panel { 
+    display: none !important; 
+}
+.mode-measure .status-bar { 
+    display: none !important; 
+}
+.mode-measure .hint { 
+    display: none !important; 
+}
+.mode-measure .hotspot-toolbar { 
+    display: none !important; 
+}
+.mode-measure .scene-panel { 
+    display: none !important; 
+}
+.mode-measure .view-tools { 
+    display: none !important; 
+}
+
+/* وضع العرض */
+.mode-view .view-tools { 
+    display: flex !important; 
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(20, 30, 40, 0.98);
+    padding: 15px 25px;
+    border-radius: 50px;
+    border: 2px solid #4a6c8f;
+    gap: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.mode-view .drawing-tools { 
+    display: none !important; 
+}
+.mode-view .measure-tools { 
+    display: none !important; 
+}
+.mode-view .color-panel { 
+    display: none !important; 
+}
+.mode-view .status-bar { 
+    display: none !important; 
+}
+.mode-view .hint { 
+    display: none !important; 
+}
+.mode-view .hotspot-toolbar { 
+    display: none !important; 
+}
+.mode-view .scene-panel { 
+    display: none !important; 
+}
+.mode-view .project-panel { 
+    display: none !important; 
+}
+
+/* =======================================
+   تنسيق أدوات القياس
+   ======================================= */
 .measure-tools button {
-    padding: 8px 16px;
+    padding: 10px 20px;
     border: none;
     border-radius: 30px;
     font-size: 14px;
@@ -971,30 +1044,36 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     color: white;
-    min-width: 80px;
     border: 1px solid rgba(255,255,255,0.2);
     white-space: nowrap;
 }
 
-/* تحسين مظهر شريط العرض */
-.view-tools {
-    position: fixed;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 12px;
-    z-index: 1000;
-    background: rgba(20, 30, 40, 0.95);
-    padding: 12px 20px;
-    border-radius: 50px;
-    border: 2px solid #4a6c8f;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+.measure-tools button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
 }
 
-.view-tools button {
+#calibrateBtn { background: #aa44aa; }
+#measureDistance { background: #44aaff; }
+#measureArea { background: #44aa44; }
+#saveMeasurement { background: #ffaa44; }
+#exportReport { background: #ff4444; }
+
+.measure-info {
+    background: rgba(0,0,0,0.5);
     padding: 10px 20px;
+    border-radius: 30px;
+    color: #88aaff;
+    font-weight: bold;
+    min-width: 150px;
+    text-align: center;
+}
+
+/* =======================================
+   تنسيق أدوات العرض
+   ======================================= */
+.view-tools button {
+    padding: 10px 25px;
     border: none;
     border-radius: 30px;
     font-size: 15px;
@@ -1002,53 +1081,20 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     color: white;
-    min-width: 120px;
     border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* تحسين شريط الوضعيات */
-.mode-bar {
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background: rgba(20, 30, 40, 0.98);
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid #4a6c8f;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    z-index: 1000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
-
-.mode-btn {
-    padding: 8px 25px;
-    border: none;
-    border-radius: 25px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: white;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid #4a6c8f;
-}
-
-.mode-btn:hover {
-    background: #4a6c8f;
+.view-tools button:hover {
     transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
 }
 
-.mode-btn.active {
-    background: #4a6c8f;
-    border-color: #88aaff;
-    box-shadow: 0 0 15px rgba(68, 170, 255, 0.5);
-}
+#viewMeasurements { background: #44aaff; }
+#generateReport { background: #44aa44; }
 
-/* تحسين للشاشات الصغيرة */
+/* =======================================
+   تحسين للشاشات الصغيرة
+   ======================================= */
 @media (max-width: 768px) {
     .mode-bar {
         gap: 5px;
@@ -1061,20 +1107,17 @@ body {
     }
     
     .measure-tools {
-        bottom: 15px;
-        padding: 8px 12px;
+        padding: 10px 15px;
         gap: 5px;
     }
     
     .measure-tools button {
-        padding: 5px 10px;
+        padding: 6px 12px;
         font-size: 12px;
-        min-width: 60px;
     }
     
     .view-tools button {
-        padding: 5px 15px;
+        padding: 6px 15px;
         font-size: 13px;
-        min-width: 80px;
     }
 }
