@@ -558,17 +558,7 @@ function setMode(mode) {
 
 // تهيئة أزرار الوضعيات
 function initModeButtons() {
-    const modeBar = document.createElement('div');
-    modeBar.className = 'mode-bar';
-    modeBar.innerHTML = `
-        <button id="modeDraw" class="mode-btn active">🎨 الرسم</button>
-        <button id="modeMeasure" class="mode-btn">📏 القياس</button>
-        <button id="modeView" class="mode-btn">👁️ العرض</button>
-    `;
-    
-    const toolbar = document.querySelector('.toolbar');
-    toolbar.parentNode.insertBefore(modeBar, toolbar.nextSibling);
-    
+    // ربط الأحداث فقط (لأن الشريط موجود في HTML)
     document.getElementById('modeDraw').onclick = () => setMode('draw');
     document.getElementById('modeMeasure').onclick = () => setMode('measure');
     document.getElementById('modeView').onclick = () => setMode('view');
