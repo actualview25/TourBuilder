@@ -290,30 +290,63 @@ body {
 /* =======================================
    التلميحات
    ======================================= */
+/* =======================================
+   التلميحات - مصغرة وفي الأسفل
+   ======================================= */
 .hint {
     position: fixed;
-    bottom: 100px;
+    bottom: 20px;
     left: 20px;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.75);
     color: white;
-    padding: 15px 20px;
-    border-radius: 15px;
-    font-size: 14px;
-    line-height: 2;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.6;
     z-index: 900;
-    border: 2px solid #4a6c8f;
-    backdrop-filter: blur(10px);
+    border: 1px solid #4a6c8f;
+    backdrop-filter: blur(5px);
     text-align: right;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-    max-width: 250px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    max-width: 200px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.hint:hover {
+    opacity: 1;
 }
 
 .hint span {
     color: #88aaff;
     font-weight: bold;
-    margin-left: 8px;
+    margin-left: 5px;
+    display: inline-block;
+    min-width: 20px;
 }
 
+.hint kbd {
+    background: #333;
+    color: #fff;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 10px;
+}
+
+.hint small {
+    display: block;
+    margin-top: 5px;
+    color: #ffaa44;
+    font-size: 10px;
+}
+
+/* نسخة مصغرة للشاشات الصغيرة */
+@media (max-width: 768px) {
+    .hint {
+        display: none;  /* يخفي التعليمات في الشاشات الصغيرة */
+    }
+}
 /* =======================================
    لوحة المشاريع
    ======================================= */
