@@ -48,10 +48,9 @@ class ProjectManager {
     }
 }
 
-=======================================
-// ٢. إدارة المشاهد المتعددة
 // =======================================
-class SceneManager {
+
+    class SceneManager {
     constructor() {
         this.scenes = [];
         this.currentScene = null;
