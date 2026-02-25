@@ -48,9 +48,10 @@ class ProjectManager {
     }
 }
 
-
-
-    class SceneManager {
+// =======================================
+// ٢. إدارة المشاهد المتعددة (مكتمل)
+// =======================================
+class SceneManager {
     constructor() {
         this.scenes = [];
         this.currentScene = null;
@@ -109,6 +110,94 @@ class ProjectManager {
                         id: `scene-${Date.now()}-${Math.random()}`,
                         name: name,
                         originalImage: e.target.result,
+                        paths: [],
+                        hotspots: [],
+                        created: new Date().toISOString()
+                    };
+                    this.scenes.push(scene);
+                    this.saveScenes();
+                    resolve(scene);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(imageFile);
+        });
+    }
+
+    addHotspot(sceneId, type, position, data) {
+        const scene = this.scenes.find(s => s.id === sceneId);
+        if (!scene) return null;
+
+        const hotspot = {
+            id: `hotspot-${Date.now()}-${Math.random()}`,
+            type: type,
+            position: { x: position.x, y: position.y, z: position.z },
+            data: data,
+            icon: type === 'SCENE' ? '🚪' : 'ℹ️',
+            color: type === 'SCENE' ? 0x44aaff : 0xffaa44
+        };
+
+        scene.hotspots.push(hotspot);
+        this.saveScenes();
+        return hotspot;
+    }
+
+    switchToScene(sceneId) {
+        const sceneData = this.scenes.find(s => s.id === sceneId);
+        if (!sceneData) return false;
+
+        if (this.currentScene && paths.length > 0) {
+            this.currentScene.paths = paths.map(p => ({
+                type: p.userData.type,
+                color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
+                points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
+            }));
+        }
+
+        this.currentScene = sceneData;
+
+        paths.forEach(p => scene.remove(p));
+        paths = [];
+        clearCurrentDrawing();
+
+        if (sphereMesh && sphereMesh.material) {
+            loadSceneImage(sceneData.originalImage);
+        }
+
+        if (sceneData.paths) {
+            sceneData.paths.forEach(pathData => {
+                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                const oldType = currentPathType;
+                currentPathType = pathData.type;
+                createStraightPath(points);
+                currentPathType = oldType;
+            });
+        }
+
+        if (sceneData.hotspots) rebuildHotspots(sceneData.hotspots);
+        if (typeof updateScenePanel === 'function') updateScenePanel();
+        this.saveScenes();
+        return true;
+    }
+
+    deleteScene(sceneId) {
+        const index = this.scenes.findIndex(s => s.id === sceneId);
+        if (index !== -1) {
+            this.scenes.splice(index, 1);
+            if (this.currentScene && this.currentScene.id === sceneId) {
+                if (this.scenes.length > 0) {
+                    this.switchToScene(this.scenes[0].id);
+                } else {
+                    this.currentScene = null;
+                    if (typeof loadPanorama === 'function') loadPanorama();
+                }
+            }
+            this.saveScenes();
+            if (typeof updateScenePanel === 'function') updateScenePanel();
+        }
+    }
+}
+
 // =======================================
 // ٣. تصدير الجولات
 // =======================================
@@ -294,79 +383,78 @@ class TourExporter {
                             });
                         }
                         
-                        // داخل generatePlayerHTML، ابحث عن هذا الجزء:
-if (sceneData.hotspots && sceneData.hotspots.length > 0) {
-    setTimeout(() => {
-        sceneData.hotspots.forEach(hotspot => {
-            const vector = new THREE.Vector3(hotspot.position.x, hotspot.position.y, hotspot.position.z).project(camera);
-            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-            const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-            
-            if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) return;
-            
-            const div = document.createElement('div');
-            div.className = 'hotspot';
-            div.style.left = x + 'px';
-            div.style.top = y + 'px';
-            
-            if (hotspot.type === 'INFO') {
-                div.style.color = '#ffaa44';
-                div.setAttribute('data-type', 'info');
-                
-                const title = hotspot.data?.title || 'معلومات';
-                const content = hotspot.data?.content || '';
-                
-                div.innerHTML = \`
-                    <span class='hotspot-icon'>ℹ️</span>
-                    <div class='hotspot-tooltip'>
-                        <strong>\${title}</strong>
-                        <p>\${content}</p>
-                    </div>
-                \`;
-                
-                div.onclick = function(e) {
-                    e.stopPropagation();
-                    alert(\`\${title}\n\n\${content}\`);
-                };
-                
-            } else {
-                div.style.color = '#44aaff';
-                div.setAttribute('data-type', 'scene');
-                
-                const targetName = hotspot.data?.targetSceneName || 'مشهد آخر';
-                const description = hotspot.data?.description || '';
-                const targetId = hotspot.data?.targetSceneId;
-                
-                div.innerHTML = \`
-                    <span class='hotspot-icon'>🚪</span>
-                    <div class='hotspot-tooltip'>
-                        <strong>انتقال إلى: \${targetName}</strong>
-                        <p>\${description}</p>
-                    </div>
-                \`;
-                
-                div.onclick = function(e) {
-                    e.stopPropagation();
-                    if (targetId) {
-                        const targetIndex = scenes.findIndex(s => s.id === targetId);
-                        if (targetIndex !== -1) {
-                            // تأثير انتقال
-                            div.style.transform = 'scale(1.5)';
-                            div.style.transition = 'all 0.3s ease';
+                        // إضافة الـ hotspots
+                        if (sceneData.hotspots && sceneData.hotspots.length > 0) {
                             setTimeout(() => {
-                                loadScene(targetIndex);
-                            }, 300);
-                        } else {
-                            alert('المشهد المطلوب غير موجود');
+                                sceneData.hotspots.forEach(hotspot => {
+                                    const vector = new THREE.Vector3(hotspot.position.x, hotspot.position.y, hotspot.position.z).project(camera);
+                                    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                                    const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+                                    
+                                    if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) return;
+                                    
+                                    const div = document.createElement('div');
+                                    div.className = 'hotspot';
+                                    div.style.left = x + 'px';
+                                    div.style.top = y + 'px';
+                                    
+                                    if (hotspot.type === 'INFO') {
+                                        div.style.color = '#ffaa44';
+                                        div.setAttribute('data-type', 'info');
+                                        
+                                        const title = hotspot.data?.title || 'معلومات';
+                                        const content = hotspot.data?.content || '';
+                                        
+                                        div.innerHTML = \`
+                                            <span class='hotspot-icon'>ℹ️</span>
+                                            <div class='hotspot-tooltip'>
+                                                <strong>\${title}</strong>
+                                                <p>\${content}</p>
+                                            </div>
+                                        \`;
+                                        
+                                        div.onclick = function(e) {
+                                            e.stopPropagation();
+                                            alert(\`\${title}\n\n\${content}\`);
+                                        };
+                                        
+                                    } else {
+                                        div.style.color = '#44aaff';
+                                        div.setAttribute('data-type', 'scene');
+                                        
+                                        const targetName = hotspot.data?.targetSceneName || 'مشهد آخر';
+                                        const description = hotspot.data?.description || '';
+                                        const targetId = hotspot.data?.targetSceneId;
+                                        
+                                        div.innerHTML = \`
+                                            <span class='hotspot-icon'>🚪</span>
+                                            <div class='hotspot-tooltip'>
+                                                <strong>انتقال إلى: \${targetName}</strong>
+                                                <p>\${description}</p>
+                                            </div>
+                                        \`;
+                                        
+                                        div.onclick = function(e) {
+                                            e.stopPropagation();
+                                            if (targetId) {
+                                                const targetIndex = scenes.findIndex(s => s.id === targetId);
+                                                if (targetIndex !== -1) {
+                                                    div.style.transform = 'scale(1.5)';
+                                                    div.style.transition = 'all 0.3s ease';
+                                                    setTimeout(() => {
+                                                        loadScene(targetIndex);
+                                                    }, 300);
+                                                } else {
+                                                    alert('المشهد المطلوب غير موجود');
+                                                }
+                                            }
+                                        };
+                                    }
+                                    
+                                    document.body.appendChild(div);
+                                });
+                            }, 200);
                         }
-                    }
-                };
-            }
-            
-            document.body.appendChild(div);
-        });
-    }, 200);
-}
                     });
                 }
                 
@@ -430,14 +518,14 @@ if (sceneData.hotspots && sceneData.hotspots.length > 0) {
 2. فعل GitHub Pages
 3. الجولة متاحة على: \`https://[اسمك].github.io/[المشروع]\`
 
----تم إنشاؤها باستخدام Virtual Tour Studio © 2026`;
+---
+تم إنشاؤها باستخدام Virtual Tour Studio © 2026`;
     }
 }
 
 // =======================================
 // ٤. المتغيرات الأساسية
 // =======================================
-
 let scene, camera, renderer, controls;
 let autorotate = true;
 let drawMode = false;
@@ -466,28 +554,7 @@ const projectManager = new ProjectManager();
 const tourExporter = new TourExporter();
 
 // =======================================
-// ٥. نظام الوضعيات (وضعيتان فقط)
-// =======================================
-let currentMode = 'draw'; // 'draw', 'view'
-
-function setMode(mode) {
-    currentMode = mode;
-    
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const activeBtn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
-    if (activeBtn) activeBtn.classList.add('active');
-    
-    document.body.classList.remove('mode-draw', 'mode-view');
-    document.body.classList.add('mode-' + mode);
-    
-    console.log('🔄 تم التبديل إلى وضع: ' + mode);
-}
-
-// =======================================
-// ٦. دوال الرسم الأساسية
+// ٥. دوال الرسم الأساسية
 // =======================================
 function setupMarkerPreview() {
     const geometry = new THREE.SphereGeometry(8, 16, 16);
@@ -667,7 +734,7 @@ function rebuildHotspots(hotspots) {
 }
 
 // =======================================
-// ٧. دوال Hotspots
+// ٦. دوال Hotspots
 // =======================================
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
@@ -771,7 +838,7 @@ function addHotspot(position) {
 }
 
 // =======================================
-// ٨. تحديث لوحة المشاهد
+// ٧. تحديث لوحة المشاهد
 // =======================================
 function updateScenePanel() {
     const list = document.getElementById('sceneList');
@@ -811,7 +878,7 @@ function updateScenePanel() {
                 }
             }
         });
-        
+
         const deleteBtn = item.querySelector('.delete-scene-btn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -823,10 +890,9 @@ function updateScenePanel() {
 }
 
 // =======================================
-// ٩. إضافة مشهد جديد
+// ٨. إضافة مشهد جديد
 // =======================================
 function addNewScene() {
-    // استخدام prompt عادي، يجب أن يقبل أي عدد من الأحرف
     const name = prompt('📝 أدخل اسم المشهد:');
     if (!name || name.trim() === '') {
         alert('❌ الرجاء إدخال اسم صحيح');
@@ -849,7 +915,6 @@ function addNewScene() {
         showLoader('جاري إضافة المشهد...');
 
         try {
-            // استخدام name.trim() لإزالة المسافات الزائدة
             const scene = await sceneManager.addScene(name.trim(), file);
             if (scene) {
                 sceneManager.switchToScene(scene.id);
@@ -870,7 +935,7 @@ function addNewScene() {
 }
 
 // =======================================
-// ١٠. دوال التحميل والتصدير
+// ٩. دوال التحميل والتصدير
 // =======================================
 function showLoader(message) {
     const loader = document.getElementById('loader');
@@ -929,34 +994,90 @@ function clearAllPaths() {
         clearCurrentDrawing();
     }
 }
+
 // =======================================
-// ١١. تحميل البانوراما
+// ١٠. تحميل البانوراما
 // =======================================
+function loadPanorama() {
+    console.log('🔄 جاري تحميل البانوراما...');
+    
+    const loader = new THREE.TextureLoader();
+    loader.load(
+        './textures/StartPoint.jpg',
+        (texture) => {
+            console.log('✅ تم تحميل الصورة');
+            
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.repeat.x = -1;
+
+            const geometry = new THREE.SphereGeometry(500, 64, 64);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide
+            });
+
+            sphereMesh = new THREE.Mesh(geometry, material);
+            scene.add(sphereMesh);
+            
+            const loaderEl = document.getElementById('loader');
+            if (loaderEl) loaderEl.style.display = 'none';
+            
+            setupMarkerPreview();
+        },
+        (progress) => {
+            console.log(`⏳ التحميل: ${Math.round((progress.loaded / progress.total) * 100)}%`);
+        },
+        (error) => {
+            console.error('❌ فشل تحميل الصورة:', error);
+        }
+    );
+}
+
 // =======================================
-// دالة موحدة لتحميل المشاهد (مع الحفاظ على الإعدادات)
+// ١١. دالة موحدة لتحميل المشاهد
 // =======================================
 function loadSceneImage(imageData) {
     if (!sphereMesh || !sphereMesh.material) return;
 
     const img = new Image();
     img.onload = () => {
-        // إنشاء نسيج جديد
         const texture = new THREE.CanvasTexture(img);
-        
-        // ✅ تطبيق نفس الإعدادات المستخدمة في loadPanorama
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.wrapS = THREE.RepeatWrapping;
-        texture.repeat.x = -1;  // عكس أفقي
+        texture.repeat.x = -1;
         
-        // تحديث مادة الكرة
         sphereMesh.material.map = texture;
         sphereMesh.material.needsUpdate = true;
         
-        console.log('✅ تم تحميل المشهد الجديد بالإعدادات الصحيحة');
+        console.log('✅ تم تحميل المشهد الجديد');
     };
     img.src = imageData;
 }
-// ١٢. إعداد الأحداث
+
+// =======================================
+// ١٢. نظام الوضعيات
+// =======================================
+let currentMode = 'draw'; // 'draw', 'view'
+
+function setMode(mode) {
+    currentMode = mode;
+    
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const activeBtn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    document.body.classList.remove('mode-draw', 'mode-view');
+    document.body.classList.add('mode-' + mode);
+    
+    console.log('🔄 تم التبديل إلى وضع: ' + mode);
+}
+
+// =======================================
+// ١٣. إعداد الأحداث
 // =======================================
 function setupEvents() {
     renderer.domElement.addEventListener('click', onClick);
@@ -1017,7 +1138,7 @@ function setupEvents() {
 }
 
 // =======================================
-// ١٣. أحداث لوحة المفاتيح
+// ١٤. أحداث لوحة المفاتيح
 // =======================================
 function onKeyDown(e) {
     if (!drawMode) return;
@@ -1050,7 +1171,7 @@ function onResize() {
 }
 
 // =======================================
-// ١٤. تهيئة أزرار الوضعيات
+// ١٥. تهيئة أزرار الوضعيات
 // =======================================
 function initModeButtons() {
     const modeDraw = document.getElementById('modeDraw');
@@ -1068,7 +1189,7 @@ if (document.readyState === 'loading') {
 }
 
 // =======================================
-// ١٥. التهيئة والتشغيل
+// ١٦. التهيئة والتشغيل
 // =======================================
 function init() {
     console.log('🚀 بدء التهيئة...');
@@ -1117,6 +1238,6 @@ function animate() {
 }
 
 // =======================================
-// ١٦. بدء التشغيل
+// ١٧. بدء التشغيل
 // =======================================
-init();
+init();                        
