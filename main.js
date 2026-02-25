@@ -144,6 +144,18 @@ class SceneManager {
 // =======================================
 // دالة موحدة لتحميل المشاهد (مع الحفاظ على الإعدادات)
 // =======================================
+
+  switchToScene(sceneId) {
+    const sceneData = this.scenes.find(s => s.id === sceneId);
+    if (!sceneData) return false;
+
+    if (this.currentScene && paths.length > 0) {
+        this.currentScene.paths = paths.map(p => ({
+            type: p.userData.type,
+            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
+            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
+        }));
+    }
 function loadSceneImage(imageData) {
     if (!sphereMesh || !sphereMesh.material) return;
 
@@ -165,18 +177,6 @@ function loadSceneImage(imageData) {
     };
     img.src = imageData;
 }
-  switchToScene(sceneId) {
-    const sceneData = this.scenes.find(s => s.id === sceneId);
-    if (!sceneData) return false;
-
-    if (this.currentScene && paths.length > 0) {
-        this.currentScene.paths = paths.map(p => ({
-            type: p.userData.type,
-            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
-            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
-        }));
-    }
-
     this.currentScene = sceneData;
 
     paths.forEach(p => scene.remove(p));
