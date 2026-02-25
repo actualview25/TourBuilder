@@ -141,7 +141,30 @@ class SceneManager {
         this.saveScenes();
         return hotspot;
     }
+// =======================================
+// دالة موحدة لتحميل المشاهد (مع الحفاظ على الإعدادات)
+// =======================================
+function loadSceneImage(imageData) {
+    if (!sphereMesh || !sphereMesh.material) return;
 
+    const img = new Image();
+    img.onload = () => {
+        // إنشاء نسيج جديد
+        const texture = new THREE.CanvasTexture(img);
+        
+        // ✅ تطبيق نفس الإعدادات المستخدمة في loadPanorama
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.repeat.x = -1;  // عكس أفقي
+        
+        // تحديث مادة الكرة
+        sphereMesh.material.map = texture;
+        sphereMesh.material.needsUpdate = true;
+        
+        console.log('✅ تم تحميل المشهد الجديد بالإعدادات الصحيحة');
+    };
+    img.src = imageData;
+}
   switchToScene(sceneId) {
     const sceneData = this.scenes.find(s => s.id === sceneId);
     if (!sceneData) return false;
@@ -173,8 +196,6 @@ class SceneManager {
         });
     }
 
-            img.src = sceneData.originalImage;
-        }
 
         if (sceneData.paths) {
             sceneData.paths.forEach(pathData => {
