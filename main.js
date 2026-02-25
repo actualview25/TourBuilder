@@ -48,7 +48,7 @@ class ProjectManager {
     }
 }
 
-// =======================================
+=======================================
 // ٢. إدارة المشاهد المتعددة
 // =======================================
 class SceneManager {
@@ -110,125 +110,6 @@ class SceneManager {
                         id: `scene-${Date.now()}-${Math.random()}`,
                         name: name,
                         originalImage: e.target.result,
-                        paths: [],
-                        hotspots: [],
-                        created: new Date().toISOString()
-                    };
-                    this.scenes.push(scene);
-                    this.saveScenes();
-                    resolve(scene);
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(imageFile);
-        });
-    }
-
-    addHotspot(sceneId, type, position, data) {
-        const scene = this.scenes.find(s => s.id === sceneId);
-        if (!scene) return null;
-
-        const hotspot = {
-            id: `hotspot-${Date.now()}-${Math.random()}`,
-            type: type,
-            position: { x: position.x, y: position.y, z: position.z },
-            data: data,
-            icon: type === 'SCENE' ? '🚪' : 'ℹ️',
-            color: type === 'SCENE' ? 0x44aaff : 0xffaa44
-        };
-
-        scene.hotspots.push(hotspot);
-        this.saveScenes();
-        return hotspot;
-    }
-// =======================================
-// دالة موحدة لتحميل المشاهد (مع الحفاظ على الإعدادات)
-// =======================================
-
-  switchToScene(sceneId) {
-    const sceneData = this.scenes.find(s => s.id === sceneId);
-    if (!sceneData) return false;
-
-    if (this.currentScene && paths.length > 0) {
-        this.currentScene.paths = paths.map(p => ({
-            type: p.userData.type,
-            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
-            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
-        }));
-    }
-function loadSceneImage(imageData) {
-    if (!sphereMesh || !sphereMesh.material) return;
-
-    const img = new Image();
-    img.onload = () => {
-        // إنشاء نسيج جديد
-        const texture = new THREE.CanvasTexture(img);
-        
-        // ✅ تطبيق نفس الإعدادات المستخدمة في loadPanorama
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.repeat.x = -1;  // عكس أفقي
-        
-        // تحديث مادة الكرة
-        sphereMesh.material.map = texture;
-        sphereMesh.material.needsUpdate = true;
-        
-        console.log('✅ تم تحميل المشهد الجديد بالإعدادات الصحيحة');
-    };
-    img.src = imageData;
-}
-    this.currentScene = sceneData;
-
-    paths.forEach(p => scene.remove(p));
-    paths = [];
-    clearCurrentDrawing();
-
-    // ✅ هذا هو التعديل
-    if (sphereMesh && sphereMesh.material) {
-        loadSceneImage(sceneData.originalImage);
-    }
-
-    if (sceneData.paths) {
-        sceneData.paths.forEach(pathData => {
-            const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-            currentPathType = pathData.type;
-            createStraightPath(points);
-        });
-    }
-
-
-        if (sceneData.paths) {
-            sceneData.paths.forEach(pathData => {
-                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                currentPathType = pathData.type;
-                createStraightPath(points);
-            });
-        }
-
-        if (sceneData.hotspots) rebuildHotspots(sceneData.hotspots);
-        if (typeof updateScenePanel === 'function') updateScenePanel();
-        this.saveScenes();
-        return true;
-    }
-
-    deleteScene(sceneId) {
-        const index = this.scenes.findIndex(s => s.id === sceneId);
-        if (index !== -1) {
-            this.scenes.splice(index, 1);
-            if (this.currentScene && this.currentScene.id === sceneId) {
-                if (this.scenes.length > 0) {
-                    this.switchToScene(this.scenes[0].id);
-                } else {
-                    this.currentScene = null;
-                    if (typeof loadPanorama === 'function') loadPanorama();
-                }
-            }
-            this.saveScenes();
-            if (typeof updateScenePanel === 'function') updateScenePanel();
-        }
-    }
-}
-
 // =======================================
 // ٣. تصدير الجولات
 // =======================================
