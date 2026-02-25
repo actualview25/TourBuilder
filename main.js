@@ -142,31 +142,37 @@ class SceneManager {
         return hotspot;
     }
 
-    switchToScene(sceneId) {
-        const sceneData = this.scenes.find(s => s.id === sceneId);
-        if (!sceneData) return false;
+  switchToScene(sceneId) {
+    const sceneData = this.scenes.find(s => s.id === sceneId);
+    if (!sceneData) return false;
 
-        if (this.currentScene && paths.length > 0) {
-            this.currentScene.paths = paths.map(p => ({
-                type: p.userData.type,
-                color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
-                points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
-            }));
-        }
+    if (this.currentScene && paths.length > 0) {
+        this.currentScene.paths = paths.map(p => ({
+            type: p.userData.type,
+            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
+            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
+        }));
+    }
 
-        this.currentScene = sceneData;
+    this.currentScene = sceneData;
 
-        paths.forEach(p => scene.remove(p));
-        paths = [];
-        clearCurrentDrawing();
+    paths.forEach(p => scene.remove(p));
+    paths = [];
+    clearCurrentDrawing();
 
-        if (sphereMesh && sphereMesh.material) {
-            const img = new Image();
-            img.onload = () => {
-                const texture = new THREE.CanvasTexture(img);
-                sphereMesh.material.map = texture;
-                sphereMesh.material.needsUpdate = true;
-            };
+    // ✅ هذا هو التعديل
+    if (sphereMesh && sphereMesh.material) {
+        loadSceneImage(sceneData.originalImage);
+    }
+
+    if (sceneData.paths) {
+        sceneData.paths.forEach(pathData => {
+            const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+            currentPathType = pathData.type;
+            createStraightPath(points);
+        });
+    }
+
             img.src = sceneData.originalImage;
         }
 
@@ -1025,50 +1031,29 @@ function clearAllPaths() {
 // =======================================
 // ١١. تحميل البانوراما
 // =======================================
-function loadPanorama(path) {
-    console.log('🔄 جاري تحميل البانوراما...', path);
-    
-    const loader = new THREE.TextureLoader();
-    loader.load(
-        path,
-        (texture) => {
-            console.log('✅ تم تحميل الصورة:', path);
-            
-            // ضبط اللون
-            texture.colorSpace = THREE.SRGBColorSpace;
+// =======================================
+// دالة موحدة لتحميل المشاهد (مع الحفاظ على الإعدادات)
+// =======================================
+function loadSceneImage(imageData) {
+    if (!sphereMesh || !sphereMesh.material) return;
 
-            // عكس الصورة أفقياً
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.repeat.x = -1;
-
-            // إنشاء الكرة
-            const geometry = new THREE.SphereGeometry(500, 64, 64);
-            const material = new THREE.MeshBasicMaterial({
-                map: texture,
-                side: THREE.BackSide
-            });
-
-            // إنشاء المجسم
-            const newSphere = new THREE.Mesh(geometry, material);
-
-            // إزالة أي مشهد سابق إذا أردت
-            if (sphereMesh) scene.remove(sphereMesh);
-
-            // حفظ المرجع للمشهد الحالي
-            sphereMesh = newSphere;
-
-            // إضافته للمشهد
-            scene.add(sphereMesh);
-
-            console.log('✅ تم إضافة المشهد بنجاح');
-        },
-        (progress) => {
-            console.log(`⏳ التحميل: ${Math.round((progress.loaded / progress.total) * 100)}%`);
-        },
-        (error) => {
-            console.error('❌ فشل تحميل الصورة:', error);
-        }
-    );
+    const img = new Image();
+    img.onload = () => {
+        // إنشاء نسيج جديد
+        const texture = new THREE.CanvasTexture(img);
+        
+        // ✅ تطبيق نفس الإعدادات المستخدمة في loadPanorama
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.repeat.x = -1;  // عكس أفقي
+        
+        // تحديث مادة الكرة
+        sphereMesh.material.map = texture;
+        sphereMesh.material.needsUpdate = true;
+        
+        console.log('✅ تم تحميل المشهد الجديد بالإعدادات الصحيحة');
+    };
+    img.src = imageData;
 }
 // ١٢. إعداد الأحداث
 // =======================================
