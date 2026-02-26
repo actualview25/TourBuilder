@@ -67,7 +67,7 @@
         <button id="clearAll">🗑️ مسح الكل</button>
     </div>
 
-    <!-- شريط Hotspots (محدث مع زر حذف) -->
+    <!-- شريط Hotspots -->
     <div class="hotspot-toolbar">
         <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">
             <img src="icon/hotspot.png" alt="scene" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
@@ -100,29 +100,26 @@
         <div class="project-list" id="projectList"></div>
     </div>
 
-<!-- لوحة المشاهد - أعلى اليمين (قابلة للطي) -->
-<div class="scene-panel" id="scenePanel">
-    <div class="panel-header" id="scenePanelHeader">
-        <h3>
-            <span>📋</span>
-            <span>المشاهد</span>
-        </h3>
-        <div class="panel-controls">
-            <button class="panel-toggle" id="toggleScenePanelBtn" title="طي/فتح">◀</button>
-            <button class="panel-close" id="closeScenePanelBtn" title="إخفاء">✕</button>
+    <!-- لوحة المشاهد - أعلى اليمين (قابلة للطي) -->
+    <div class="scene-panel" id="scenePanel">
+        <div class="panel-header" id="scenePanelHeader">
+            <h3>
+                <span>📋</span>
+                <span>المشاهد</span>
+            </h3>
+            <div class="panel-controls">
+                <button class="panel-toggle" id="toggleScenePanelBtn" title="طي/فتح">◀</button>
+                <button class="panel-close" id="closeScenePanelBtn" title="إخفاء">✕</button>
+            </div>
         </div>
+        <div class="scene-list" id="sceneList"></div>
+        <button class="add-scene-btn" id="addSceneBtn">
+            <span>➕</span> إضافة مشهد
+        </button>
     </div>
-    <div class="scene-list" id="sceneList"></div>
-    <button class="add-scene-btn" id="addSceneBtn">
-        <span>➕</span> إضافة مشهد
-    </button>
-</div>
 
-<!-- زر إظهار اللوحة (عندما تكون مخفية) -->
-<button class="show-panel-btn" id="showScenePanelBtn" title="إظهار المشاهد">📋</button>
-
-<!-- زر إظهار اللوحة (عندما تكون مخفية) -->
-<button class="show-panel-btn" id="showScenePanelBtn" title="إظهار المشاهد">📋</button>
+    <!-- زر إظهار اللوحة (عندما تكون مخفية) -->
+    <button class="show-panel-btn" id="showScenePanelBtn" title="إظهار المشاهد">📋</button>
 
     <!-- شاشة التحميل -->
     <div id="loader" style="display: none;">⏳ جاري التحميل...</div>
