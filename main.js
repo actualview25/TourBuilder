@@ -248,454 +248,160 @@ class TourExporter {
         saveAs(content, `${projectName}.zip`);
     }
 
-    generatePlayerHTML(projectName) {
+   generatePlayerHTML(projectName) {
     return `<!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
     <title>${projectName} - جولة افتراضية</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- ✅ تحميل Three.js بشكل صحيح -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            direction: rtl;
-        }
-        
-        #container {
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
+        #container { width: 100vw; height: 100vh; background: #000; }
         
         /* معلومات المشروع */
         .info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            border: 2px solid #4a6c8f;
-            z-index: 100;
-            font-weight: bold;
-            backdrop-filter: blur(5px);
-            font-size: 14px;
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(0, 0, 0, 0.7); color: white;
+            padding: 10px 20px; border-radius: 30px;
+            border: 2px solid #4a6c8f; z-index: 100;
+            font-weight: bold; backdrop-filter: blur(5px); font-size: 14px;
         }
         
         /* زر التدوير */
         #autoRotateBtn {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: 2px solid #4a6c8f;
-            border-radius: 30px;
-            cursor: pointer;
-            z-index: 100;
-            font-size: 16px;
-            backdrop-filter: blur(5px);
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 24px; background: rgba(0, 0, 0, 0.7); color: white;
+            border: 2px solid #4a6c8f; border-radius: 30px; cursor: pointer;
+            z-index: 100; font-size: 16px; backdrop-filter: blur(5px);
             transition: all 0.3s ease;
         }
-        
-        #autoRotateBtn:hover {
-            background: rgba(74, 108, 143, 0.8);
-            transform: translateX(-50%) scale(1.05);
-        }
+        #autoRotateBtn:hover { background: rgba(74, 108, 143, 0.8); transform: translateX(-50%) scale(1.05); }
         
         /* قائمة المشاهد الجانبية */
         .scene-list-panel {
-            position: fixed;
-            top: 50%;
-            left: 20px;
-            transform: translateY(-50%);
-            width: 260px;
-            max-height: 70vh;
-            background: rgba(20, 30, 40, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 2px solid #4a6c8f;
-            border-radius: 16px;
-            color: white;
-            z-index: 200;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            direction: rtl;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            position: fixed; top: 50%; left: 20px; transform: translateY(-50%);
+            width: 260px; max-height: 70vh;
+            background: rgba(20, 30, 40, 0.75); backdrop-filter: blur(12px);
+            border: 2px solid #4a6c8f; border-radius: 16px; color: white;
+            z-index: 200; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            direction: rtl; overflow: hidden; display: flex; flex-direction: column;
             transition: all 0.3s ease;
         }
-        
-        .scene-list-panel.collapsed {
-            width: 50px;
-            overflow: hidden;
-        }
-        
+        .scene-list-panel.collapsed { width: 50px; overflow: hidden; }
         .scene-list-panel.collapsed .panel-header h3 span:last-child,
-        .scene-list-panel.collapsed .scene-list-container {
-            display: none;
-        }
+        .scene-list-panel.collapsed .scene-list-container { display: none; }
         
         .panel-header {
-            padding: 15px;
-            background: rgba(30, 40, 50, 0.95);
-            border-bottom: 1px solid #4a6c8f;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
+            padding: 15px; background: rgba(30, 40, 50, 0.95);
+            border-bottom: 1px solid #4a6c8f; display: flex;
+            justify-content: space-between; align-items: center; cursor: pointer;
         }
-        
-        .panel-header h3 {
-            margin: 0;
-            color: #88aaff;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
+        .panel-header h3 { margin: 0; color: #88aaff; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .panel-toggle {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
+            background: none; border: none; color: white; font-size: 18px; cursor: pointer;
+            width: 30px; height: 30px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; transition: all 0.2s;
         }
-        
-        .panel-toggle:hover {
-            background: rgba(255,255,255,0.1);
-            color: #88aaff;
-        }
+        .panel-toggle:hover { background: rgba(255,255,255,0.1); color: #88aaff; }
         
         .scene-list-container {
-            max-height: calc(70vh - 60px);
-            overflow-y: auto;
-            padding: 10px;
+            max-height: calc(70vh - 60px); overflow-y: auto; padding: 10px;
         }
-        
-        .scene-list-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        
-        .scene-list-container::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-        }
-        
-        .scene-list-container::-webkit-scrollbar-thumb {
-            background: rgba(74, 108, 143, 0.5);
-            border-radius: 4px;
-        }
+        .scene-list-container::-webkit-scrollbar { width: 4px; }
+        .scene-list-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .scene-list-container::-webkit-scrollbar-thumb { background: rgba(74, 108, 143, 0.5); border-radius: 4px; }
         
         .scene-item {
-            padding: 10px 12px;
-            margin: 4px 0;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            font-size: 13px;
+            padding: 10px 12px; margin: 4px 0; background: rgba(255,255,255,0.03);
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center;
+            gap: 10px; transition: all 0.2s ease; border: 1px solid transparent; font-size: 13px;
         }
-        
-        .scene-item:hover {
-            background: rgba(74, 108, 143, 0.2);
-            border-color: rgba(74, 108, 143, 0.3);
-        }
-        
-        .scene-item.active {
-            background: rgba(74, 108, 143, 0.6);
-            border-right: 3px solid #88aaff;
-        }
-        
-        .scene-icon {
-            font-size: 18px;
-        }
-        
-        .scene-name {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .scene-hotspot-count {
-            font-size: 11px;
-            background: rgba(74, 108, 143, 0.4);
-            padding: 2px 6px;
-            border-radius: 12px;
-            color: #88aaff;
-        }
+        .scene-item:hover { background: rgba(74, 108, 143, 0.2); border-color: rgba(74, 108, 143, 0.3); }
+        .scene-item.active { background: rgba(74, 108, 143, 0.6); border-right: 3px solid #88aaff; }
+        .scene-icon { font-size: 18px; }
+        .scene-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .scene-hotspot-count { font-size: 11px; background: rgba(74, 108, 143, 0.4); padding: 2px 6px; border-radius: 12px; color: #88aaff; }
         
         /* لوحة التحكم بالمسارات */
         .paths-control-panel {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(20, 30, 40, 0.85);
-            backdrop-filter: blur(10px);
-            border: 2px solid #4a6c8f;
-            border-radius: 15px;
-            color: white;
-            z-index: 200;
-            padding: 15px;
-            min-width: 200px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            direction: rtl;
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(20, 30, 40, 0.85); backdrop-filter: blur(10px);
+            border: 2px solid #4a6c8f; border-radius: 15px; color: white;
+            z-index: 200; padding: 15px; min-width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); direction: rtl;
         }
+        .paths-control-panel h3 { margin: 0 0 10px 0; color: #88aaff; font-size: 16px; text-align: center; border-bottom: 1px solid #4a6c8f; padding-bottom: 8px; }
+        .path-toggle-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .path-toggle-item:last-child { border-bottom: none; }
+        .path-toggle-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #4a6c8f; }
+        .path-toggle-item label { flex: 1; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .path-color-dot { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
         
-        .paths-control-panel h3 {
-            margin: 0 0 10px 0;
-            color: #88aaff;
-            font-size: 16px;
-            text-align: center;
-            border-bottom: 1px solid #4a6c8f;
-            padding-bottom: 8px;
-        }
-        
-        .path-toggle-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .path-toggle-item:last-child {
-            border-bottom: none;
-        }
-       .path-toggle-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #4a6c8f;
-        }
-        
-        .path-toggle-item label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .path-color-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-        
-        /* نظام Hotspots */
+        /* نظام Hotspots - مطابق للأداة */
         .hotspot-marker {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
-            z-index: 100;
-            transition: all 0.2s ease;
+            position: absolute; transform: translate(-50%, -50%);
+            cursor: pointer; z-index: 100; transition: all 0.2s ease;
             pointer-events: all;
         }
-        
         .hotspot-marker img {
-            width: 40px;
-            height: 40px;
-            filter: drop-shadow(0 0 10px currentColor);
-            pointer-events: none;
-            transition: all 0.2s ease;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.3);
+            width: 40px; height: 40px; filter: drop-shadow(0 0 10px currentColor);
+            pointer-events: none; transition: all 0.2s ease;
+            border-radius: 50%; background: rgba(0,0,0,0.3);
         }
-        
-        .hotspot-marker:hover img {
-            transform: scale(1.15);
-            filter: drop-shadow(0 0 15px gold);
-        }
+        .hotspot-marker:hover img { transform: scale(1.15); filter: drop-shadow(0 0 15px gold); }
         
         .hotspot-label {
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(20, 30, 40, 0.95);
-            backdrop-filter: blur(5px);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            white-space: nowrap;
-            border: 2px solid;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            pointer-events: none;
-            z-index: 101;
+            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(5px);
+            color: white; padding: 6px 12px; border-radius: 20px;
+            font-size: 12px; white-space: nowrap; border: 2px solid;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0;
+            transition: opacity 0.2s ease; pointer-events: none; z-index: 101;
             font-weight: 500;
         }
-        
-        .hotspot-marker:hover .hotspot-label {
-            opacity: 1;
-        }
+        .hotspot-marker:hover .hotspot-label { opacity: 1; }
         
         /* نافذة المعلومات */
         .custom-info-window {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(20, 30, 40, 0.95);
-            backdrop-filter: blur(10px);
-            border: 2px solid;
-            border-radius: 20px;
-            padding: 20px 30px;
-            color: white;
-            z-index: 1000;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            max-width: 400px;
-            width: 90%;
-            animation: slideUp 0.3s ease;
-            direction: rtl;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(10px);
+            border: 2px solid #ffaa44; border-radius: 20px; padding: 20px 30px;
+            color: white; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            max-width: 400px; width: 90%; animation: slideUp 0.3s ease; direction: rtl;
         }
-        
         .custom-info-window .window-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid;
+            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+            padding-bottom: 10px; border-bottom: 2px solid #ffaa44;
         }
-        
-        .custom-info-window .window-header img {
-            width: 30px;
-            height: 30px;
-        }
-        
-        .custom-info-window .window-header h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .custom-info-window .window-content {
-            margin-bottom: 20px;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        
+        .custom-info-window .window-header img { width: 30px; height: 30px; }
+        .custom-info-window .window-header h3 { margin: 0; color: #ffaa44; font-size: 18px; font-weight: bold; }
+        .custom-info-window .window-content { margin-bottom: 20px; line-height: 1.6; font-size: 14px; }
         .custom-info-window .window-close {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-            width: 100%;
+            background: rgba(255,255,255,0.1); border: 2px solid #ffaa44; color: white;
+            padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;
+            transition: all 0.2s; width: 100%;
         }
-        
-        .custom-info-window .window-close:hover {
-            background: currentColor;
-            color: black;
-        }
+        .custom-info-window .window-close:hover { background: #ffaa44; color: black; }
         
         @keyframes slideUp {
-            from {
-                transform: translate(-50%, 100%);
-                opacity: 0;
-            }
-            to {
-                transform: translate(-50%, 0);
-                opacity: 1;
-            }
+            from { transform: translate(-50%, 100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
         }
         
         /* تحسينات للموبايل */
         @media (max-width: 768px) {
-            .scene-list-panel {
-                width: 200px;
-                left: 10px;
-            }
-            
-            .scene-list-panel.collapsed {
-                width: 40px;
-            }
-            
-            .paths-control-panel {
-                top: 10px;
-                right: 10px;
-                padding: 10px;
-                min-width: 150px;
-            }
-            
-            .paths-control-panel h3 {
-                font-size: 14px;
-            }
-            
-            .path-toggle-item label {
-                font-size: 12px;
-            }
-            
-            .custom-info-window {
-                width: 90%;
-                padding: 15px 20px;
-                bottom: 20px;
-            }
-            
-            .hotspot-marker img {
-                width: 35px;
-                height: 35px;
-            }
-            
-            #autoRotateBtn {
-                font-size: 14px;
-                padding: 10px 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .scene-list-panel {
-                width: 180px;
-            }
-            
-            .paths-control-panel {
-                min-width: 120px;
-            }
-            
-            .path-toggle-item label {
-                font-size: 11px;
-            }
-            
-            .path-color-dot {
-                width: 12px;
-                height: 12px;
-            }
+            .scene-list-panel { width: 200px; left: 10px; }
+            .scene-list-panel.collapsed { width: 40px; }
+            .paths-control-panel { top: 10px; right: 10px; padding: 10px; min-width: 150px; }
+            .paths-control-panel h3 { font-size: 14px; }
+            .path-toggle-item label { font-size: 12px; }
+            .custom-info-window { width: 90%; padding: 15px 20px; bottom: 20px; }
+            .hotspot-marker img { width: 35px; height: 35px; }
+            #autoRotateBtn { font-size: 14px; padding: 10px 20px; }
         }
     </style>
 </head>
@@ -709,44 +415,29 @@ class TourExporter {
         <div id="paths-toggle-list"></div>
     </div>
     
-    <!-- قائمة المشاهد الجانبية -->
     <div class="scene-list-panel" id="sceneListPanel">
         <div class="panel-header" id="panelHeader">
-            <h3>
-                <span>📋</span>
-                <span>قائمة المشاهد</span>
-            </h3>
+            <h3><span>📋</span><span>قائمة المشاهد</span></h3>
             <button class="panel-toggle" id="togglePanelBtn">◀</button>
         </div>
         <div class="scene-list-container" id="sceneListContainer"></div>
     </div>
 
     <script>
-        // ✅ التحقق من تحميل Three.js
-        if (typeof THREE === 'undefined') {
-            console.error('❌ Three.js لم يتم تحميله');
-        }
-        
-       let autoRotate = true;
+        let autoRotate = true;
         let currentSceneIndex = 0;
         let scenes = [];
         let scene3D, camera, renderer, controls, sphereMesh;
         let allPaths = [];
         let hotspotMarkers = {};
         
-        const pathColors = {
-            EL: '#ffcc00',
-            AC: '#00ccff',
-            WP: '#0066cc',
-            WA: '#ff3300',
-            GS: '#33cc33'
-        };
+        const pathColors = { EL: '#ffcc00', AC: '#00ccff', WP: '#0066cc', WA: '#ff3300', GS: '#33cc33' };
         
-        // دوال التحكم بالقائمة الجانبية
+        // دوال القائمة الجانبية
         function initScenePanel() {
             const panel = document.getElementById('sceneListPanel');
             const toggleBtn = document.getElementById('togglePanelBtn');
-            
+            if (!panel || !toggleBtn) return;
             toggleBtn.addEventListener('click', () => {
                 panel.classList.toggle('collapsed');
                 toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
@@ -756,37 +447,27 @@ class TourExporter {
         function updateSceneList() {
             const container = document.getElementById('sceneListContainer');
             if (!container) return;
-            
             container.innerHTML = '';
-            
             scenes.forEach((scene, index) => {
                 const item = document.createElement('div');
-                item.className = 'scene-item';
-                if (index === currentSceneIndex) {
-                    item.classList.add('active');
-                }
-                
+                item.className = 'scene-item' + (index === currentSceneIndex ? ' active' : '');
                 const hotspotCount = scene.hotspots ? scene.hotspots.length : 0;
-                
                 item.innerHTML = \`
                     <span class="scene-icon">\${index === 0 ? '🏠' : '🏢'}</span>
-                    <span class="scene-name">\${scene.displayName || scene.name}</span>
+                    <span class="scene-name">\${scene.name}</span>
                     <span class="scene-hotspot-count">\${hotspotCount}</span>
                 \`;
-                
                 item.addEventListener('click', () => loadScene(index));
                 container.appendChild(item);
             });
         }
         
-        // دوال Hotspots
-        function createHotspotElement(x, y, type, data, hotspotId) {
+        // دوال Hotspots - مطابقة للأداة
+        function createHotspotElement(x, y, type, data) {
             const div = document.createElement('div');
             div.className = 'hotspot-marker';
             div.style.left = x + 'px';
             div.style.top = y + 'px';
-            div.setAttribute('data-id', hotspotId);
-            div.setAttribute('data-type', type);
             
             const iconUrl = type === 'SCENE' ? 'icon/hotspot.png' : 'icon/info.png';
             const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
@@ -795,23 +476,18 @@ class TourExporter {
                 : (data.title || 'معلومات');
             
             div.innerHTML = \`
-                <img src="\${iconUrl}" alt="\${type}" style="border: 2px solid \${borderColor}; border-radius: 50%; background: rgba(0,0,0,0.3);">
+                <img src="\${iconUrl}" alt="\${type}" style="border: 2px solid \${borderColor};">
                 <div class="hotspot-label" style="border-color: \${borderColor};">\${displayText}</div>
             \`;
             
             if (type === 'INFO') {
-                div.addEventListener('click', () => {
-                    showInfoWindow(data.title, data.content);
-                });
+                div.addEventListener('click', () => showInfoWindow(data.title, data.content));
             } else {
                 div.addEventListener('click', () => {
                     const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
-                    if (targetIndex !== -1) {
-                        loadScene(targetIndex);
-                    }
+                    if (targetIndex !== -1) loadScene(targetIndex);
                 });
             }
-            
             return div;
         }
         
@@ -820,21 +496,20 @@ class TourExporter {
             hotspotMarkers = {};
             
             const currentScene = scenes[currentSceneIndex];
-            if (!currentScene || !currentScene.hotspots || !currentScene.hotspots.length) return;
+            if (!currentScene?.hotspots?.length) return;
             
-            const width = window.innerWidth;
-            const height = window.innerHeight;
+            const width = window.innerWidth, height = window.innerHeight;
             
             currentScene.hotspots.forEach(h => {
                 const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
                 pos.project(camera);
-                
                 const x = (pos.x * 0.5 + 0.5) * width;
                 const y = (-pos.y * 0.5 + 0.5) * height;
                 
                 if (x < 0 || x > width || y < 0 || y > height) return;
                 
-                const iconElement = createHotspotElement(x, y, h.type, h.data, h.id);
+                const iconElement = createHotspotElement(x, y, h.type, h.data);
+                iconElement.dataset.id = h.id;
                 document.body.appendChild(iconElement);
                 hotspotMarkers[h.id] = iconElement;
             });
@@ -844,71 +519,37 @@ class TourExporter {
             const oldWindow = document.querySelector('.custom-info-window');
             if (oldWindow) oldWindow.remove();
             
-            const window = document.createElement('div');
-            window.className = 'custom-info-window';
-            window.style.borderColor = '#ffaa44';
-            
-            window.innerHTML = \`
-                <div class="window-header" style="border-bottom-color: #ffaa44;">
-                    <img src="icon/info.png" style="width: 30px; height: 30px;">
-                    <h3 style="color: #ffaa44;">\${title}</h3>
+            const win = document.createElement('div');
+            win.className = 'custom-info-window';
+            win.innerHTML = \`
+                <div class="window-header">
+                    <img src="icon/info.png">
+                    <h3>\${title || 'معلومات'}</h3>
                 </div>
-                <div class="window-content">
-                    \${content}
-                </div>
-                <button class="window-close" style="border-color: #ffaa44;" onclick="this.parentElement.remove()">حسناً</button>
+                <div class="window-content">\${content || ''}</div>
+                <button class="window-close" onclick="this.parentElement.remove()">حسناً</button>
             \`;
-            
-            document.body.appendChild(window);
-            
-            setTimeout(() => {
-                if (window.parentElement) window.remove();
-            }, 5000);
+            document.body.appendChild(win);
+            setTimeout(() => win.remove(), 5000);
         }
         
+        // دوال المسارات
         function togglePathsByType(type, visible) {
-            if (!allPaths) return;
-            allPaths.forEach(path => {
-                if (path.userData && path.userData.type === type) {
-                    path.visible = visible;
-                }
-            });
+            allPaths.forEach(p => { if (p.userData?.type === type) p.visible = visible; });
         }
         
         function createPathsTogglePanel() {
             const toggleList = document.getElementById('paths-toggle-list');
             if (!toggleList) return;
-            
             toggleList.innerHTML = '';
-            
-            const types = ['EL', 'AC', 'WP', 'WA', 'GS'];
-            
-            types.forEach(type => {
+            ['EL', 'AC', 'WP', 'WA', 'GS'].forEach(type => {
                 const div = document.createElement('div');
                 div.className = 'path-toggle-item';
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = 'toggle-' + type;
-                checkbox.checked = true;
-                checkbox.setAttribute('data-type', type);
-                
-                checkbox.addEventListener('change', function(e) {
-                    togglePathsByType(type, e.target.checked);
-                });
-                
-                const label = document.createElement('label');
-                label.htmlFor = 'toggle-' + type;
-                
-                const colorDot = document.createElement('span');
-                colorDot.className = 'path-color-dot';
-                colorDot.style.backgroundColor = pathColors[type] || '#ffffff';
-                
-                label.appendChild(colorDot);
-                label.appendChild(document.createTextNode(' ' + type));
-                
-                div.appendChild(checkbox);
-                div.appendChild(label);
+                div.innerHTML = \`
+                    <input type="checkbox" id="toggle-\${type}" checked data-type="\${type}">
+                    <label for="toggle-\${type}"><span class="path-color-dot" style="background:\${pathColors[type]}"></span> \${type}</label>
+                \`;
+                div.querySelector('input').addEventListener('change', e => togglePathsByType(type, e.target.checked));
                 toggleList.appendChild(div);
             });
         }
@@ -921,7 +562,6 @@ class TourExporter {
             
             if (sphereMesh) scene3D.remove(sphereMesh);
             document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
-            
             allPaths.forEach(p => scene3D.remove(p));
             allPaths = [];
             
@@ -930,61 +570,41 @@ class TourExporter {
                 texture.wrapT = THREE.RepeatWrapping;
                 texture.repeat.x = -1;
                 
-                const geometry = new THREE.SphereGeometry(500, 128, 128);
-                const material = new THREE.MeshBasicMaterial({
-                    map: texture,
-                    side: THREE.BackSide
-                });
-                
-                sphereMesh = new THREE.Mesh(geometry, material);
+                sphereMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(500, 128, 128),
+                    new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide })
+                );
                 scene3D.add(sphereMesh);
                 
                 if (sceneData.paths) {
                     sceneData.paths.forEach(pathData => {
                         const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
                         for (let i = 0; i < points.length - 1; i++) {
-                            const start = points[i];
-                            const end = points[i + 1];
+                            const start = points[i], end = points[i + 1];
                             const direction = new THREE.Vector3().subVectors(end, start);
                             const distance = direction.length();
                             if (distance < 5) continue;
                             
                             const cylinder = new THREE.Mesh(
                                 new THREE.CylinderGeometry(3.5, 3.5, distance, 12),
-                                new THREE.MeshStandardMaterial({ 
-                                    color: pathData.color, 
-                                    emissive: pathData.color, 
-                                    emissiveIntensity: 0.3 
-                                })
+                                new THREE.MeshStandardMaterial({ color: pathData.color, emissive: pathData.color, emissiveIntensity: 0.3 })
                             );
-                            
-                            const quaternion = new THREE.Quaternion();
-                            quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+                            const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
                             cylinder.applyQuaternion(quaternion);
-                            
-                            const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-                            cylinder.position.copy(center);
-                            
+                            cylinder.position.copy(new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5));
                             cylinder.userData = { type: pathData.type };
                             scene3D.add(cylinder);
                             allPaths.push(cylinder);
                         }
                     });
-                    
-                    document.querySelectorAll('#paths-toggle-list input').forEach(cb => {
-                        togglePathsByType(cb.dataset.type, cb.checked);
-                    });
+                    document.querySelectorAll('#paths-toggle-list input').forEach(cb => togglePathsByType(cb.dataset.type, cb.checked));
                 }
                 
-                setTimeout(() => {
-                    rebuildHotspots();
-                }, 200);
-                
+                setTimeout(rebuildHotspots, 200);
                 updateSceneList();
             });
         }
-        
-        // ✅ تحميل البيانات وبدء التشغيل
+        // التهيئة
         fetch('tour-data.json')
             .then(res => res.json())
             .then(data => {
@@ -1000,8 +620,7 @@ class TourExporter {
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 document.getElementById('container').appendChild(renderer.domElement);
                 
-                const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-                scene3D.add(ambientLight);
+                scene3D.add(new THREE.AmbientLight(0xffffff, 1.5));
                 
                 controls = new THREE.OrbitControls(camera, renderer.domElement);
                 controls.enableZoom = true;
@@ -1009,13 +628,11 @@ class TourExporter {
                 controls.enableDamping = true;
                 controls.autoRotate = autoRotate;
                 controls.autoRotateSpeed = 0.5;
-                controls.target.set(0, 0, 0);
                 
                 document.getElementById('autoRotateBtn').onclick = () => {
                     autoRotate = !autoRotate;
                     controls.autoRotate = autoRotate;
-                    document.getElementById('autoRotateBtn').textContent = 
-                        autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
+                    document.getElementById('autoRotateBtn').textContent = autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
                 };
                 
                 createPathsTogglePanel();
@@ -1026,24 +643,22 @@ class TourExporter {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
                     renderer.setSize(window.innerWidth, window.innerHeight);
+                    rebuildHotspots();
                 });
                 
                 function animate() {
                     requestAnimationFrame(animate);
                     controls.update();
                     renderer.render(scene3D, camera);
+                    rebuildHotspots(); // تحديث مستمر لمواقع النقاط
                 }
                 animate();
             })
-            .catch(error => {
-                console.error('❌ خطأ في تحميل البيانات:', error);
-                document.body.innerHTML += '<div style="color:white; background:red; padding:20px;">خطأ في تحميل بيانات الجولة</div>';
-            });
+            .catch(err => console.error('خطأ في تحميل البيانات:', err));
     </script>
 </body>
 </html>`;
 }
-
     generatePlayerCSS() {
         return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
 #container { width: 100vw; height: 100vh; background: #000; }
