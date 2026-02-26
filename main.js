@@ -1850,6 +1850,55 @@ if (document.readyState === 'loading') {
 } else {
     setTimeout(initScenePanelControls, 100); // تأخير بسيط للتأكد
 }
+
+// ========== دوال إظهار/إخفاء قائمة المشاهد ==========
+
+// دالة لإظهار/إخفاء قائمة المشاهد
+function toggleSceneList() {
+    const list = document.getElementById('sceneList');
+    
+    if (list) {
+        if (list.style.display === 'none') {
+            list.style.display = 'block';
+        } else {
+            list.style.display = 'none';
+        }
+    }
+}
+
+// ربط الزر بالدالة إذا كان موجوداً
+const sceneListToggle = document.getElementById('sceneListToggle');
+if (sceneListToggle) {
+    sceneListToggle.addEventListener('click', toggleSceneList);
+}
+
+// إذا لم يكن الزر موجوداً، يمكنك إضافته يدوياً
+if (!document.getElementById('sceneListToggle')) {
+    const toggleBtn = document.createElement('div');
+    toggleBtn.id = 'sceneListToggle';
+    toggleBtn.innerHTML = '☰';
+    toggleBtn.style.cssText = `
+        position: fixed;
+        top: 70px;
+        left: 20px;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: rgba(20, 30, 40, 0.8);
+        backdrop-filter: blur(8px);
+        border: 2px solid rgba(74, 108, 143, 0.5);
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 950;
+        transition: all 0.2s;
+    `;
+    toggleBtn.addEventListener('click', toggleSceneList);
+    document.body.appendChild(toggleBtn);
+}
 // =======================================
 // ١٧. بدء التشغيل
 // =======================================
