@@ -479,25 +479,57 @@ generatePlayerHTML(projectName) {
                         autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
                 };
                 
-                // إنشاء لوحة التحكم بالمسارات
-                function createPathsTogglePanel() {
-                    const toggleList = document.getElementById('paths-toggle-list');
-                    toggleList.innerHTML = '';
-                    
-                    // إضافة خيار لكل نوع
-                    for (const [type, color] of Object.entries(pathColors)) {
-                        const div = document.createElement('div');
-                        div.className = 'path-toggle-item';
-                        
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.id = `toggle-${type}`;
-                        checkbox.checked = true;
-                        checkbox.dataset.type = type;
-                        
-                        checkbox.addEventListener('change', function(e) {
-                            togglePathsByType(type, e.target.checked);
-                        });
+              // إنشاء لوحة التحكم بالمسارات
+function createPathsTogglePanel() {
+    const toggleList = document.getElementById('paths-toggle-list');
+    if (!toggleList) return;
+    
+    toggleList.innerHTML = '';
+    
+    // ألوان المسارات
+    const pathColors = {
+        EL: '#ffcc00',
+        AC: '#00ccff',
+        WP: '#0066cc',
+        WA: '#ff3300',
+        GS: '#33cc33'
+    };
+    
+    // إضافة خيار لكل نوع
+    const types = ['EL', 'AC', 'WP', 'WA', 'GS'];
+    
+    types.forEach(type => {
+        const div = document.createElement('div');
+        div.className = 'path-toggle-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'toggle-' + type;  // استخدام + بدلاً من template literal
+        checkbox.checked = true;
+        checkbox.setAttribute('data-type', type);
+        
+        checkbox.addEventListener('change', function(e) {
+            // دالة togglePathsByType يجب أن تكون معرفة مسبقاً
+            if (typeof togglePathsByType === 'function') {
+                togglePathsByType(type, e.target.checked);
+            }
+        });
+        
+        const label = document.createElement('label');
+        label.htmlFor = 'toggle-' + type;
+        
+        const colorDot = document.createElement('span');
+        colorDot.className = 'path-color-dot';
+        colorDot.style.backgroundColor = pathColors[type] || '#ffffff';
+        
+        label.appendChild(colorDot);
+        label.appendChild(document.createTextNode(' ' + type));
+        
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        toggleList.appendChild(div);
+    });
+}
                         
                         const label = document.createElement('label');
                         label.htmlFor = `toggle-${type}`;
