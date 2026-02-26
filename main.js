@@ -1141,13 +1141,6 @@ function createHotspotElement(x, y, type, data, hotspotId) {
     return div;
 }
 
-// تحديث animate - إزالة أي تحديث للأيقونات
-function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-    // ❌ لا تحديث للأيقونات هنا - تبقى ثابتة
-}
 
 // دالة إضافة Hotspot جديدة - مع إحداثيات ثابتة
 function addHotspot(position) {
