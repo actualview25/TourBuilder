@@ -249,12 +249,15 @@ class TourExporter {
     }
 
     generatePlayerHTML(projectName) {
-        return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
     <title>${projectName} - جولة افتراضية</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- ✅ تحميل Three.js بشكل صحيح -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
         * {
             margin: 0;
@@ -486,8 +489,7 @@ class TourExporter {
         .path-toggle-item:last-child {
             border-bottom: none;
         }
-
-        .path-toggle-item input[type="checkbox"] {
+       .path-toggle-item input[type="checkbox"] {
             width: 18px;
             height: 18px;
             cursor: pointer;
@@ -720,7 +722,12 @@ class TourExporter {
     </div>
 
     <script>
-        let autoRotate = true;
+        // ✅ التحقق من تحميل Three.js
+        if (typeof THREE === 'undefined') {
+            console.error('❌ Three.js لم يتم تحميله');
+        }
+        
+       let autoRotate = true;
         let currentSceneIndex = 0;
         let scenes = [];
         let scene3D, camera, renderer, controls, sphereMesh;
@@ -790,16 +797,25 @@ class TourExporter {
             div.innerHTML = \`
                 <img src="\${iconUrl}" alt="\${type}" style="border: 2px solid \${borderColor}; border-radius: 50%; background: rgba(0,0,0,0.3);">
                 <div class="hotspot-label" style="border-color: \${borderColor};">\${displayText}</div>
-                <div class="hotspot-controls">
-                    <button class="edit-btn" onclick="window.editHotspotFromUI('\${hotspotId}')" title="تعديل">✏️</button>
-                    <button class="delete-btn" onclick="window.deleteHotspotFromUI('\${hotspotId}')" title="حذف">🗑️</button>
-                </div>
             \`;
+            
+            if (type === 'INFO') {
+                div.addEventListener('click', () => {
+                    showInfoWindow(data.title, data.content);
+                });
+            } else {
+                div.addEventListener('click', () => {
+                    const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
+                    if (targetIndex !== -1) {
+                        loadScene(targetIndex);
+                    }
+                });
+            }
             
             return div;
         }
         
-        function rebuildHotspots(hotspots) {
+        function rebuildHotspots() {
             document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
             hotspotMarkers = {};
             
@@ -821,34 +837,6 @@ class TourExporter {
                 const iconElement = createHotspotElement(x, y, h.type, h.data, h.id);
                 document.body.appendChild(iconElement);
                 hotspotMarkers[h.id] = iconElement;
-            });
-        }
-        
-        function updateHotspotPositions() {
-            const currentScene = scenes[currentSceneIndex];
-            if (!currentScene || !currentScene.hotspots || !currentScene.hotspots.length) return;
-            
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            
-            currentScene.hotspots.forEach(h => {
-                const marker = hotspotMarkers[h.id];
-                if (!marker) return;
-                
-                const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
-                pos.project(camera);
-                
-                const x = (pos.x * 0.5 + 0.5) * width;
-                const y = (-pos.y * 0.5 + 0.5) * height;
-                
-                marker.style.left = x + 'px';
-                marker.style.top = y + 'px';
-                
-                if (x < 0 || x > width || y < 0 || y > height) {
-                    marker.style.display = 'none';
-                } else {
-                    marker.style.display = 'block';
-                }
             });
         }
         
@@ -886,7 +874,7 @@ class TourExporter {
                 }
             });
         }
-
+        
         function createPathsTogglePanel() {
             const toggleList = document.getElementById('paths-toggle-list');
             if (!toggleList) return;
@@ -996,6 +984,7 @@ class TourExporter {
             });
         }
         
+        // ✅ تحميل البيانات وبدء التشغيل
         fetch('tour-data.json')
             .then(res => res.json())
             .then(data => {
@@ -1037,21 +1026,23 @@ class TourExporter {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
                     renderer.setSize(window.innerWidth, window.innerHeight);
-                    updateHotspotPositions();
                 });
                 
                 function animate() {
                     requestAnimationFrame(animate);
                     controls.update();
                     renderer.render(scene3D, camera);
-                    updateHotspotPositions();
                 }
                 animate();
+            })
+            .catch(error => {
+                console.error('❌ خطأ في تحميل البيانات:', error);
+                document.body.innerHTML += '<div style="color:white; background:red; padding:20px;">خطأ في تحميل بيانات الجولة</div>';
             });
     </script>
 </body>
 </html>`;
-    }
+}
 
     generatePlayerCSS() {
         return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
