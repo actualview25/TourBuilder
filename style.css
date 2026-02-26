@@ -714,3 +714,197 @@ body {
         font-size: 11px;
     }
 }
+/* =======================================
+   تحسينات Hotspots - نسخة محسنة
+   ======================================= */
+
+/* أيقونات Hotspots في الأداة */
+.hotspot-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.2s ease;
+    pointer-events: all;
+}
+
+.hotspot-marker img {
+    width: 40px;
+    height: 40px;
+    filter: drop-shadow(0 0 10px currentColor);
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.hotspot-marker:hover img {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 15px gold);
+}
+
+/* تسمية النقطة */
+.hotspot-label {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 30, 40, 0.95);
+    backdrop-filter: blur(5px);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    white-space: nowrap;
+    border: 2px solid;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1001;
+    font-weight: 500;
+}
+
+.hotspot-marker:hover .hotspot-label {
+    opacity: 1;
+}
+
+/* أزرار التحكم في النقطة */
+.hotspot-controls {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    display: flex;
+    gap: 5px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1002;
+}
+
+.hotspot-marker:hover .hotspot-controls {
+    opacity: 1;
+}
+
+.hotspot-controls button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+    border: 2px solid;
+    backdrop-filter: blur(5px);
+}
+
+.hotspot-controls .edit-btn {
+    background: #4a6c8f;
+    border-color: #88aaff;
+}
+
+.hotspot-controls .delete-btn {
+    background: #882222;
+    border-color: #ff8888;
+}
+
+.hotspot-controls button:hover {
+    transform: scale(1.15);
+}
+
+/* نافذة معلومات محسنة */
+.custom-info-window {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 30, 40, 0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid #ffaa44;
+    border-radius: 20px;
+    padding: 20px 30px;
+    color: white;
+    z-index: 2000;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    max-width: 400px;
+    width: 90%;
+    animation: slideUp 0.3s ease;
+    direction: rtl;
+}
+
+.custom-info-window .window-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ffaa44;
+}
+
+.custom-info-window .window-header img {
+    width: 30px;
+    height: 30px;
+}
+
+.custom-info-window .window-header h3 {
+    margin: 0;
+    color: #ffaa44;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.custom-info-window .window-content {
+    margin-bottom: 20px;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.custom-info-window .window-close {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid #ffaa44;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.custom-info-window .window-close:hover {
+    background: #ffaa44;
+    color: black;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translate(-50%, 100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+/* تحسينات للموبايل */
+@media (max-width: 768px) {
+    .custom-info-window {
+        width: 90%;
+        padding: 15px 20px;
+        bottom: 20px;
+    }
+    
+    .hotspot-marker img {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .hotspot-controls button {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+}
