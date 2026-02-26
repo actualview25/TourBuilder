@@ -1065,12 +1065,7 @@ function createStraightPath(points) {
 }
 
 // =======================================
-// ٦. دوال Hotspots (موحدة ومطورة)
-// =======================================
-
-// دالة مساعدة لإنشاء عنصر hotspot في DOM (للأداة)
-// =======================================
-// ٦. دوال Hotspots (موحدة ومطورة)
+// ٦. دوال Hotspots (موحدة ومطورة) - أيقونات ثابتة
 // =======================================
 
 // دالة مساعدة لإنشاء عنصر hotspot في DOM (للأداة)
@@ -1081,8 +1076,9 @@ function createHotspotElement(position, type, data, hotspotId) {
     div.style.left = position.x + 'px';
     div.style.top = position.y + 'px';
     div.style.transform = 'translate(-50%, -50%)';
-    div.style.pointerEvents = 'auto'; // مهم للتفاعل
+    div.style.pointerEvents = 'auto';
     div.style.zIndex = '1000';
+    div.style.willChange = 'left, top'; // تحسين الأداء
     div.setAttribute('data-id', hotspotId);
     div.setAttribute('data-type', type);
     
@@ -1103,40 +1099,7 @@ function createHotspotElement(position, type, data, hotspotId) {
     return div;
 }
 
-// دالة تحديث مواقع الأيقونات (تُستدعى في animate)
-function updateHotspotPositions() {
-    if (!sceneManager || !sceneManager.currentScene || !sceneManager.currentScene.hotspots) return;
-    
-    sceneManager.currentScene.hotspots.forEach(h => {
-        // البحث عن الكرة المطابقة في المشهد
-        const marker = scene.children.find(c => 
-            c.userData && c.userData.type === 'hotspot' && c.userData.hotspotId === h.id
-        );
-        
-        if (marker) {
-            // تحويل إحداثيات 3D إلى 2D
-            const vector = marker.position.clone().project(camera);
-            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-            const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-            
-            // تحديث موقع الأيقونة
-            const icon = document.querySelector(`[data-id="${h.id}"]`);
-            if (icon) {
-                icon.style.left = x + 'px';
-                icon.style.top = y + 'px';
-                
-                // إخفاء الأيقونة إذا كانت خارج الشاشة
-                if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) {
-                    icon.style.display = 'none';
-                } else {
-                    icon.style.display = 'block';
-                }
-            }
-        }
-    });
-}
-
-// إعادة بناء Hotspots في المشهد (عرض احترافي مع أيقونات)
+// إعادة بناء Hotspots في المشهد (عرض احترافي مع أيقونات ثابتة)
 function rebuildHotspots(hotspots) {
     if (!scene) return;
 
@@ -1147,6 +1110,92 @@ function rebuildHotspots(hotspots) {
         }
     });
 
+    // إزالة الأيقونات القديمة من DOM
+    document.querySelectorAll('.scene-hotspot-marker, .info-hotspot-marker').forEach(el => el.remove());
+
+    if (!hotspots || hotspots.length === 0) return;
+
+    hotspots.forEach(h => {
+        // إضافة نقطة في المشهد (كرة شفافة للتفاعل) - بدون أيقونة متحركة
+        const geometry = new THREE.SphereGeometry(8, 16, 16);
+        const material = new THREE.MeshStandardMaterial({
+            color: h.type === 'SCENE' ? 0x44aaff : 0xffaa44,
+            emissive: h.type === 'SCENE' ? 0x44aaff : 0xffaa44,
+            emissiveIntensity: 0.3,
+            transparent: true,
+            opacity: 0.2
+        });
+
+        const marker = new THREE.Mesh(geometry, material);
+        marker.position.set(h.position.x, h.position.y, h.position.z);
+        marker.userData = {
+            type: 'hotspot',
+            hotspotId: h.id,
+            hotspotType: h.type,
+            data: h.data
+        };
+        scene.add(marker);
+
+        // حساب الموقع الأولي للأيقونة (مرة واحدة فقط)
+        const vector = marker.position.clone().project(camera);
+        const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+
+        // إنشاء عنصر HTML للأيقونة (سيظل ثابتاً في مكانه)
+        const iconElement = createHotspotElement(
+            { x, y }, 
+            h.type, 
+            h.data, 
+            h.id
+        );
+        
+        // تخزين مرجع للعنصر
+        if (!window.hotspotIcons) window.hotspotIcons = {};
+        window.hotspotIcons[h.id] = iconElement;
+        
+        document.body.appendChild(iconElement);
+    });
+
+    console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة مع أيقونات ثابتة`);
+}
+
+// ❌ إلغاء دالة تحديث المواقع (لم نعد بحاجة لها)
+// function updateHotspotPositions() { ... }
+
+// تعديل دالة onResize لتحديث مواقع الأيقونات فقط عند تغيير حجم الشاشة (وليس مع كل حركة)
+function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    // تحديث مواقع الأيقونات مرة واحدة فقط عند تغيير حجم الشاشة
+    if (sceneManager && sceneManager.currentScene && sceneManager.currentScene.hotspots) {
+        sceneManager.currentScene.hotspots.forEach(h => {
+            const marker = scene.children.find(c => 
+                c.userData && c.userData.hotspotId === h.id
+            );
+            if (marker) {
+                const vector = marker.position.clone().project(camera);
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+                
+                const icon = document.querySelector(`[data-id="${h.id}"]`);
+                if (icon) {
+                    icon.style.left = x + 'px';
+                    icon.style.top = y + 'px';
+                }
+            }
+        });
+    }
+}
+
+// تعديل animate - إزالة استدعاء تحديث المواقع
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+    // ❌ لا داعي لتحديث مواقع الأيقونات هنا
+}
     // إزالة الأيقونات القديمة من DOM
     document.querySelectorAll('.scene-hotspot-marker, .info-hotspot-marker').forEach(el => el.remove());
 
