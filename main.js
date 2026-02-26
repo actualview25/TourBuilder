@@ -935,8 +935,13 @@ function createStraightPath(points) {
     }
 }
 
+// =======================================
+// إعادة بناء Hotspots في المشهد (عرض احترافي)
+// =======================================
 function rebuildHotspots(hotspots) {
     if (!scene) return;
+
+    // إزالة النقاط القديمة
     scene.children.forEach(child => {
         if (child.userData && child.userData.type === 'hotspot') {
             scene.remove(child);
@@ -946,14 +951,14 @@ function rebuildHotspots(hotspots) {
     if (!hotspots || hotspots.length === 0) return;
 
     hotspots.forEach(h => {
-        const color = h.type === 'SCENE' ? 0x44aaff : 0xffaa44;
-        const geometry = new THREE.SphereGeometry(12, 24, 24);
+        // إنشاء كرة شفافة (تمثل نقطة التفاعل)
+        const geometry = new THREE.SphereGeometry(10, 24, 24);
         const material = new THREE.MeshStandardMaterial({
-            color: color,
-            emissive: color,
-            emissiveIntensity: 0.5,
+            color: h.type === 'SCENE' ? 0x44aaff : 0xffaa44,
+            emissive: h.type === 'SCENE' ? 0x44aaff : 0xffaa44,
+            emissiveIntensity: 0.4,
             transparent: true,
-            opacity: 0.9
+            opacity: 0.3
         });
 
         const marker = new THREE.Mesh(geometry, material);
@@ -962,14 +967,14 @@ function rebuildHotspots(hotspots) {
             type: 'hotspot',
             hotspotId: h.id,
             hotspotType: h.type,
-            data: h.data
+            data: h.data,
+            isInTool: true // لتمييز أن هذه النقطة في وضع التحرير
         };
         scene.add(marker);
     });
 
     console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة`);
 }
-
 // =======================================
 // ٦. دوال Hotspots
 // =======================================
