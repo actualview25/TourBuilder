@@ -1069,6 +1069,11 @@ function createStraightPath(points) {
 // =======================================
 
 // دالة مساعدة لإنشاء عنصر hotspot في DOM (للأداة)
+// =======================================
+// ٦. دوال Hotspots (موحدة ومطورة)
+// =======================================
+
+// دالة مساعدة لإنشاء عنصر hotspot في DOM (للأداة)
 function createHotspotElement(position, type, data, hotspotId) {
     const div = document.createElement('div');
     div.className = type === 'SCENE' ? 'scene-hotspot-marker' : 'info-hotspot-marker';
@@ -1076,6 +1081,8 @@ function createHotspotElement(position, type, data, hotspotId) {
     div.style.left = position.x + 'px';
     div.style.top = position.y + 'px';
     div.style.transform = 'translate(-50%, -50%)';
+    div.style.pointerEvents = 'auto'; // مهم للتفاعل
+    div.style.zIndex = '1000';
     div.setAttribute('data-id', hotspotId);
     div.setAttribute('data-type', type);
     
@@ -1085,15 +1092,48 @@ function createHotspotElement(position, type, data, hotspotId) {
         (data.title || 'معلومات');
     
     div.innerHTML = `
-        <img src="${iconUrl}" alt="${type}" style="width: 40px; height: 40px; filter: drop-shadow(0 0 10px ${type === 'SCENE' ? '#44aaff' : '#ffaa44'});">
+        <img src="${iconUrl}" alt="${type}" style="width: 40px; height: 40px; filter: drop-shadow(0 0 10px ${type === 'SCENE' ? '#44aaff' : '#ffaa44'}); pointer-events: none;">
         <div class="hotspot-label">${displayText}</div>
-        <div class="hotspot-controls">
+        <div class="hotspot-controls" style="pointer-events: auto;">
             <button class="edit-btn" onclick="window.editHotspotFromUI('${hotspotId}')" title="تعديل">✏️</button>
             <button class="delete-btn" onclick="window.deleteHotspotFromUI('${hotspotId}')" title="حذف">🗑️</button>
         </div>
     `;
     
     return div;
+}
+
+// دالة تحديث مواقع الأيقونات (تُستدعى في animate)
+function updateHotspotPositions() {
+    if (!sceneManager || !sceneManager.currentScene || !sceneManager.currentScene.hotspots) return;
+    
+    sceneManager.currentScene.hotspots.forEach(h => {
+        // البحث عن الكرة المطابقة في المشهد
+        const marker = scene.children.find(c => 
+            c.userData && c.userData.type === 'hotspot' && c.userData.hotspotId === h.id
+        );
+        
+        if (marker) {
+            // تحويل إحداثيات 3D إلى 2D
+            const vector = marker.position.clone().project(camera);
+            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+            
+            // تحديث موقع الأيقونة
+            const icon = document.querySelector(`[data-id="${h.id}"]`);
+            if (icon) {
+                icon.style.left = x + 'px';
+                icon.style.top = y + 'px';
+                
+                // إخفاء الأيقونة إذا كانت خارج الشاشة
+                if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) {
+                    icon.style.display = 'none';
+                } else {
+                    icon.style.display = 'block';
+                }
+            }
+        }
+    });
 }
 
 // إعادة بناء Hotspots في المشهد (عرض احترافي مع أيقونات)
@@ -1133,7 +1173,7 @@ function rebuildHotspots(hotspots) {
         };
         scene.add(marker);
 
-        // تحويل إحداثيات 3D إلى 2D للأيقونة
+        // حساب الموقع الأولي للأيقونة
         const vector = marker.position.clone().project(camera);
         const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
         const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
@@ -1145,8 +1185,10 @@ function rebuildHotspots(hotspots) {
             h.data, 
             h.id
         );
-// تخزين مرجع للعنصر
-        hotspotIcons[h.id] = iconElement;
+        
+        // تخزين مرجع للعنصر
+        if (!window.hotspotIcons) window.hotspotIcons = {};
+        window.hotspotIcons[h.id] = iconElement;
         
         document.body.appendChild(iconElement);
     });
@@ -1738,8 +1780,10 @@ function animate() {
     requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
+    
+    // تحديث مواقع الأيقونات باستمرار
+    updateHotspotPositions();
 }
-
 // =======================================
 // ١٧. بدء التشغيل
 // =======================================
