@@ -142,19 +142,22 @@ class SceneManager {
         this.saveScenes();
         return hotspot;
     }
-
-    switchToScene(sceneId) {
-        const sceneData = this.scenes.find(s => s.id === sceneId);
-        if (!sceneData) return false;
-
-        if (this.currentScene && paths.length > 0) {
-            this.currentScene.paths = paths.map(p => ({
-                type: p.userData.type,
-                color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
-                points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
-            }));
-        }
-
+switchToScene(sceneId) {
+    // ... الكود الموجود ...
+    
+    // ✅ استدعاء rebuildHotspots مرة واحدة فقط عند تغيير المشهد
+    if (sceneData.hotspots) {
+        rebuildHotspots(sceneData.hotspots);  // يتم استدعاؤها مرة واحدة
+    } else {
+        Object.values(hotspotMarkers).forEach(marker => {
+            if (marker && marker.parentNode) {
+                marker.parentNode.removeChild(marker);
+            }
+        });
+        hotspotMarkers = {};
+    }
+    
+    
         this.currentScene = sceneData;
 
         paths.forEach(p => scene.remove(p));
@@ -1089,7 +1092,74 @@ let markerPreview = null;
 let exportCanvas, exportContext;
 let sceneManager;
 let hotspotMode = null;
+// ✅ تخزين مراجع الأيقونات لمنع إعادة إنشائها
+let hotspotMarkers = {};
 
+// ✅ دالة إنشاء أيقونة hotspot مرة واحدة فقط
+function createHotspotMarker(position, type, data, hotspotId) {
+    // إنشاء عنصر HTML للأيقونة
+    const div = document.createElement('div');
+    div.className = 'hotspot-marker';
+    div.setAttribute('data-id', hotspotId);
+    div.setAttribute('data-type', type);
+    
+    const iconUrl = type === 'SCENE' ? 'icon/hotspot.png' : 'icon/info.png';
+    const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
+    const displayText = type === 'SCENE' 
+        ? (data.targetSceneName || 'انتقال') 
+        : (data.title || 'معلومات');
+    
+    div.innerHTML = `
+        <img src="${iconUrl}" alt="${type}" style="border: 2px solid ${borderColor}; border-radius: 50%; background: rgba(0,0,0,0.3);">
+        <div class="hotspot-label" style="border-color: ${borderColor};">${displayText}</div>
+        <div class="hotspot-controls">
+            <button class="edit-btn" onclick="window.editHotspotFromUI('${hotspotId}')" title="تعديل">✏️</button>
+            <button class="delete-btn" onclick="window.deleteHotspotFromUI('${hotspotId}')" title="حذف">🗑️</button>
+        </div>
+    `;
+    
+    // تخزين الإحداثيات الثابتة مع العنصر
+    div._position = position.clone();
+    
+    // إضافة العنصر إلى DOM
+    document.body.appendChild(div);
+    
+    // تخزين المرجع
+    hotspotMarkers[hotspotId] = div;
+    
+    return div;
+}
+
+// ✅ دالة تحديث مواقع الأيقونات فقط (بدون إعادة إنشاء)
+function updateHotspotPositions() {
+    if (!sceneManager || !sceneManager.currentScene || !sceneManager.currentScene.hotspots) return;
+    
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    sceneManager.currentScene.hotspots.forEach(h => {
+        const marker = hotspotMarkers[h.id];
+        if (!marker) return;
+        
+        // استخدام الإحداثيات المخزنة مع الأيقونة
+        const pos = marker._position.clone();
+        pos.project(camera);
+        
+        const x = (pos.x * 0.5 + 0.5) * width;
+        const y = (-pos.y * 0.5 + 0.5) * height;
+        
+        // تحديث الموقع فقط
+        marker.style.left = x + 'px';
+        marker.style.top = y + 'px';
+        
+        // إخفاء الأيقونة إذا كانت خارج الشاشة
+        if (x < 0 || x > width || y < 0 || y > height) {
+            marker.style.display = 'none';
+        } else {
+            marker.style.display = 'block';
+        }
+    });
+}
 const pathColors = { EL: 0xffcc00, AC: 0x00ccff, WP: 0x0066cc, WA: 0xff3300, GS: 0x33cc33 };
 let currentPathType = 'EL';
 
@@ -1298,30 +1368,66 @@ function createHotspotElement(x, y, type, data, hotspotId) {
     return div;
 }
 
+/// =======================================
+// دوال Hotspots المحسنة
+// =======================================
+
+// ✅ دالة إنشاء أيقونة hotspot مرة واحدة فقط
+function createHotspotMarker(position, type, data, hotspotId) {
+    // إنشاء عنصر HTML للأيقونة
+    const div = document.createElement('div');
+    div.className = 'hotspot-marker';
+    div.setAttribute('data-id', hotspotId);
+    div.setAttribute('data-type', type);
+    
+    const iconUrl = type === 'SCENE' ? 'icon/hotspot.png' : 'icon/info.png';
+    const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
+    const displayText = type === 'SCENE' 
+        ? (data.targetSceneName || 'انتقال') 
+        : (data.title || 'معلومات');
+    
+    div.innerHTML = `
+        <img src="${iconUrl}" alt="${type}" style="border: 2px solid ${borderColor}; border-radius: 50%; background: rgba(0,0,0,0.3);">
+        <div class="hotspot-label" style="border-color: ${borderColor};">${displayText}</div>
+        <div class="hotspot-controls">
+            <button class="edit-btn" onclick="window.editHotspotFromUI('${hotspotId}')" title="تعديل">✏️</button>
+            <button class="delete-btn" onclick="window.deleteHotspotFromUI('${hotspotId}')" title="حذف">🗑️</button>
+        </div>
+    `;
+    
+    // تخزين الإحداثيات الثابتة مع العنصر
+    div._position = position.clone();
+    
+    // إضافة العنصر إلى DOM
+    document.body.appendChild(div);
+    
+    // تخزين المرجع
+    hotspotMarkers[hotspotId] = div;
+    
+    return div;
+}/ ✅ دالة إعادة بناء الهوتسبوت - تُستدعى عند تغيير المشهد فقط
 function rebuildHotspots(hotspots) {
     if (!scene || !camera) return;
 
-    document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
+    // إزالة الأيقونات القديمة من DOM والذاكرة
+    Object.values(hotspotMarkers).forEach(marker => {
+        if (marker && marker.parentNode) {
+            marker.parentNode.removeChild(marker);
+        }
+    });
+    hotspotMarkers = {};
 
     if (!hotspots || hotspots.length === 0) return;
 
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
+    // إنشاء أيقونات جديدة لكل نقطة
     hotspots.forEach(h => {
         const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
-        pos.project(camera);
-        
-        const x = (pos.x * 0.5 + 0.5) * width;
-        const y = (-pos.y * 0.5 + 0.5) * height;
-
-        if (x < 0 || x > width || y < 0 || y > height) return;
-
-        const iconElement = createHotspotElement(x, y, h.type, h.data, h.id);
-        document.body.appendChild(iconElement);
+        createHotspotMarker(pos, h.type, h.data, h.id);
     });
 
-    console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة`);
+    // تحديث المواقع لأول مرة
+    setTimeout(updateHotspotPositions, 100);
+    console.log(`✅ تم إنشاء ${hotspots.length} نقطة`);
 }
 
 function addHotspot(position) {
@@ -1900,11 +2006,9 @@ function onResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     
-    if (sceneManager && sceneManager.currentScene && sceneManager.currentScene.hotspots) {
-        rebuildHotspots(sceneManager.currentScene.hotspots);
-    }
+    // ✅ تحديث المواقع فقط - بدون إعادة إنشاء
+    updateHotspotPositions();
 }
-
 // =======================================
 // ١٥. تهيئة أزرار الوضعيات
 // =======================================
@@ -1969,6 +2073,9 @@ function animate() {
     requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
+    
+    // ✅ استخدام update بدلاً من rebuild - أسرع بكثير
+    updateHotspotPositions();  // تحديث المواقع فقط دون إعادة إنشاء
 }
 
 init();
