@@ -240,8 +240,7 @@ class TourExporter {
         return `<!DOCTYPE html>
 <html lang="ar">
 <head>
-
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <title>${projectName} - جولة افتراضية</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
@@ -487,7 +486,7 @@ class TourExporter {
                 toggleList.appendChild(div);
             });
         }
-
+        
         fetch('tour-data.json')
             .then(res => res.json())
             .then(data => {
@@ -668,7 +667,7 @@ class TourExporter {
                                             }
                                         };
                                     }
-                                    
+
                                     document.body.appendChild(div);
                                 });
                             }, 200);
@@ -790,12 +789,37 @@ function setupMarkerPreview() {
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 
+// =======================================
+// دوال الرسم الأساسية (تابع)
+// =======================================
 function onClick(e) {
     if (!sphereMesh || e.target !== renderer.domElement) return;
     
     mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
     mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
+    
+    // التحقق من النقر على Hotspot أولاً
+    const hotspotHits = raycaster.intersectObjects(
+        scene.children.filter(c => c.userData && c.userData.type === 'hotspot')
+    );
+
+    if (hotspotHits.length > 0) {
+        const hotspotObj = hotspotHits[0].object;
+        const hotspotData = hotspotObj.userData;
+
+        // إذا كان Ctrl مضغوطاً، احذف
+        if (e.ctrlKey) {
+            deleteHotspotById(hotspotData.hotspotId);
+            return;
+        }
+
+        // وإلا، اعرض نافذة التحرير
+        editHotspot(hotspotData.hotspotId);
+        return;
+    }
+
+    // إذا لم يكن هناك Hotspot، تحقق من النقر على الكرة
     const hits = raycaster.intersectObject(sphereMesh);
 
     if (hits.length) {
@@ -936,8 +960,10 @@ function createStraightPath(points) {
 }
 
 // =======================================
-// إعادة بناء Hotspots في المشهد (عرض احترافي)
+// ٦. دوال Hotspots (مطورة بالكامل)
 // =======================================
+
+// إعادة بناء Hotspots في المشهد (عرض احترافي)
 function rebuildHotspots(hotspots) {
     if (!scene) return;
 
@@ -975,9 +1001,8 @@ function rebuildHotspots(hotspots) {
 
     console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة`);
 }
-// =======================================
-// ٦. دوال Hotspots
-// =======================================
+
+// دالة إضافة Hotspot جديدة
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
         alert('❌ لا يوجد مشهد نشط');
@@ -1000,13 +1025,13 @@ function addHotspot(position) {
         );
 
         if (hotspot) {
-            const geometry = new THREE.SphereGeometry(12, 24, 24);
+            const geometry = new THREE.SphereGeometry(10, 24, 24);
             const material = new THREE.MeshStandardMaterial({
                 color: 0xffaa44,
                 emissive: 0xffaa44,
-                emissiveIntensity: 0.5,
+                emissiveIntensity: 0.4,
                 transparent: true,
-                opacity: 0.9
+                opacity: 0.3
             });
 
             const marker = new THREE.Mesh(geometry, material);
@@ -1015,7 +1040,8 @@ function addHotspot(position) {
                 type: 'hotspot',
                 hotspotId: hotspot.id,
                 hotspotType: 'INFO',
-                data: data
+                data: data,
+                isInTool: true
             };
             scene.add(marker);
             pointMarkers.push(marker);
@@ -1069,13 +1095,13 @@ function addHotspot(position) {
         );
 
         if (hotspot) {
-            const geometry = new THREE.SphereGeometry(12, 24, 24);
+            const geometry = new THREE.SphereGeometry(10, 24, 24);
             const material = new THREE.MeshStandardMaterial({
                 color: 0x44aaff,
                 emissive: 0x44aaff,
-                emissiveIntensity: 0.5,
+                emissiveIntensity: 0.4,
                 transparent: true,
-                opacity: 0.9
+                opacity: 0.3
             });
 
             const marker = new THREE.Mesh(geometry, material);
@@ -1084,7 +1110,8 @@ function addHotspot(position) {
                 type: 'hotspot',
                 hotspotId: hotspot.id,
                 hotspotType: 'SCENE',
-                data: data
+                data: data,
+                isInTool: true
             };
             scene.add(marker);
             pointMarkers.push(marker);
@@ -1098,6 +1125,74 @@ function addHotspot(position) {
 
     hotspotMode = null;
     document.body.style.cursor = 'default';
+}
+
+// دالة حذف Hotspot بالـ ID
+function deleteHotspotById(hotspotId) {
+    if (!sceneManager || !sceneManager.currentScene) return;
+
+    if (confirm('هل أنت متأكد من حذف هذه النقطة؟')) {
+        // حذف من البيانات
+        sceneManager.currentScene.hotspots = sceneManager.currentScene.hotspots.filter(
+            h => h.id !== hotspotId
+        );
+
+        // حذف من المشهد
+        scene.children.forEach(child => {
+            if (child.userData && child.userData.hotspotId === hotspotId) {
+                scene.remove(child);
+            }
+        });
+
+        sceneManager.saveScenes();
+        updateScenePanel();
+        console.log('🗑️ تم حذف النقطة');
+    }
+}
+
+// دالة تحرير Hotspot
+function editHotspot(hotspotId) {
+    if (!sceneManager || !sceneManager.currentScene) return;
+
+    const hotspot = sceneManager.currentScene.hotspots.find(h => h.id === hotspotId);
+    if (!hotspot) return;
+
+    if (hotspot.type === 'INFO') {
+        const newTitle = prompt('تعديل عنوان المعلومات:', hotspot.data.title || '');
+        if (newTitle === null) return;
+        const newContent = prompt('تعديل نص المعلومات:', hotspot.data.content || '');
+        if (newContent === null) return;
+
+        hotspot.data.title = newTitle;
+        hotspot.data.content = newContent;
+    } else {
+        const otherScenes = sceneManager.scenes.filter(s => s.id !== sceneManager.currentScene.id);
+        if (otherScenes.length > 0) {
+            let sceneList = '';
+            otherScenes.forEach((s, index) => {
+                sceneList += `${index + 1}. ${s.name}\n`;
+            });
+            const choice = prompt(
+                `تعديل المشهد المستهدف:\n${sceneList}\nأدخل الرقم الجديد (أو اتركه فارغاً للإبقاء):`
+            );
+            if (choice) {
+                const idx = parseInt(choice) - 1;
+                if (idx >= 0 && idx < otherScenes.length) {
+                    hotspot.data.targetSceneId = otherScenes[idx].id;
+                    hotspot.data.targetSceneName = otherScenes[idx].name;
+                }
+            }
+        }
+
+    const newDesc = prompt('تعديل الوصف:', hotspot.data.description || '');
+        if (newDesc !== null) {
+            hotspot.data.description = newDesc;
+        }
+    }
+
+    sceneManager.saveScenes();
+    rebuildHotspots(sceneManager.currentScene.hotspots);
+    alert('✅ تم تحديث النقطة');
 }
 
 // =======================================
@@ -1498,4 +1593,7 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+// =======================================
+// ١٧. بدء التشغيل
+// =======================================
 init();
