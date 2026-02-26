@@ -236,11 +236,12 @@ class TourExporter {
         saveAs(content, `${projectName}.zip`);
     }
 
-generatePlayerHTML(projectName) {
-    return `<!DOCTYPE html>
+    generatePlayerHTML(projectName) {
+        return `<!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
+
+<meta charset="UTF-8">
     <title>${projectName} - جولة افتراضية</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
@@ -263,7 +264,6 @@ generatePlayerHTML(projectName) {
             backdrop-filter: blur(5px);
         }
         
-        /* لوحة التحكم بالمسارات */
         .paths-control-panel {
             position: fixed;
             top: 20px;
@@ -351,7 +351,6 @@ generatePlayerHTML(projectName) {
         .hotspot:hover .hotspot-tooltip { display: block; }
         .hotspot-icon { font-size: 30px; }
         
-        /* أنماط أيقونات hotspots */
         .hotspot-icon-wrapper {
             position: relative;
             width: 48px;
@@ -422,7 +421,6 @@ generatePlayerHTML(projectName) {
     <div id="container"></div>
     <button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
     
-    <!-- لوحة التحكم بالمسارات -->
     <div class="paths-control-panel">
         <h3>🔘 التحكم بالمسارات</h3>
         <div id="paths-toggle-list"></div>
@@ -433,11 +431,8 @@ generatePlayerHTML(projectName) {
         let currentSceneIndex = 0;
         let scenes = [];
         let scene3D, camera, renderer, controls, sphereMesh;
-        
-        // مصفوفة لتخزين جميع المسارات (لإخفائها/إظهارها)
         let allPaths = [];
         
-        // ألوان المسارات
         const pathColors = {
             EL: '#ffcc00',
             AC: '#00ccff',
@@ -446,6 +441,53 @@ generatePlayerHTML(projectName) {
             GS: '#33cc33'
         };
         
+        function togglePathsByType(type, visible) {
+            if (!allPaths) return;
+            allPaths.forEach(path => {
+                if (path.userData && path.userData.type === type) {
+                    path.visible = visible;
+                }
+            });
+        }
+        
+        function createPathsTogglePanel() {
+            const toggleList = document.getElementById('paths-toggle-list');
+            if (!toggleList) return;
+            
+            toggleList.innerHTML = '';
+            
+            const types = ['EL', 'AC', 'WP', 'WA', 'GS'];
+            
+            types.forEach(type => {
+                const div = document.createElement('div');
+                div.className = 'path-toggle-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = 'toggle-' + type;
+                checkbox.checked = true;
+                checkbox.setAttribute('data-type', type);
+                
+                checkbox.addEventListener('change', function(e) {
+                    togglePathsByType(type, e.target.checked);
+                });
+                
+                const label = document.createElement('label');
+                label.htmlFor = 'toggle-' + type;
+                
+                const colorDot = document.createElement('span');
+                colorDot.className = 'path-color-dot';
+                colorDot.style.backgroundColor = pathColors[type] || '#ffffff';
+                
+                label.appendChild(colorDot);
+                label.appendChild(document.createTextNode(' ' + type));
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                toggleList.appendChild(div);
+            });
+        }
+
         fetch('tour-data.json')
             .then(res => res.json())
             .then(data => {
@@ -479,83 +521,6 @@ generatePlayerHTML(projectName) {
                         autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
                 };
                 
-              // إنشاء لوحة التحكم بالمسارات
-function createPathsTogglePanel() {
-    const toggleList = document.getElementById('paths-toggle-list');
-    if (!toggleList) return;
-    
-    toggleList.innerHTML = '';
-    
-    // ألوان المسارات
-    const pathColors = {
-        EL: '#ffcc00',
-        AC: '#00ccff',
-        WP: '#0066cc',
-        WA: '#ff3300',
-        GS: '#33cc33'
-    };
-    
-    // إضافة خيار لكل نوع
-    const types = ['EL', 'AC', 'WP', 'WA', 'GS'];
-    
-    types.forEach(type => {
-        const div = document.createElement('div');
-        div.className = 'path-toggle-item';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = 'toggle-' + type;  // استخدام + بدلاً من template literal
-        checkbox.checked = true;
-        checkbox.setAttribute('data-type', type);
-        
-        checkbox.addEventListener('change', function(e) {
-            // دالة togglePathsByType يجب أن تكون معرفة مسبقاً
-            if (typeof togglePathsByType === 'function') {
-                togglePathsByType(type, e.target.checked);
-            }
-        });
-        
-        const label = document.createElement('label');
-        label.htmlFor = 'toggle-' + type;
-        
-        const colorDot = document.createElement('span');
-        colorDot.className = 'path-color-dot';
-        colorDot.style.backgroundColor = pathColors[type] || '#ffffff';
-        
-        label.appendChild(colorDot);
-        label.appendChild(document.createTextNode(' ' + type));
-        
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        toggleList.appendChild(div);
-    });
-}
-                        
-                        const label = document.createElement('label');
-                        label.htmlFor = `toggle-${type}`;
-                        
-                        const colorDot = document.createElement('span');
-                        colorDot.className = 'path-color-dot';
-                        colorDot.style.backgroundColor = color;
-                        
-                        label.appendChild(colorDot);
-                        label.appendChild(document.createTextNode(` ${type}`));
-                        
-                        div.appendChild(checkbox);
-                        div.appendChild(label);
-                        toggleList.appendChild(div);
-                    }
-                }
-                
-                // إظهار/إخفاء المسارات حسب النوع
-                function togglePathsByType(type, visible) {
-                    allPaths.forEach(path => {
-                        if (path.userData && path.userData.type === type) {
-                            path.visible = visible;
-                        }
-                    });
-                }
-                
                 function loadScene(index) {
                     const sceneData = scenes[index];
                     if (!sceneData) return;
@@ -565,7 +530,6 @@ function createPathsTogglePanel() {
                     if (sphereMesh) scene3D.remove(sphereMesh);
                     document.querySelectorAll('.hotspot').forEach(el => el.remove());
                     
-                    // إزالة المسارات القديمة
                     allPaths.forEach(p => scene3D.remove(p));
                     allPaths = [];
                     
@@ -583,7 +547,6 @@ function createPathsTogglePanel() {
                         sphereMesh = new THREE.Mesh(geometry, material);
                         scene3D.add(sphereMesh);
                         
-                        // إضافة المسارات
                         if (sceneData.paths) {
                             sceneData.paths.forEach(pathData => {
                                 const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
@@ -616,13 +579,11 @@ function createPathsTogglePanel() {
                                 }
                             });
                             
-                            // تحديث حالة المسارات حسب الأزرار
                             document.querySelectorAll('#paths-toggle-list input').forEach(cb => {
                                 togglePathsByType(cb.dataset.type, cb.checked);
                             });
                         }
                         
-                        // إضافة الـ hotspots
                         if (sceneData.hotspots && sceneData.hotspots.length > 0) {
                             setTimeout(() => {
                                 sceneData.hotspots.forEach(hotspot => {
@@ -714,9 +675,8 @@ function createPathsTogglePanel() {
                         }
                     });
                 }
-                // إنشاء لوحة التحكم
-                createPathsTogglePanel();
                 
+                createPathsTogglePanel();
                 loadScene(0);
                 
                 window.addEventListener('resize', () => {
@@ -735,7 +695,8 @@ function createPathsTogglePanel() {
     </script>
 </body>
 </html>`;
-}
+    }
+
     generatePlayerCSS() {
         return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
 #container { width: 100vw; height: 100vh; background: #000; }
@@ -1010,7 +971,7 @@ function rebuildHotspots(hotspots) {
 }
 
 // =======================================
-// ٦. دوال Hotspots (مطوّرة)
+// ٦. دوال Hotspots
 // =======================================
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
@@ -1085,7 +1046,7 @@ function addHotspot(position) {
             return;
         }
 
-    const targetScene = otherScenes[selectedIndex];
+        const targetScene = otherScenes[selectedIndex];
         const description = prompt(`أدخل وصفاً لهذه النقطة:`) || `انتقال إلى ${targetScene.name}`;
 
         const data = {
