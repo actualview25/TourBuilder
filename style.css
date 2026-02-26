@@ -963,3 +963,135 @@ body {
     background: rgba(74, 108, 143, 0.5);
     border-radius: 4px;
 }
+/* ========== تحسينات نظام BIM ========== */
+
+/* طبقات BIM */
+#bim-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 90; /* أقل من الشريط العلوي */
+}
+
+.bim-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* تحسينات الشفافية والحجم للنقاط */
+.fixed-point {
+  transition: r 0.2s, filter 0.2s, opacity 0.2s;
+  pointer-events: auto;
+  cursor: pointer;
+  opacity: 0.85; /* شفافية افتراضية */
+}
+
+.fixed-point:hover {
+  r: 10; /* تكبير عند التمرير */
+  opacity: 1; /* إزالة الشفافية عند التمرير */
+  filter: drop-shadow(0 0 8px gold);
+}
+
+/* تحسينات الخطوط */
+.fixed-line {
+  transition: stroke-width 0.2s, opacity 0.2s;
+  pointer-events: auto;
+  cursor: pointer;
+  opacity: 0.7; /* شفافية للخطوط */
+}
+
+.fixed-line:hover {
+  stroke-width: 4;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 5px white);
+}
+
+/* تسميات النقاط - أصغر وأكثر شفافية */
+#bim-overlay text {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 9px;
+  fill: white;
+  stroke: black;
+  stroke-width: 0.3;
+  paint-order: stroke;
+  pointer-events: none;
+  user-select: none;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+  opacity: 0.9;
+}
+
+/* ألوان الطبقات */
+.EL-path, .EL-line, [class*="EL"] {
+  stroke: #44ff44;
+}
+
+.PW-path, .PW-line, [class*="PW"] {
+  stroke: #4444ff;
+}
+
+.GS-path, .GS-line, [class*="GS"] {
+  stroke: #ff4444;
+}
+
+.AC-path, .AC-line, [class*="AC"] {
+  stroke: #ffaa44;
+}
+
+/* أنماط الخطوط */
+.fixed-line {
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.fixed-line.EL-line {
+  stroke-dasharray: 8,8;
+}
+
+.fixed-line.PW-line {
+  stroke-dasharray: none;
+}
+
+.fixed-line.GS-line {
+  stroke-dasharray: 4,4;
+}
+
+.fixed-line.AC-line {
+  stroke-dasharray: 12,6;
+}
+
+/* أنماط النقاط حسب النوع */
+.fixed-point[data-type="source"] {
+  animation: pulse 2s infinite;
+}
+
+.fixed-point[data-type="endpoint"] {
+  opacity: 0.8;
+}
+
+.fixed-point[data-type="junction"] {
+  stroke-dasharray: 3,2;
+}
+
+/* تأثير وميض للمصادر */
+@keyframes pulse {
+  0% { filter: drop-shadow(0 0 2px currentColor); }
+  50% { filter: drop-shadow(0 0 8px currentColor); }
+  100% { filter: drop-shadow(0 0 2px currentColor); }
+}
+
+/* خطوط الشبكة */
+.fixed-line {
+  vector-effect: non-scaling-stroke;
+}
+
+/* الشريط العلوي - تأكد من أنه فوق الطبقات */
+#titleBar {
+  z-index: 100 !important;
+}
