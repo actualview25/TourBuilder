@@ -523,35 +523,6 @@ body {
 }
 
 /* =======================================
-   زر إظهار/إخفاء القائمة
-   ======================================= */
-#sceneListToggle {
-    position: fixed;
-    top: 70px;
-    left: 20px;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: rgba(20, 30, 40, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 2px solid rgba(74, 108, 143, 0.5);
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 950;
-    transition: all 0.2s;
-}
-
-#sceneListToggle:hover {
-    transform: scale(1.1);
-    border-color: #88aaff;
-}
-
-/* =======================================
    لوحة المشاهد الجانبية
    ======================================= */
 .scene-panel {
@@ -745,85 +716,6 @@ body {
     font-weight: 500;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-}
-
-/* =======================================
-   نظام BIM
-   ======================================= */
-#bim-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 50;
-}
-
-.bim-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.bim-line { transition: stroke-width 0.2s; }
-.bim-line:hover { stroke-width: 4; }
-
-#bim-overlay circle { transition: r 0.2s; }
-#bim-overlay circle:hover { r: 8; filter: drop-shadow(0 0 5px gold); }
-
-.fixed-point {
-    transition: r 0.2s, filter 0.2s, opacity 0.2s;
-    pointer-events: auto;
-    cursor: pointer;
-    opacity: 0.85;
-}
-
-.fixed-point:hover { r: 10; opacity: 1; filter: drop-shadow(0 0 8px gold); }
-
-.fixed-line {
-    transition: stroke-width 0.2s, opacity 0.2s;
-    pointer-events: auto;
-    cursor: pointer;
-    opacity: 0.7;
-    stroke-width: 2.5;
-    fill: none;
-}
-
-.fixed-line:hover { stroke-width: 4; opacity: 0.9; filter: drop-shadow(0 0 5px white); }
-
-#bim-overlay text {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    font-size: 9px;
-    fill: white;
-    stroke: black;
-    stroke-width: 0.3;
-    paint-order: stroke;
-    pointer-events: none;
-    user-select: none;
-    opacity: 0.9;
-}
-
-.EL-path, .EL-line, [class*="EL"] { stroke: #44ff44; }
-.PW-path, .PW-line, [class*="PW"] { stroke: #4444ff; }
-.GS-path, .GS-line, [class*="GS"] { stroke: #ff4444; }
-.AC-path, .AC-line, [class*="AC"] { stroke: #ffaa44; }
-
-.fixed-line.EL-line { stroke-dasharray: 8,8; }
-.fixed-line.PW-line { stroke-dasharray: none; }
-.fixed-line.GS-line { stroke-dasharray: 4,4; }
-.fixed-line.AC-line { stroke-dasharray: 12,6; }
-
-.fixed-point[data-type="source"] { animation: pulse 2s infinite; }
-.fixed-point[data-type="endpoint"] { opacity: 0.8; }
-.fixed-point[data-type="junction"] { stroke-dasharray: 3,2; }
-
-@keyframes pulse {
-    0% { filter: drop-shadow(0 0 2px currentColor); }
-    50% { filter: drop-shadow(0 0 8px currentColor); }
-    100% { filter: drop-shadow(0 0 2px currentColor); }
 }
 
 /* =======================================
