@@ -1073,10 +1073,45 @@ function createStraightPath(points) {
 }
 
 // =======================================
-// ٦. دوال Hotspots - أيقونات ثابتة تماماً
+// ٦. دوال Hotspots - أيقونات ثابتة تماماً (نسخة مصححة)
 // =======================================
 
-// دالة مساعدة لإنشاء عنصر hotspot في DOM (للأداة) - إحداثيات ثابتة
+// إعادة بناء Hotspots - أيقونات ثابتة
+function rebuildHotspots(hotspots) {
+    if (!scene || !camera) return;
+
+    // إزالة الأيقونات القديمة من DOM
+    document.querySelectorAll('.scene-hotspot-marker, .info-hotspot-marker').forEach(el => el.remove());
+
+    if (!hotspots || hotspots.length === 0) return;
+
+    // حساب مصفوفة الإسقاط للكاميرا الحالية
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    hotspots.forEach(h => {
+        // تحويل إحداثيات 3D إلى 2D
+        const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
+        
+        // استخدام matrixWorld للحصول على الإسقاط الصحيح
+        pos.project(camera);
+        
+        // تحويل إلى إحداثيات الشاشة
+        const x = (pos.x * 0.5 + 0.5) * width;
+        const y = (-pos.y * 0.5 + 0.5) * height;
+
+        // التأكد من أن الإحداثيات ضمن الشاشة
+        if (x < 0 || x > width || y < 0 || y > height) return;
+
+        // إنشاء عنصر HTML للأيقونة في موقع ثابت
+        const iconElement = createHotspotElement(x, y, h.type, h.data, h.id);
+        document.body.appendChild(iconElement);
+    });
+
+    console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة في مواقع ثابتة`);
+}
+
+// دالة مساعدة لإنشاء عنصر hotspot - نفس الكود السابق
 function createHotspotElement(x, y, type, data, hotspotId) {
     const div = document.createElement('div');
     div.className = type === 'SCENE' ? 'scene-hotspot-marker' : 'info-hotspot-marker';
@@ -1106,36 +1141,29 @@ function createHotspotElement(x, y, type, data, hotspotId) {
     return div;
 }
 
-// إعادة بناء Hotspots - أيقونات ثابتة
-function rebuildHotspots(hotspots) {
-    if (!scene) return;
-
-    // إزالة الأيقونات القديمة من DOM
-    document.querySelectorAll('.scene-hotspot-marker, .info-hotspot-marker').forEach(el => el.remove());
-
-    if (!hotspots || hotspots.length === 0) return;
-
-    hotspots.forEach(h => {
-        // تحويل إحداثيات 3D إلى 2D (مرة واحدة فقط عند البناء)
-        const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
-        const vector = pos.clone().project(camera);
-        const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-        const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-
-        // إنشاء عنصر HTML للأيقونة (سيظل ثابتاً في مكانه)
-        const iconElement = createHotspotElement(
-            x, y, 
-            h.type, 
-            h.data, 
-            h.id
-        );
-        
-        document.body.appendChild(iconElement);
-    });
-
-    console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة مع أيقونات ثابتة`);
+// تحديث animate - إزالة أي تحديث للأيقونات
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+    // ❌ لا تحديث للأيقونات هنا - تبقى ثابتة
 }
 
+// تحديث onResize - فقط عند تغيير حجم الشاشة
+function onResize() {
+    if (!camera || !renderer) return;
+    
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    // إعادة بناء النقاط مع الإحداثيات الجديدة للشاشة
+    if (sceneManager && sceneManager.currentScene && sceneManager.currentScene.hotspots) {
+        if (typeof rebuildHotspots === 'function') {
+            rebuildHotspots(sceneManager.currentScene.hotspots);
+        }
+    }
+}
 // دالة إضافة Hotspot جديدة - مع إحداثيات ثابتة
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
