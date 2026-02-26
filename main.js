@@ -236,8 +236,8 @@ class TourExporter {
         saveAs(content, `${projectName}.zip`);
     }
 
-    generatePlayerHTML(projectName) {
-        return `<!DOCTYPE html>
+generatePlayerHTML(projectName) {
+    return `<!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
@@ -262,6 +262,68 @@ class TourExporter {
             font-size: 16px;
             backdrop-filter: blur(5px);
         }
+        
+        /* لوحة التحكم بالمسارات */
+        .paths-control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(20, 30, 40, 0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid #4a6c8f;
+            border-radius: 15px;
+            color: white;
+            z-index: 200;
+            padding: 15px;
+            min-width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            direction: rtl;
+        }
+        
+        .paths-control-panel h3 {
+            margin: 0 0 10px 0;
+            color: #88aaff;
+            font-size: 16px;
+            text-align: center;
+            border-bottom: 1px solid #4a6c8f;
+            padding-bottom: 8px;
+        }
+        
+        .path-toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .path-toggle-item:last-child {
+            border-bottom: none;
+        }
+        
+        .path-toggle-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #4a6c8f;
+        }
+        
+        .path-toggle-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .path-color-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
         .hotspot {
             position: absolute;
             transform: translate(-50%, -50%);
@@ -288,18 +350,101 @@ class TourExporter {
         }
         .hotspot:hover .hotspot-tooltip { display: block; }
         .hotspot-icon { font-size: 30px; }
+        
+        /* أنماط أيقونات hotspots */
+        .hotspot-icon-wrapper {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hotspot-icon-image {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            z-index: 2;
+            filter: drop-shadow(0 0 10px currentColor);
+            transition: all 0.3s ease;
+        }
+        
+        .hotspot-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.3;
+            animation: pulse 2s infinite;
+            z-index: 1;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 0.3; }
+        }
+        
+        .tooltip-arrow {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid currentColor;
+        }
+        
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .tooltip-icon {
+            font-size: 16px;
+        }
+        
+        .tooltip-body {
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
     <div class="info">🏗️ ${projectName}</div>
     <div id="container"></div>
     <button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
+    
+    <!-- لوحة التحكم بالمسارات -->
+    <div class="paths-control-panel">
+        <h3>🔘 التحكم بالمسارات</h3>
+        <div id="paths-toggle-list"></div>
+    </div>
 
     <script>
         let autoRotate = true;
         let currentSceneIndex = 0;
         let scenes = [];
         let scene3D, camera, renderer, controls, sphereMesh;
+        
+        // مصفوفة لتخزين جميع المسارات (لإخفائها/إظهارها)
+        let allPaths = [];
+        
+        // ألوان المسارات
+        const pathColors = {
+            EL: '#ffcc00',
+            AC: '#00ccff',
+            WP: '#0066cc',
+            WA: '#ff3300',
+            GS: '#33cc33'
+        };
         
         fetch('tour-data.json')
             .then(res => res.json())
@@ -334,6 +479,51 @@ class TourExporter {
                         autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
                 };
                 
+                // إنشاء لوحة التحكم بالمسارات
+                function createPathsTogglePanel() {
+                    const toggleList = document.getElementById('paths-toggle-list');
+                    toggleList.innerHTML = '';
+                    
+                    // إضافة خيار لكل نوع
+                    for (const [type, color] of Object.entries(pathColors)) {
+                        const div = document.createElement('div');
+                        div.className = 'path-toggle-item';
+                        
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = `toggle-${type}`;
+                        checkbox.checked = true;
+                        checkbox.dataset.type = type;
+                        
+                        checkbox.addEventListener('change', function(e) {
+                            togglePathsByType(type, e.target.checked);
+                        });
+                        
+                        const label = document.createElement('label');
+                        label.htmlFor = `toggle-${type}`;
+                        
+                        const colorDot = document.createElement('span');
+                        colorDot.className = 'path-color-dot';
+                        colorDot.style.backgroundColor = color;
+                        
+                        label.appendChild(colorDot);
+                        label.appendChild(document.createTextNode(` ${type}`));
+                        
+                        div.appendChild(checkbox);
+                        div.appendChild(label);
+                        toggleList.appendChild(div);
+                    }
+                }
+                
+                // إظهار/إخفاء المسارات حسب النوع
+                function togglePathsByType(type, visible) {
+                    allPaths.forEach(path => {
+                        if (path.userData && path.userData.type === type) {
+                            path.visible = visible;
+                        }
+                    });
+                }
+                
                 function loadScene(index) {
                     const sceneData = scenes[index];
                     if (!sceneData) return;
@@ -342,6 +532,10 @@ class TourExporter {
                     
                     if (sphereMesh) scene3D.remove(sphereMesh);
                     document.querySelectorAll('.hotspot').forEach(el => el.remove());
+                    
+                    // إزالة المسارات القديمة
+                    allPaths.forEach(p => scene3D.remove(p));
+                    allPaths = [];
                     
                     new THREE.TextureLoader().load(sceneData.image, texture => {
                         texture.wrapS = THREE.RepeatWrapping;
@@ -357,6 +551,7 @@ class TourExporter {
                         sphereMesh = new THREE.Mesh(geometry, material);
                         scene3D.add(sphereMesh);
                         
+                        // إضافة المسارات
                         if (sceneData.paths) {
                             sceneData.paths.forEach(pathData => {
                                 const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
@@ -369,7 +564,11 @@ class TourExporter {
                                     
                                     const cylinder = new THREE.Mesh(
                                         new THREE.CylinderGeometry(3.5, 3.5, distance, 12),
-                                        new THREE.MeshStandardMaterial({ color: pathData.color, emissive: pathData.color, emissiveIntensity: 0.3 })
+                                        new THREE.MeshStandardMaterial({ 
+                                            color: pathData.color, 
+                                            emissive: pathData.color, 
+                                            emissiveIntensity: 0.3 
+                                        })
                                     );
                                     
                                     const quaternion = new THREE.Quaternion();
@@ -378,8 +577,16 @@ class TourExporter {
                                     
                                     const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
                                     cylinder.position.copy(center);
+                                    
+                                    cylinder.userData = { type: pathData.type };
                                     scene3D.add(cylinder);
+                                    allPaths.push(cylinder);
                                 }
+                            });
+                            
+                            // تحديث حالة المسارات حسب الأزرار
+                            document.querySelectorAll('#paths-toggle-list input').forEach(cb => {
+                                togglePathsByType(cb.dataset.type, cb.checked);
                             });
                         }
                         
@@ -398,18 +605,28 @@ class TourExporter {
                                     div.style.left = x + 'px';
                                     div.style.top = y + 'px';
                                     
+                                    const iconUrl = hotspot.type === 'SCENE' ? 'icon/hotspot.png' : 'icon/info.png';
+                                    
                                     if (hotspot.type === 'INFO') {
                                         div.style.color = '#ffaa44';
-                                        div.setAttribute('data-type', 'info');
                                         
                                         const title = hotspot.data?.title || 'معلومات';
                                         const content = hotspot.data?.content || '';
                                         
                                         div.innerHTML = \`
-                                            <span class='hotspot-icon'>ℹ️</span>
-                                            <div class='hotspot-tooltip'>
-                                                <strong>\${title}</strong>
-                                                <p>\${content}</p>
+                                            <div class="hotspot-icon-wrapper">
+                                                <img src="\${iconUrl}" class="hotspot-icon-image" alt="info">
+                                                <span class="hotspot-glow"></span>
+                                            </div>
+                                            <div class="hotspot-tooltip">
+                                                <div class="tooltip-arrow"></div>
+                                                <div class="tooltip-header">
+                                                    <span class="tooltip-icon">📌</span>
+                                                    <strong>\${title}</strong>
+                                                </div>
+                                                <div class="tooltip-body">
+                                                    <p>\${content}</p>
+                                                </div>
                                             </div>
                                         \`;
                                         
@@ -420,17 +637,25 @@ class TourExporter {
                                         
                                     } else {
                                         div.style.color = '#44aaff';
-                                        div.setAttribute('data-type', 'scene');
                                         
                                         const targetName = hotspot.data?.targetSceneName || 'مشهد آخر';
                                         const description = hotspot.data?.description || '';
                                         const targetId = hotspot.data?.targetSceneId;
                                         
                                         div.innerHTML = \`
-                                            <span class='hotspot-icon'>🚪</span>
-                                            <div class='hotspot-tooltip'>
-                                                <strong>انتقال إلى: \${targetName}</strong>
-                                                <p>\${description}</p>
+                                            <div class="hotspot-icon-wrapper">
+                                                <img src="\${iconUrl}" class="hotspot-icon-image" alt="scene">
+                                                <span class="hotspot-glow"></span>
+                                            </div>
+                                            <div class="hotspot-tooltip">
+                                                <div class="tooltip-arrow"></div>
+                                                <div class="tooltip-header">
+                                                    <span class="tooltip-icon">🚶</span>
+                                                    <strong>انتقال إلى: \${targetName}</strong>
+                                                </div>
+                                                <div class="tooltip-body">
+                                                    <p>\${description || 'اضغط للانتقال'}</p>
+                                                </div>
                                             </div>
                                         \`;
                                         
@@ -457,6 +682,8 @@ class TourExporter {
                         }
                     });
                 }
+                // إنشاء لوحة التحكم
+                createPathsTogglePanel();
                 
                 loadScene(0);
                 
@@ -476,9 +703,8 @@ class TourExporter {
     </script>
 </body>
 </html>`;
-    }
-
-generatePlayerCSS() {
+}
+    generatePlayerCSS() {
         return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
 #container { width: 100vw; height: 100vh; background: #000; }
 .info {
@@ -827,7 +1053,7 @@ function addHotspot(position) {
             return;
         }
 
-        const targetScene = otherScenes[selectedIndex];
+    const targetScene = otherScenes[selectedIndex];
         const description = prompt(`أدخل وصفاً لهذه النقطة:`) || `انتقال إلى ${targetScene.name}`;
 
         const data = {
