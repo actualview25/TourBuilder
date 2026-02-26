@@ -33,18 +33,6 @@
             <button id="exportTour">📦 تصدير الجولة</button>
         </div>
     </div>
-<!-- شريط Hotspots (في الأداة) - محدث مع زر حذف -->
-<div class="hotspot-toolbar">
-    <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">
-        <img src="icon/hotspot.png" alt="scene" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
-    </button>
-    <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">
-        <img src="icon/info.png" alt="info" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
-    </button>
-    <button class="hotspot-btn delete" id="hotspotDelete" title="حذف نقطة (اختر نقطة ثم اضغط)">
-        🗑️
-    </button>
-</div>
 
     <!-- حاوية شريط الوضعيات -->
     <div class="mode-bar-container">
@@ -79,13 +67,16 @@
         <button id="clearAll">🗑️ مسح الكل</button>
     </div>
 
-    <!-- شريط Hotspots (في الأداة) - محدث بالأيقونات -->
+    <!-- شريط Hotspots (محدث مع زر حذف) -->
     <div class="hotspot-toolbar">
         <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">
             <img src="icon/hotspot.png" alt="scene" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
         </button>
         <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">
             <img src="icon/info.png" alt="info" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
+        </button>
+        <button class="hotspot-btn delete" id="hotspotDelete" title="حذف نقطة (اختر نقطة ثم اضغط)">
+            🗑️
         </button>
     </div>
 
@@ -96,8 +87,8 @@
         ⏎ Enter: اعتماد المسار<br>
         🖼️ Esc: إلغاء الرسم<br>
         🔴 وضع Hotspot: اختر نوعاً ثم انقر<br>
-        <small>⌃ Ctrl + Click على نقطة: حذفها</small>
-        <small style="color:#88aaff;">✏️ Click عادي: تعديل النقطة</small>
+        <small>🗑️ اضغط على زر الحذف ثم انقر على نقطة لحذفها</small>
+        <small style="color:#88aaff;">✏️ أزرار التعديل بجانب كل نقطة</small>
     </div>
 
     <!-- لوحة المشاريع -->
