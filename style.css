@@ -231,7 +231,7 @@ body {
 #clearAll { background: rgba(136, 34, 34, 0.4); }
 
 /* =======================================
-   شريط Hotspots (محدث)
+   شريط Hotspots
    ======================================= */
 .hotspot-toolbar {
     position: fixed;
@@ -265,20 +265,10 @@ body {
     border-color: white;
 }
 
-.hotspot-btn.scene { 
-    background: rgba(68, 170, 255, 0.3);
-}
-.hotspot-btn.info { 
-    background: rgba(255, 170, 68, 0.3);
-}
-.hotspot-btn.delete {
-    background: rgba(136, 34, 34, 0.4);
-    color: white;
-    font-size: 20px;
-}
-.hotspot-btn.delete:hover {
-    background: rgba(136, 34, 34, 0.8);
-}
+.hotspot-btn.scene { background: rgba(68, 170, 255, 0.3); }
+.hotspot-btn.info { background: rgba(255, 170, 68, 0.3); }
+.hotspot-btn.delete { background: rgba(136, 34, 34, 0.4); color: white; font-size: 20px; }
+.hotspot-btn.delete:hover { background: rgba(136, 34, 34, 0.8); }
 
 /* =======================================
    أيقونات Hotspots في المشهد
@@ -361,17 +351,9 @@ body {
     border: 1px solid rgba(255,255,255,0.3);
 }
 
-.hotspot-controls button:hover {
-    transform: scale(1.1);
-}
-
-.hotspot-controls .edit-btn {
-    background: #4a6c8f;
-}
-
-.hotspot-controls .delete-btn {
-    background: #882222;
-}
+.hotspot-controls button:hover { transform: scale(1.1); }
+.hotspot-controls .edit-btn { background: #4a6c8f; }
+.hotspot-controls .delete-btn { background: #882222; }
 
 /* =======================================
    التلميحات
@@ -396,106 +378,118 @@ body {
     transition: opacity 0.2s ease;
 }
 
-.hint:hover {
-    opacity: 1;
-    background: rgba(0, 0, 0, 0.4);
-}
-
-.hint span {
-    color: #88aaff;
-    font-weight: bold;
-    margin-left: 4px;
-    font-size: 10px;
-}
-
-.hint kbd {
-    background: rgba(51, 51, 51, 0.5);
-    color: #fff;
-    padding: 1px 4px;
-    border-radius: 3px;
-    font-family: monospace;
-    font-size: 9px;
-}
-
-.hint small {
-    display: block;
-    margin-top: 4px;
-    color: #ffaa44;
-    font-size: 9px;
-}
+.hint:hover { opacity: 1; background: rgba(0, 0, 0, 0.4); }
+.hint span { color: #88aaff; font-weight: bold; margin-left: 4px; font-size: 10px; }
+.hint kbd { background: rgba(51, 51, 51, 0.5); color: #fff; padding: 1px 4px; border-radius: 3px; font-family: monospace; font-size: 9px; }
+.hint small { display: block; margin-top: 4px; color: #ffaa44; font-size: 9px; }
 
 /* =======================================
-   لوحة المشاهد
+   لوحة المشاهد الرئيسية
+   ======================================= */
+#sceneList {
+    position: fixed !important;
+    top: 80px !important;
+    left: 20px !important;
+    width: 240px !important;
+    max-height: 60vh !important;
+    background: rgba(20, 30, 40, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(74, 108, 143, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+    z-index: 950 !important;
+    overflow-y: auto !important;
+    direction: rtl !important;
+    padding: 10px 0 !important;
+}
+
+#sceneList .scene {
+    display: block !important;
+    padding: 10px 15px !important;
+    margin: 4px 8px !important;
+    border-radius: 8px !important;
+    color: #eee !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    border-right: 3px solid transparent !important;
+}
+
+#sceneList .scene:hover {
+    background: rgba(255,255,255,0.1) !important;
+    color: white !important;
+}
+
+#sceneList .scene.current {
+    background: rgba(0, 102, 204, 0.5) !important;
+    border-right-color: #00ff00 !important;
+}
+
+#sceneList .scene .text {
+    display: block !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+#sceneList::-webkit-scrollbar { width: 4px !important; }
+#sceneList::-webkit-scrollbar-track { background: rgba(255,255,255,0.05) !important; }
+#sceneList::-webkit-scrollbar-thumb { background: rgba(74, 108, 143, 0.5) !important; border-radius: 4px !important; }
+
+/* =======================================
+   لوحة المشاهد الجانبية (الثانوية)
    ======================================= */
 .scene-panel {
     position: fixed;
-    top: 50%;
+    top: 80px;
     right: 20px;
-    transform: translateY(-50%);
-    width: 240px;
-    max-height: 60vh;
-    background: rgba(20, 30, 40, 0.25);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(74, 108, 143, 0.3);
+    width: 260px;
+    max-height: 400px;
+    background: rgba(20, 30, 40, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid #4a6c8f;
     border-radius: 12px;
     color: white;
     z-index: 900;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     overflow: hidden;
 }
 
 .scene-panel .panel-header {
-    padding: 12px;
-    border-bottom: 1px solid rgba(74, 108, 143, 0.2);
+    padding: 12px 15px;
+    background: rgba(30, 40, 50, 0.95);
+    border-bottom: 1px solid #4a6c8f;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0,0,0,0.2);
+    cursor: grab;
 }
 
-.scene-panel h3 {
+.scene-panel .panel-header h3 {
     margin: 0;
-    color: white;
+    color: #88aaff;
     font-size: 14px;
-    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.add-scene-btn {
-    padding: 4px 12px;
-    background: rgba(34, 136, 34, 0.3);
-    border: 1px solid rgba(68, 255, 68, 0.3);
-    border-radius: 16px;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 11px;
-    transition: all 0.2s ease;
+.panel-controls { display: flex; gap: 8px; }
+.panel-toggle, .panel-close {
+    background: none; border: none; color: white; cursor: pointer;
+    width: 28px; height: 28px; border-radius: 4px;
+    transition: all 0.2s;
 }
+.panel-toggle:hover { background: rgba(255,255,255,0.1); color: #88aaff; }
+.panel-close:hover { background: rgba(255,68,68,0.2); color: #ff8888; }
 
-.add-scene-btn:hover {
-    background: rgba(34, 136, 34, 0.6);
-    border-color: #44ff44;
-}
+.scene-panel.collapsed { width: 50px; overflow: hidden; }
+.scene-panel.collapsed .scene-list { display: none; }
 
 .scene-list {
-    max-height: calc(60vh - 50px);
+    max-height: 300px;
     overflow-y: auto;
-    padding: 8px;
-}
-
-.scene-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.scene-list::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.05);
-}
-
-.scene-list::-webkit-scrollbar-thumb {
-    background: rgba(74, 108, 143, 0.5);
-    border-radius: 4px;
+    padding: 10px;
 }
 
 .scene-item {
@@ -507,32 +501,30 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
     font-size: 12px;
+    transition: all 0.2s ease;
 }
 
-.scene-item:hover {
-    background: rgba(74, 108, 143, 0.2);
-    border-color: rgba(74, 108, 143, 0.3);
+.scene-item:hover { background: rgba(74, 108, 143, 0.2); }
+.scene-item.active { background: rgba(74, 108, 143, 0.4); border-right: 3px solid #88aaff; }
+.scene-icon { font-size: 16px; width: 24px; text-align: center; }
+.scene-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scene-hotspots { font-size: 10px; background: rgba(74, 108, 143, 0.4); padding: 2px 6px; border-radius: 10px; }
+
+.add-scene-btn {
+    width: calc(100% - 20px);
+    margin: 10px;
+    padding: 8px;
+    background: rgba(34, 136, 34, 0.3);
+    border: 1px solid rgba(68, 255, 68, 0.3);
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
 }
 
-.scene-icon {
-    font-size: 16px;
-}
-
-.scene-name {
-    flex: 1;
-    font-weight: 500;
-}
-
-.scene-hotspots {
-    font-size: 10px;
-    background: rgba(74, 108, 143, 0.4);
-    padding: 2px 6px;
-    border-radius: 10px;
-    color: rgba(255,255,255,0.9);
-}
+.add-scene-btn:hover { background: rgba(34, 136, 34, 0.6); border-color: #44ff44; }
 
 /* =======================================
    لوحة المشاريع
@@ -540,7 +532,7 @@ body {
 .project-panel {
     position: fixed;
     top: 70px;
-    right: 280px;
+    right: 300px;
     width: 260px;
     background: rgba(20, 30, 40, 0.3);
     backdrop-filter: blur(12px);
@@ -550,34 +542,6 @@ body {
     z-index: 1000;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     overflow: hidden;
-}
-
-.panel-header {
-    padding: 12px;
-    border-bottom: 1px solid rgba(74, 108, 143, 0.2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(0,0,0,0.2);
-}
-
-.panel-header h3 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.close-panel {
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.5);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 0 5px;
-}
-
-.close-panel:hover {
-    color: #ff8888;
 }
 
 .project-list {
@@ -592,12 +556,88 @@ body {
     background: rgba(255,255,255,0.03);
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
     font-size: 12px;
 }
 
-.project-item:hover {
-    background: rgba(74, 108, 143, 0.2);
+.project-item:hover { background: rgba(74, 108, 143, 0.2); }
+
+/* =======================================
+   نظام BIM
+   ======================================= */
+#bim-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+}
+
+.bim-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.bim-line { transition: stroke-width 0.2s; }
+.bim-line:hover { stroke-width: 4; }
+
+#bim-overlay circle { transition: r 0.2s; }
+#bim-overlay circle:hover { r: 8; filter: drop-shadow(0 0 5px gold); }
+
+.fixed-point {
+    transition: r 0.2s, filter 0.2s, opacity 0.2s;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+.fixed-point:hover { r: 10; opacity: 1; filter: drop-shadow(0 0 8px gold); }
+
+.fixed-line {
+    transition: stroke-width 0.2s, opacity 0.2s;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 0.7;
+    stroke-width: 2.5;
+    fill: none;
+}
+
+.fixed-line:hover { stroke-width: 4; opacity: 0.9; filter: drop-shadow(0 0 5px white); }
+
+#bim-overlay text {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 9px;
+    fill: white;
+    stroke: black;
+    stroke-width: 0.3;
+    paint-order: stroke;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.9;
+}
+
+.EL-path, .EL-line, [class*="EL"] { stroke: #44ff44; }
+.PW-path, .PW-line, [class*="PW"] { stroke: #4444ff; }
+.GS-path, .GS-line, [class*="GS"] { stroke: #ff4444; }
+.AC-path, .AC-line, [class*="AC"] { stroke: #ffaa44; }
+
+.fixed-line.EL-line { stroke-dasharray: 8,8; }
+.fixed-line.PW-line { stroke-dasharray: none; }
+.fixed-line.GS-line { stroke-dasharray: 4,4; }
+.fixed-line.AC-line { stroke-dasharray: 12,6; }
+
+.fixed-point[data-type="source"] { animation: pulse 2s infinite; }
+.fixed-point[data-type="endpoint"] { opacity: 0.8; }
+.fixed-point[data-type="junction"] { stroke-dasharray: 3,2; }
+
+@keyframes pulse {
+    0% { filter: drop-shadow(0 0 2px currentColor); }
+    50% { filter: drop-shadow(0 0 8px currentColor); }
+    100% { filter: drop-shadow(0 0 2px currentColor); }
 }
 
 /* =======================================
@@ -615,32 +655,6 @@ body {
     z-index: 10000;
     font-weight: 500;
     backdrop-filter: blur(8px);
-}
-
-/* =======================================
-   أزرار الحذف
-   ======================================= */
-.delete-scene-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 136, 136, 0.5);
-    font-size: 14px;
-    cursor: pointer;
-    padding: 3px;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    opacity: 0.5;
-}
-
-.delete-scene-btn:hover {
-    background: rgba(255, 0, 0, 0.1);
-    opacity: 1;
-    color: #ff8888;
 }
 
 /* =======================================
@@ -662,588 +676,27 @@ body {
 .mode-view .project-panel { display: none; }
 
 /* =======================================
+   الشريط العلوي
+   ======================================= */
+#titleBar { z-index: 100 !important; }
+
+/* =======================================
    توافق مع الشاشات الصغيرة
    ======================================= */
 @media (max-width: 1200px) {
-    .drawing-tools {
-        flex-wrap: wrap;
-        width: 90%;
-        bottom: 10px;
-        padding: 8px;
-    }
-    
-    .drawing-tools button {
-        flex: 1 1 auto;
-        min-width: 70px;
-        padding: 5px 10px;
-        font-size: 11px;
-    }
-    
-    .hint {
-        display: none;
-    }
-    
-    .scene-panel {
-        width: 200px;
-    }
-    
-    .project-panel {
-        right: 240px;
-        width: 200px;
-    }
+    .drawing-tools { flex-wrap: wrap; width: 90%; bottom: 10px; padding: 8px; }
+    .drawing-tools button { flex: 1 1 auto; min-width: 70px; padding: 5px 10px; font-size: 11px; }
+    .hint { display: none; }
+    #sceneList { width: 200px !important; }
+    .scene-panel { width: 200px; }
+    .project-panel { right: 240px; width: 200px; }
 }
 
 @media (max-width: 768px) {
     .mode-bar-container { height: 25px; }
     .mode-bar { height: 45px; gap: 8px; }
     .mode-btn { padding: 4px 12px; font-size: 12px; }
-    
-    .toolbar .logo {
-        font-size: 16px;
-    }
-    
-    .controls button {
-        padding: 4px 10px;
-        font-size: 11px;
-    }
-}
-/* =======================================
-   لوحة المشاهد - أعلى اليمين (قابلة للطي)
-   ======================================= */
-.scene-panel {
-    position: fixed;
-    top: 70px;
-    right: 20px;
-    width: 280px;
-    max-height: 400px;
-    background: rgba(20, 30, 40, 0.9);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 2px solid #4a6c8f;
-    border-radius: 12px;
-    color: white;
-    z-index: 900;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-/* رأس اللوحة - قابل للسحب */
-.scene-panel .panel-header {
-    padding: 12px 15px;
-    background: rgba(30, 40, 50, 0.95);
-    border-bottom: 1px solid #4a6c8f;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: grab;
-    user-select: none;
-    border-radius: 10px 10px 0 0;
-}
-
-.scene-panel .panel-header:active {
-    cursor: grabbing;
-}
-
-.scene-panel .panel-header h3 {
-    margin: 0;
-    color: #88aaff;
-    font-size: 15px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* أزرار التحكم في اللوحة */
-.panel-controls {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.panel-toggle, .panel-close {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: all 0.2s;
-}
-
-.panel-toggle:hover {
-    background: rgba(255,255,255,0.1);
-    color: #88aaff;
-}
-
-.panel-close:hover {
-    background: rgba(255,68,68,0.2);
-    color: #ff8888;
-}
-
-/* محتوى اللوحة */
-.scene-list {
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 10px;
-    transition: all 0.3s ease;
-}
-
-/* اللوحة عندما تكون مصغرة */
-.scene-panel.collapsed {
-    width: 50px;
-    min-width: 50px;
-    overflow: hidden;
-}
-
-.scene-panel.collapsed .scene-list,
-.scene-panel.collapsed .add-scene-btn {
-    display: none;
-}
-
-.scene-panel.collapsed .panel-header h3 span:last-child {
-    display: none;
-}
-
-.scene-panel.collapsed .panel-header h3 {
-    font-size: 20px;
-    padding: 0;
-    justify-content: center;
-}
-
-.scene-panel.collapsed .panel-close {
-    display: none;
-}
-
-/* عناصر المشاهد */
-.scene-item {
-    padding: 8px 10px;
-    margin: 4px 0;
-    background: rgba(255,255,255,0.03);
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-    font-size: 12px;
-}
-
-.scene-item:hover {
-    background: rgba(74, 108, 143, 0.2);
-    border-color: rgba(74, 108, 143, 0.3);
-}
-
-.scene-item.active {
-    background: rgba(74, 108, 143, 0.4);
-    border-right: 3px solid #88aaff;
-}
-
-.scene-icon {
-    font-size: 16px;
-    width: 24px;
-    text-align: center;
-}
-
-.scene-name {
-    flex: 1;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.scene-hotspots {
-    font-size: 10px;
-    background: rgba(74, 108, 143, 0.4);
-    padding: 2px 6px;
-    border-radius: 10px;
-    color: rgba(255,255,255,0.9);
-    white-space: nowrap;
-}
-
-/* زر إضافة مشهد */
-.add-scene-btn {
-    width: calc(100% - 20px);
-    margin: 10px;
-    padding: 8px;
-    background: rgba(34, 136, 34, 0.3);
-    border: 1px solid rgba(68, 255, 68, 0.3);
-    border-radius: 6px;
-    color: white;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 12px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-.add-scene-btn:hover {
-    background: rgba(34, 136, 34, 0.6);
-    border-color: #44ff44;
-}
-
-/* زر إظهار اللوحة عندما تكون مخفية */
-.show-panel-btn {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(20, 30, 40, 0.9);
-    backdrop-filter: blur(10px);
-    border: 2px solid #4a6c8f;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 950;
-    transition: all 0.2s;
-}
-
-.show-panel-btn:hover {
-    transform: scale(1.1);
-    border-color: #88aaff;
-}
-
-.show-panel-btn.visible {
-    display: flex;
-}
-
-/* زر حذف المشهد */
-.delete-scene-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 136, 136, 0.5);
-    font-size: 14px;
-    cursor: pointer;
-    padding: 3px;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    opacity: 0.5;
-}
-
-.delete-scene-btn:hover {
-    background: rgba(255, 0, 0, 0.1);
-    opacity: 1;
-    color: #ff8888;
-}
-
-/* تحسين شريط التمرير */
-.scene-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.scene-list::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.05);
-    border-radius: 4px;
-}
-
-.scene-list::-webkit-scrollbar-thumb {
-    background: rgba(74, 108, 143, 0.5);
-    border-radius: 4px;
-}
-/* ========== تحسينات نظام BIM ========== */
-
-/* طبقات BIM */
-#bim-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 90; /* أقل من الشريط العلوي */
-}
-
-.bim-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-/* تحسينات الشفافية والحجم للنقاط */
-.fixed-point {
-  transition: r 0.2s, filter 0.2s, opacity 0.2s;
-  pointer-events: auto;
-  cursor: pointer;
-  opacity: 0.85; /* شفافية افتراضية */
-}
-
-.fixed-point:hover {
-  r: 10; /* تكبير عند التمرير */
-  opacity: 1; /* إزالة الشفافية عند التمرير */
-  filter: drop-shadow(0 0 8px gold);
-}
-
-/* تحسينات الخطوط */
-.fixed-line {
-  transition: stroke-width 0.2s, opacity 0.2s;
-  pointer-events: auto;
-  cursor: pointer;
-  opacity: 0.7; /* شفافية للخطوط */
-}
-
-.fixed-line:hover {
-  stroke-width: 4;
-  opacity: 0.9;
-  filter: drop-shadow(0 0 5px white);
-}
-
-/* تسميات النقاط - أصغر وأكثر شفافية */
-#bim-overlay text {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  font-size: 9px;
-  fill: white;
-  stroke: black;
-  stroke-width: 0.3;
-  paint-order: stroke;
-  pointer-events: none;
-  user-select: none;
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-  opacity: 0.9;
-}
-
-/* ألوان الطبقات */
-.EL-path, .EL-line, [class*="EL"] {
-  stroke: #44ff44;
-}
-
-.PW-path, .PW-line, [class*="PW"] {
-  stroke: #4444ff;
-}
-
-.GS-path, .GS-line, [class*="GS"] {
-  stroke: #ff4444;
-}
-
-.AC-path, .AC-line, [class*="AC"] {
-  stroke: #ffaa44;
-}
-
-/* أنماط الخطوط */
-.fixed-line {
-  stroke-width: 2.5;
-  fill: none;
-}
-
-.fixed-line.EL-line {
-  stroke-dasharray: 8,8;
-}
-
-.fixed-line.PW-line {
-  stroke-dasharray: none;
-}
-
-.fixed-line.GS-line {
-  stroke-dasharray: 4,4;
-}
-
-.fixed-line.AC-line {
-  stroke-dasharray: 12,6;
-}
-
-/* أنماط النقاط حسب النوع */
-.fixed-point[data-type="source"] {
-  animation: pulse 2s infinite;
-}
-
-.fixed-point[data-type="endpoint"] {
-  opacity: 0.8;
-}
-
-.fixed-point[data-type="junction"] {
-  stroke-dasharray: 3,2;
-}
-
-/* تأثير وميض للمصادر */
-@keyframes pulse {
-  0% { filter: drop-shadow(0 0 2px currentColor); }
-  50% { filter: drop-shadow(0 0 8px currentColor); }
-  100% { filter: drop-shadow(0 0 2px currentColor); }
-}
-
-/* خطوط الشبكة */
-.fixed-line {
-  vector-effect: non-scaling-stroke;
-}
-
-/* الشريط العلوي - تأكد من أنه فوق الطبقات */
-#titleBar {
-  z-index: 100 !important;
-}
-/* نظام BIM */
-#bim-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 50;
-}
-
-.bim-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.bim-line {
-  transition: stroke-width 0.2s;
-}
-
-.bim-line:hover {
-  stroke-width: 4;
-}
-
-#bim-overlay circle {
-  transition: r 0.2s;
-}
-
-#bim-overlay circle:hover {
-  r: 8;
-  filter: drop-shadow(0 0 5px gold);
-}
-
-/* الشريط العلوي */
-#titleBar {
-  z-index: 100 !important;
-}
-/* نظام BIM */
-#bim-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 50;
-}
-
-.bim-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.bim-line {
-  transition: stroke-width 0.2s;
-}
-
-.bim-line:hover {
-  stroke-width: 4;
-}
-
-#bim-overlay circle {
-  transition: r 0.2s;
-}
-
-#bim-overlay circle:hover {
-  r: 8;
-  filter: drop-shadow(0 0 5px gold);
-}
-
-/* الشريط العلوي */
-#titleBar {
-  z-index: 100 !important;
-}
-
-/* ===== قائمة المشاهد - النسخة النهائية المعدلة ===== */
-#sceneList {
-  position: fixed !important;
-  top: 70px !important;           /* نزولها تحت الشريط العلوي مباشرة */
-  left: 15px !important;          
-  width: 220px !important;         /* أصغر من السابق */
-  max-height: 60vh !important;     /* ارتفاع أقل */
-  background: rgba(20, 20, 30, 0.75) !important;  /* شفافية 75% */
-  backdrop-filter: blur(8px) !important;           /* تأثير ضبابي */
-  border-radius: 12px !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4) !important;
-  z-index: 1000 !important;
-  overflow-y: auto !important;
-  direction: rtl !important;
-  padding: 8px 0 !important;
-  font-family: 'Segoe UI', Arial, sans-serif !important;
-}
-
-/* تنسيق عناصر القائمة */
-#sceneList .scene {
-  display: block !important;
-  padding: 8px 15px !important;    /* مسافة داخلية أقل */
-  margin: 2px 8px !important;       /* مسافة خارجية قليلة */
-  border-radius: 6px !important;
-  color: #eee !important;
-  font-size: 13px !important;       /* خط أصغر */
-  transition: all 0.2s ease !important;
-  cursor: pointer !important;
-  border-right: 2px solid transparent !important;
-}
-
-#sceneList .scene:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  padding-right: 20px !important;    /* حركة بسيطة عند التمرير */
-  color: white !important;
-}
-
-#sceneList .scene.current {
-  background: rgba(0, 102, 204, 0.7) !important;  /* أزرق مع شفافية */
-  border-right: 3px solid #00ff00 !important;
-  color: white !important;
-  font-weight: 500 !important;
-}
-
-/* تنسيق النص داخل العنصر */
-#sceneList .scene .text {
-  display: block !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-/* شريط التمرير المخصص */
-#sceneList::-webkit-scrollbar {
-  width: 4px !important;
-}
-
-#sceneList::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-radius: 4px !important;
-}
-
-#sceneList::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 4px !important;
-}
-
-#sceneList::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
+    .toolbar .logo { font-size: 16px; }
+    .controls button { padding: 4px 10px; font-size: 11px; }
+    #sceneList { width: 180px !important; top: 70px !important; left: 10px !important; }
 }
