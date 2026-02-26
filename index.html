@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
     
+    <!-- أيقونات Hotspots -->
+    <link rel="icon" type="image/png" href="icon/hotspot.png">
+    
     <script type="importmap">
         {
             "imports": {
@@ -20,6 +23,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
+    <!-- شريط الأدوات العلوي -->
     <div class="toolbar">
         <div class="logo">🏗️ Actual view Studio</div>
         <div class="controls">
@@ -30,19 +34,20 @@
         </div>
     </div>
 
-    <!-- حاوية شريط الوضعيات - للكشف عن الماوس -->
+    <!-- حاوية شريط الوضعيات -->
     <div class="mode-bar-container">
-        <!-- شريط الوضعيات -->
         <div class="mode-bar">
             <button id="modeDraw" class="mode-btn active">🎨 الرسم</button>
             <button id="modeView" class="mode-btn">👁️ العرض</button>
         </div>
     </div>
 
+    <!-- شريط الحالة -->
     <div class="status-bar" id="status">
         النوع الحالي: <span style="color:#ffcc00;">EL</span>
     </div>
 
+    <!-- لوحة الألوان -->
     <div class="color-panel">
         <div class="color-btn EL" onclick="window.changeType('EL')"></div>
         <div class="color-btn AC" onclick="window.changeType('AC')"></div>
@@ -51,8 +56,10 @@
         <div class="color-btn GS" onclick="window.changeType('GS')"></div>
     </div>
 
+    <!-- حاوية المشهد -->
     <div id="container"></div>
 
+    <!-- أدوات الرسم -->
     <div class="drawing-tools">
         <button id="toggleRotate">⏸️ إيقاف التدوير</button>
         <button id="toggleDraw">✏️ تفعيل الرسم</button>
@@ -62,10 +69,15 @@
 
     <!-- شريط Hotspots -->
     <div class="hotspot-toolbar">
-        <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">🚪</button>
-        <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">ℹ️</button>
+        <button class="hotspot-btn scene" id="hotspotScene" title="نقطة انتقال">
+            <img src="icon/hotspot.png" alt="scene" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
+        </button>
+        <button class="hotspot-btn info" id="hotspotInfo" title="معلومات">
+            <img src="icon/info.png" alt="info" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
+        </button>
     </div>
 
+    <!-- التلميحات -->
     <div class="hint">
         🖱 Click: إضافة نقطة<br>
         ⌫ Backspace: حذف آخر نقطة<br>
@@ -75,6 +87,7 @@
         <small>⌃ Ctrl + Click على نقطة: حذفها</small>
     </div>
 
+    <!-- لوحة المشاريع -->
     <div class="project-panel" id="projectPanel" style="display: none;">
         <div class="panel-header">
             <h3>📁 المشاريع</h3>
@@ -83,7 +96,7 @@
         <div class="project-list" id="projectList"></div>
     </div>
 
-    <!-- لوحة المشاهد - منتصف اليمين -->
+    <!-- لوحة المشاهد -->
     <div class="scene-panel" id="scenePanel">
         <div class="panel-header">
             <h3>📋 المشاهد</h3>
@@ -92,7 +105,14 @@
         <div class="scene-list" id="sceneList"></div>
     </div>
 
+    <!-- شاشة التحميل -->
     <div id="loader" style="display: none;">⏳ جاري التحميل...</div>
+
+    <!-- تحميل مسارات الأيقونات كمتغيرات CSS -->
+    <script>
+        document.documentElement.style.setProperty('--hotspot-icon', 'url("icon/hotspot.png")');
+        document.documentElement.style.setProperty('--info-icon', 'url("icon/info.png")');
+    </script>
 
     <script type="module" src="main.js"></script>
     
