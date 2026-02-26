@@ -49,7 +49,7 @@ class ProjectManager {
 }
 
 // =======================================
-// ٢. إدارة المشاهد المتعددة (مكتمل)
+// ٢. إدارة المشاهد المتعددة
 // =======================================
 class SceneManager {
     constructor() {
@@ -478,7 +478,7 @@ class TourExporter {
 </html>`;
     }
 
-    generatePlayerCSS() {
+generatePlayerCSS() {
         return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
 #container { width: 100vw; height: 100vh; background: #000; }
 .info {
@@ -719,22 +719,40 @@ function createStraightPath(points) {
 function rebuildHotspots(hotspots) {
     if (!scene) return;
     scene.children.forEach(child => {
-        if (child.userData?.type === 'hotspot') scene.remove(child);
+        if (child.userData && child.userData.type === 'hotspot') {
+            scene.remove(child);
+        }
     });
-    if (!hotspots?.length) return;
+
+    if (!hotspots || hotspots.length === 0) return;
+
     hotspots.forEach(h => {
         const color = h.type === 'SCENE' ? 0x44aaff : 0xffaa44;
-        const geometry = new THREE.SphereGeometry(14, 32, 32);
-        const material = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.5 });
+        const geometry = new THREE.SphereGeometry(12, 24, 24);
+        const material = new THREE.MeshStandardMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: 0.5,
+            transparent: true,
+            opacity: 0.9
+        });
+
         const marker = new THREE.Mesh(geometry, material);
         marker.position.set(h.position.x, h.position.y, h.position.z);
-        marker.userData = { type: 'hotspot', hotspotId: h.id, hotspotType: h.type, hotspotData: h.data };
+        marker.userData = {
+            type: 'hotspot',
+            hotspotId: h.id,
+            hotspotType: h.type,
+            data: h.data
+        };
         scene.add(marker);
     });
+
+    console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة`);
 }
 
 // =======================================
-// ٦. دوال Hotspots
+// ٦. دوال Hotspots (مطوّرة)
 // =======================================
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
@@ -748,7 +766,7 @@ function addHotspot(position) {
         const content = prompt('أدخل نص المعلومات:');
         if (!content) return;
 
-        const data = { title, content };
+        const data = { title, content, type: 'INFO' };
 
         const hotspot = sceneManager.addHotspot(
             sceneManager.currentScene.id,
@@ -758,27 +776,37 @@ function addHotspot(position) {
         );
 
         if (hotspot) {
-            const geometry = new THREE.SphereGeometry(14, 32, 32);
+            const geometry = new THREE.SphereGeometry(12, 24, 24);
             const material = new THREE.MeshStandardMaterial({
                 color: 0xffaa44,
                 emissive: 0xffaa44,
-                emissiveIntensity: 0.5
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.9
             });
 
             const marker = new THREE.Mesh(geometry, material);
             marker.position.copy(position);
-            marker.userData = { type: 'hotspot', hotspotId: hotspot.id, hotspotType: 'INFO' };
+            marker.userData = {
+                type: 'hotspot',
+                hotspotId: hotspot.id,
+                hotspotType: 'INFO',
+                data: data
+            };
             scene.add(marker);
+            pointMarkers.push(marker);
 
-            alert(`✅ تم إضافة نقطة معلومات`);
+            alert(`✅ تم إضافة نقطة معلومات: "${title}"`);
             if (typeof updateScenePanel === 'function') updateScenePanel();
+        } else {
+            alert('❌ فشل إضافة نقطة المعلومات');
         }
 
     } else if (hotspotMode === 'SCENE') {
         const otherScenes = sceneManager.scenes.filter(s => s.id !== sceneManager.currentScene.id);
-        
+
         if (otherScenes.length === 0) {
-            alert('❌ لا يوجد مشاهد أخرى');
+            alert('❌ لا يوجد مشاهد أخرى للانتقال إليها');
             return;
         }
 
@@ -801,11 +829,12 @@ function addHotspot(position) {
 
         const targetScene = otherScenes[selectedIndex];
         const description = prompt(`أدخل وصفاً لهذه النقطة:`) || `انتقال إلى ${targetScene.name}`;
-        
+
         const data = {
             targetSceneId: targetScene.id,
             targetSceneName: targetScene.name,
-            description
+            description,
+            type: 'SCENE'
         };
 
         const hotspot = sceneManager.addHotspot(
@@ -816,20 +845,30 @@ function addHotspot(position) {
         );
 
         if (hotspot) {
-            const geometry = new THREE.SphereGeometry(14, 32, 32);
+            const geometry = new THREE.SphereGeometry(12, 24, 24);
             const material = new THREE.MeshStandardMaterial({
                 color: 0x44aaff,
                 emissive: 0x44aaff,
-                emissiveIntensity: 0.5
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.9
             });
 
             const marker = new THREE.Mesh(geometry, material);
             marker.position.copy(position);
-            marker.userData = { type: 'hotspot', hotspotId: hotspot.id, hotspotType: 'SCENE' };
+            marker.userData = {
+                type: 'hotspot',
+                hotspotId: hotspot.id,
+                hotspotType: 'SCENE',
+                data: data
+            };
             scene.add(marker);
+            pointMarkers.push(marker);
 
-            alert(`✅ تم إضافة نقطة انتقال`);
+            alert(`✅ تم إضافة نقطة انتقال إلى: "${targetScene.name}"`);
             if (typeof updateScenePanel === 'function') updateScenePanel();
+        } else {
+            alert('❌ فشل إضافة نقطة الانتقال');
         }
     }
 
@@ -1058,7 +1097,7 @@ function loadSceneImage(imageData) {
 // =======================================
 // ١٢. نظام الوضعيات
 // =======================================
-let currentMode = 'draw'; // 'draw', 'view'
+let currentMode = 'draw';
 
 function setMode(mode) {
     currentMode = mode;
@@ -1085,7 +1124,6 @@ function setupEvents() {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('resize', onResize);
     
-    // أزرار التحكم
     const toggleRotate = document.getElementById('toggleRotate');
     if (toggleRotate) {
         toggleRotate.onclick = () => {
@@ -1181,7 +1219,6 @@ function initModeButtons() {
     if (modeView) modeView.onclick = () => setMode('view');
 }
 
-// استدعاء التهيئة
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initModeButtons);
 } else {
@@ -1237,7 +1274,4 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// =======================================
-// ١٧. بدء التشغيل
-// =======================================
-init();                        
+init();
