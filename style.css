@@ -1135,3 +1135,115 @@ body {
 #titleBar {
   z-index: 100 !important;
 }
+/* نظام BIM */
+#bim-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.bim-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bim-line {
+  transition: stroke-width 0.2s;
+}
+
+.bim-line:hover {
+  stroke-width: 4;
+}
+
+#bim-overlay circle {
+  transition: r 0.2s;
+}
+
+#bim-overlay circle:hover {
+  r: 8;
+  filter: drop-shadow(0 0 5px gold);
+}
+
+/* الشريط العلوي */
+#titleBar {
+  z-index: 100 !important;
+}
+
+/* ===== قائمة المشاهد - النسخة النهائية المعدلة ===== */
+#sceneList {
+  position: fixed !important;
+  top: 70px !important;           /* نزولها تحت الشريط العلوي مباشرة */
+  left: 15px !important;          
+  width: 220px !important;         /* أصغر من السابق */
+  max-height: 60vh !important;     /* ارتفاع أقل */
+  background: rgba(20, 20, 30, 0.75) !important;  /* شفافية 75% */
+  backdrop-filter: blur(8px) !important;           /* تأثير ضبابي */
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4) !important;
+  z-index: 1000 !important;
+  overflow-y: auto !important;
+  direction: rtl !important;
+  padding: 8px 0 !important;
+  font-family: 'Segoe UI', Arial, sans-serif !important;
+}
+
+/* تنسيق عناصر القائمة */
+#sceneList .scene {
+  display: block !important;
+  padding: 8px 15px !important;    /* مسافة داخلية أقل */
+  margin: 2px 8px !important;       /* مسافة خارجية قليلة */
+  border-radius: 6px !important;
+  color: #eee !important;
+  font-size: 13px !important;       /* خط أصغر */
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  border-right: 2px solid transparent !important;
+}
+
+#sceneList .scene:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  padding-right: 20px !important;    /* حركة بسيطة عند التمرير */
+  color: white !important;
+}
+
+#sceneList .scene.current {
+  background: rgba(0, 102, 204, 0.7) !important;  /* أزرق مع شفافية */
+  border-right: 3px solid #00ff00 !important;
+  color: white !important;
+  font-weight: 500 !important;
+}
+
+/* تنسيق النص داخل العنصر */
+#sceneList .scene .text {
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* شريط التمرير المخصص */
+#sceneList::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+#sceneList::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 4px !important;
+}
+
+#sceneList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
+}
+
+#sceneList::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
