@@ -1149,21 +1149,6 @@ function animate() {
     // ❌ لا تحديث للأيقونات هنا - تبقى ثابتة
 }
 
-// تحديث onResize - فقط عند تغيير حجم الشاشة
-function onResize() {
-    if (!camera || !renderer) return;
-    
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    
-    // إعادة بناء النقاط مع الإحداثيات الجديدة للشاشة
-    if (sceneManager && sceneManager.currentScene && sceneManager.currentScene.hotspots) {
-        if (typeof rebuildHotspots === 'function') {
-            rebuildHotspots(sceneManager.currentScene.hotspots);
-        }
-    }
-}
 // دالة إضافة Hotspot جديدة - مع إحداثيات ثابتة
 function addHotspot(position) {
     if (!sceneManager || !sceneManager.currentScene) {
