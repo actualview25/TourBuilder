@@ -754,3 +754,101 @@ body {
     opacity: 1;
     background: rgba(255,0,0,0.7);
 }
+/* =======================================
+   Hotspots في وضع التحرير (الأداة) - محدث
+   ======================================= */
+
+/* تحسين شكل الأيقونات في الأزرار */
+.hotspot-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: all 0.2s ease;
+}
+
+.hotspot-btn:hover {
+    transform: scale(1.1);
+    border-color: white;
+    background: rgba(0,0,0,0.6);
+}
+
+.hotspot-btn.scene {
+    background: rgba(68, 170, 255, 0.3);
+}
+.hotspot-btn.scene:hover {
+    background: rgba(68, 170, 255, 0.6);
+}
+
+.hotspot-btn.info {
+    background: rgba(255, 170, 68, 0.3);
+}
+.hotspot-btn.info:hover {
+    background: rgba(255, 170, 68, 0.6);
+}
+
+/* النقاط في المشهد (وضع التحرير) */
+.hotspot-editor-marker {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hotspot-editor-marker:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+
+/* تلميح التعديل */
+.hotspot-editor-marker::after {
+    content: '✏️';
+    position: absolute;
+    top: -25px;
+    right: -25px;
+    font-size: 16px;
+    background: rgba(0,0,0,0.7);
+    padding: 4px 8px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+}
+
+.hotspot-editor-marker:hover::after {
+    opacity: 1;
+}
+
+/* تلميح الحذف عند الضغط على Ctrl */
+.hotspot-editor-marker:active::after {
+    content: '🗑️ انقر مع Ctrl للحذف';
+    opacity: 1;
+    background: rgba(255,0,0,0.8);
+    border-color: #ff8888;
+}
+
+/* تمييز النقاط حسب النوع */
+.scene-hotspot-marker {
+    box-shadow: 0 0 20px rgba(68, 170, 255, 0.5);
+    border: 2px solid #44aaff;
+}
+
+.info-hotspot-marker {
+    box-shadow: 0 0 20px rgba(255, 170, 68, 0.5);
+    border: 2px solid #ffaa44;
+}
+
+/* تحسين التلميحات */
+.hint small {
+    display: block;
+    margin-top: 4px;
+    color: #88aaff;
+    font-size: 10px;
+}
+
+.hint small:last-child {
+    color: #ffaa44;
+    margin-top: 2px;
+}
