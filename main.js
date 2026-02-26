@@ -1746,7 +1746,116 @@ function updateHotspotPositions() {
         }
     });
 }
+// =======================================
+// دوال التحكم بلوحة المشاهد (قابلة للطي)
+// =======================================
+function initScenePanelControls() {
+    const panel = document.getElementById('scenePanel');
+    const header = document.getElementById('scenePanelHeader');
+    const toggleBtn = document.getElementById('toggleScenePanel');
+    const closeBtn = document.getElementById('closeScenePanel');
+    const showBtn = document.getElementById('showScenePanelBtn');
+    
+    if (!panel || !header) return;
+    
+    // متغيرات للسحب
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+    
+    // طي/فتح اللوحة
+    if (toggleBtn) {
+        toggleBtn.onclick = () => {
+            panel.classList.toggle('collapsed');
+            toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
+        };
+    }
+    
+    // إخفاء اللوحة
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            panel.style.display = 'none';
+            if (showBtn) showBtn.classList.add('visible');
+        };
+    }
+    
+    // إظهار اللوحة
+    if (showBtn) {
+        showBtn.onclick = () => {
+            panel.style.display = 'flex';
+            showBtn.classList.remove('visible');
+        };
+    }
+    
+    // وظيفة السحب
+    header.onmousedown = (e) => {
+        // منع السحب إذا كان الضغط على زر
+        if (e.target.tagName === 'BUTTON') return;
+        
+        isDragging = true;
+        
+        // حساب الموضع الحالي
+        const rect = panel.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = rect.left;
+        startTop = rect.top;
+        
+        // تغيير المؤشر
+        header.style.cursor = 'grabbing';
+        
+        // منع تحديد النص أثناء السحب
+        e.preventDefault();
+    };
+    
+    document.onmousemove = (e) => {
+        if (!isDragging) return;
+        
+        // حساب الحركة
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        // تطبيق الموقع الجديد
+        panel.style.left = (startLeft + dx) + 'px';
+        panel.style.top = (startTop + dy) + 'px';
+        panel.style.right = 'auto'; // إلغاء right
+        panel.style.bottom = 'auto';
+    };
+    
+    document.onmouseup = () => {
+        isDragging = false;
+        header.style.cursor = 'grab';
+    };
+    
+    // حفظ الموقع في localStorage عند الإغلاق
+    window.addEventListener('beforeunload', () => {
+        const rect = panel.getBoundingClientRect();
+        localStorage.setItem('scenePanelPos', JSON.stringify({
+            left: rect.left,
+            top: rect.top
+        }));
+    });
+    
+    // استرجاع الموقع المحفوظ
+    const savedPos = localStorage.getItem('scenePanelPos');
+    if (savedPos) {
+        try {
+            const pos = JSON.parse(savedPos);
+            panel.style.left = pos.left + 'px';
+            panel.style.top = pos.top + 'px';
+            panel.style.right = 'auto';
+            panel.style.bottom = 'auto';
+        } catch (e) {
+            console.log('لا يمكن استرجاع الموقع المحفوظ');
+        }
+    }
+}
 
+// استدعاء الدالة بعد تحميل الصفحة
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScenePanelControls);
+} else {
+    initScenePanelControls();
+}
 // =======================================
 // ١٧. بدء التشغيل
 // =======================================
