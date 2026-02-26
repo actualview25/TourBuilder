@@ -1786,31 +1786,47 @@ function undoLastPoint() {
     }
 }
 
+// =======================================
+// ١٤. أحداث لوحة المفاتيح وتغيير الحجم
+// =======================================
+function onKeyDown(e) {
+    if (!drawMode) return;
+    switch(e.key) {
+        case 'Enter': e.preventDefault(); saveCurrentPath(); break;
+        case 'Backspace': e.preventDefault(); undoLastPoint(); break;
+        case 'Escape': e.preventDefault(); clearCurrentDrawing(); break;
+        case 'n': case 'N': e.preventDefault(); clearCurrentDrawing(); break;
+        case '1': currentPathType = 'EL'; window.setCurrentPathType('EL'); break;
+        case '2': currentPathType = 'AC'; window.setCurrentPathType('AC'); break;
+        case '3': currentPathType = 'WP'; window.setCurrentPathType('WP'); break;
+        case '4': currentPathType = 'WA'; window.setCurrentPathType('WA'); break;
+        case '5': currentPathType = 'GS'; window.setCurrentPathType('GS'); break;
+    }
+}
+
+function undoLastPoint() {
+    if (selectedPoints.length > 0) {
+        selectedPoints.pop();
+        const last = pointMarkers.pop();
+        if (last) scene.remove(last);
+        updateTempLine();
+    }
+}
+
+// ✅ دالة onResize الموحدة (استخدم هذه النسخة فقط)
 function onResize() {
+    if (!camera || !renderer) return;
+    
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     
-    // تحديث مواقع الأيقونات
+    // إعادة بناء النقاط مع الإحداثيات الجديدة للشاشة
     if (sceneManager && sceneManager.currentScene && sceneManager.currentScene.hotspots) {
-        setTimeout(() => {
-            sceneManager.currentScene.hotspots.forEach(h => {
-                const marker = scene.children.find(c => 
-                    c.userData && c.userData.hotspotId === h.id
-                );
-                if (marker) {
-                    const vector = marker.position.clone().project(camera);
-                    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                    const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-                    
-                    const icon = document.querySelector(`[data-id="${h.id}"]`);
-                    if (icon) {
-                        icon.style.left = x + 'px';
-                        icon.style.top = y + 'px';
-                    }
-                }
-            });
-        }, 100);
+        // تأكد من وجود دالة rebuildHotspots
+        if (typeof rebuildHotspots === 'function') {
+            rebuildHotspots(sceneManager.currentScene.hotspots);
+        }
     }
 }
 
