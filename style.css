@@ -707,3 +707,272 @@ body {
         font-size: 11px;
     }
 }
+/* =======================================
+   لوحة المشاهد - أعلى اليمين (قابلة للطي)
+   ======================================= */
+.scene-panel {
+    position: fixed;
+    top: 70px; /* تحت شريط الأدوات مباشرة */
+    right: 20px;
+    width: 260px;
+    max-height: 300px;
+    background: rgba(20, 30, 40, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid #4a6c8f;
+    border-radius: 12px;
+    color: white;
+    z-index: 900;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* رأس اللوحة - قابل للسحب */
+.scene-panel .panel-header {
+    padding: 12px 15px;
+    background: rgba(30, 40, 50, 0.9);
+    border-bottom: 1px solid #4a6c8f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: grab;
+    user-select: none;
+    border-radius: 10px 10px 0 0;
+}
+
+.scene-panel .panel-header:active {
+    cursor: grabbing;
+}
+
+.scene-panel .panel-header h3 {
+    margin: 0;
+    color: #88aaff;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.scene-panel .panel-header h3 span {
+    font-size: 14px;
+    color: #88aaff;
+}
+
+/* أزرار التحكم في اللوحة */
+.panel-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.panel-toggle {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.panel-toggle:hover {
+    background: rgba(255,255,255,0.1);
+    color: #88aaff;
+}
+
+.panel-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    font-size: 18px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.panel-close:hover {
+    background: rgba(255,68,68,0.2);
+    color: #ff8888;
+}
+
+/* محتوى اللوحة */
+.scene-list {
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+/* اللوحة عندما تكون مصغرة */
+.scene-panel.collapsed {
+    width: 50px;
+    min-width: 50px;
+    overflow: hidden;
+}
+
+.scene-panel.collapsed .scene-list {
+    display: none;
+}
+
+.scene-panel.collapsed .panel-header h3 span {
+    display: none;
+}
+
+.scene-panel.collapsed .panel-header h3 {
+    font-size: 20px;
+    padding: 0;
+    justify-content: center;
+}
+
+.scene-panel.collapsed .panel-close {
+    display: none;
+}
+
+/* عناصر المشاهد */
+.scene-item {
+    padding: 8px 10px;
+    margin: 4px 0;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    font-size: 12px;
+}
+
+.scene-item:hover {
+    background: rgba(74, 108, 143, 0.2);
+    border-color: rgba(74, 108, 143, 0.3);
+    transform: translateX(-2px);
+}
+
+.scene-item.active {
+    background: rgba(74, 108, 143, 0.4);
+    border-right: 3px solid #88aaff;
+}
+
+.scene-icon {
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+}
+
+.scene-name {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.scene-hotspots {
+    font-size: 10px;
+    background: rgba(74, 108, 143, 0.4);
+    padding: 2px 6px;
+    border-radius: 10px;
+    color: rgba(255,255,255,0.9);
+    white-space: nowrap;
+}
+
+/* زر إضافة مشهد */
+.add-scene-btn {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    background: rgba(34, 136, 34, 0.3);
+    border: 1px solid rgba(68, 255, 68, 0.3);
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.add-scene-btn:hover {
+    background: rgba(34, 136, 34, 0.6);
+    border-color: #44ff44;
+}
+
+/* تحسين شريط التمرير */
+.scene-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scene-list::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+}
+
+.scene-list::-webkit-scrollbar-thumb {
+    background: rgba(74, 108, 143, 0.5);
+    border-radius: 4px;
+}
+
+.scene-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(74, 108, 143, 0.8);
+}
+
+/* زر إظهار اللوحة عندما تكون مخفية */
+.show-panel-btn {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(20, 30, 40, 0.85);
+    backdrop-filter: blur(10px);
+    border: 2px solid #4a6c8f;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 950;
+    transition: all 0.2s;
+}
+
+.show-panel-btn:hover {
+    transform: scale(1.1);
+    border-color: #88aaff;
+}
+
+.show-panel-btn.visible {
+    display: flex;
+}
+
+/* تحسين للشاشات الصغيرة */
+@media (max-width: 768px) {
+    .scene-panel {
+        width: 220px;
+        top: 60px;
+        right: 10px;
+    }
+    
+    .show-panel-btn {
+        top: 70px;
+        right: 10px;
+    }
+}
