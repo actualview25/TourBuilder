@@ -236,7 +236,7 @@ body {
 #clearAll { background: rgba(136, 34, 34, 0.4); }
 
 /* =======================================
-   شريط Hotspots المحسن
+   شريط Hotspots
    ======================================= */
 .hotspot-toolbar {
     position: fixed;
@@ -270,95 +270,12 @@ body {
     border-color: white;
 }
 
-.hotspot-btn.scene { background: rgba(68, 170, 255, 0.3); }
-.hotspot-btn.info { background: rgba(255, 170, 68, 0.3); }
-.hotspot-btn.delete { background: rgba(136, 34, 34, 0.4); color: white; font-size: 20px; }
-.hotspot-btn.delete:hover { background: rgba(136, 34, 34, 0.8); }
-
-/* =======================================
-   أيقونات Hotspots في المشهد (محسنة)
-   ======================================= */
-.scene-hotspot-marker, .info-hotspot-marker {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    z-index: 1000;
-    transition: all 0.2s ease;
-    pointer-events: all;
+.hotspot-btn.scene { 
+    background: rgba(68, 170, 255, 0.3);
 }
-
-.scene-hotspot-marker:hover, .info-hotspot-marker:hover {
-    transform: translate(-50%, -50%) scale(1.1);
-    filter: drop-shadow(0 0 15px currentColor);
+.hotspot-btn.info { 
+    background: rgba(255, 170, 68, 0.3);
 }
-
-.scene-hotspot-marker img, .info-hotspot-marker img {
-    width: 40px;
-    height: 40px;
-    filter: drop-shadow(0 0 10px currentColor);
-    pointer-events: none;
-}
-
-.hotspot-label {
-    position: absolute;
-    top: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(20, 30, 40, 0.95);
-    backdrop-filter: blur(5px);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 15px;
-    font-size: 12px;
-    white-space: nowrap;
-    border: 2px solid currentColor;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    z-index: 1001;
-}
-
-.scene-hotspot-marker:hover .hotspot-label,
-.info-hotspot-marker:hover .hotspot-label {
-    opacity: 1;
-}
-
-.hotspot-controls {
-    position: absolute;
-    top: -20px;
-    right: -20px;
-    display: flex;
-    gap: 5px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 1002;
-}
-
-.scene-hotspot-marker:hover .hotspot-controls,
-.info-hotspot-marker:hover .hotspot-controls {
-    opacity: 1;
-}
-
-.hotspot-controls button {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    transition: all 0.2s;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.hotspot-controls button:hover { transform: scale(1.1); }
-.hotspot-controls .edit-btn { background: #4a6c8f; }
-.hotspot-controls .delete-btn { background: #882222; }
 
 /* =======================================
    التلميحات
@@ -379,7 +296,7 @@ body {
     border: 1px solid rgba(74, 108, 143, 0.2);
     text-align: right;
     box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-    max-width: 200px;
+    max-width: 180px;
     opacity: 0.5;
     transition: opacity 0.2s ease;
 }
@@ -413,117 +330,7 @@ body {
 }
 
 /* =======================================
-   قائمة المشاهد الرئيسية (النسخة القديمة)
-   ======================================= */
-#sceneList {
-    position: fixed;
-    top: 70px;
-    left: 20px;
-    width: 260px;
-    max-height: 70vh;
-    background: rgba(20, 30, 40, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
-    overflow-y: auto;
-    direction: rtl;
-    padding: 12px 0;
-    color: white;
-}
-
-#sceneList .scene-item {
-    display: block;
-    padding: 12px 20px;
-    margin: 4px 10px;
-    border-radius: 10px;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 14px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    border-right: 3px solid transparent;
-    position: relative;
-}
-
-#sceneList .scene-item:hover {
-    background: rgba(255, 255, 255, 0.15);
-    padding-right: 25px;
-    color: white;
-}
-
-#sceneList .scene-item.active {
-    background: rgba(0, 102, 204, 0.6);
-    border-right: 3px solid #00ff00;
-    color: white;
-    font-weight: 500;
-}
-
-#sceneList .scene-name {
-    display: inline-block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 140px;
-}
-
-#sceneList .scene-hotspots {
-    float: left;
-    font-size: 11px;
-    background: rgba(74, 108, 143, 0.4);
-    padding: 2px 8px;
-    border-radius: 12px;
-    color: #88aaff;
-}
-
-#sceneList .delete-scene-btn {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: rgba(255, 136, 136, 0.5);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    opacity: 0.5;
-}
-
-#sceneList .delete-scene-btn:hover {
-    background: rgba(255, 0, 0, 0.1);
-    opacity: 1;
-    color: #ff8888;
-}
-
-#sceneList::-webkit-scrollbar {
-    width: 5px;
-}
-
-#sceneList::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-}
-
-#sceneList::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-}
-
-#sceneList::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* =======================================
-   لوحة المشاهد الجانبية
+   لوحة المشاهد
    ======================================= */
 .scene-panel {
     position: fixed;
@@ -719,6 +526,131 @@ body {
 }
 
 /* =======================================
+   أزرار الحذف
+   ======================================= */
+.delete-scene-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 136, 136, 0.5);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0.5;
+}
+
+.delete-scene-btn:hover {
+    background: rgba(255, 0, 0, 0.1);
+    opacity: 1;
+    color: #ff8888;
+}
+
+/* =======================================
+   أيقونات Hotspots
+   ======================================= */
+.hotspot-icon-scene {
+    width: 32px;
+    height: 32px;
+    background-image: var(--hotspot-icon, url('icon/hotspot.png'));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+}
+
+.hotspot-icon-info {
+    width: 32px;
+    height: 32px;
+    background-image: var(--info-icon, url('icon/info.png'));
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+}
+
+/* =======================================
+   أنماط Hotspots في الجولة المصدرة
+   ======================================= */
+.hotspot-icon-wrapper {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hotspot-icon-image {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    z-index: 2;
+    filter: drop-shadow(0 0 10px currentColor);
+    transition: all 0.3s ease;
+}
+
+.hotspot-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.3;
+    animation: pulse 2s infinite;
+    z-index: 1;
+}
+
+.hotspot:hover .hotspot-icon-image {
+    transform: scale(1.2);
+}
+
+.hotspot:hover .hotspot-glow {
+    opacity: 0.5;
+    animation: pulse 1s infinite;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid currentColor;
+}
+
+.tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.tooltip-icon {
+    font-size: 16px;
+}
+
+.tooltip-body {
+    line-height: 1.5;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 0.3; }
+}
+
+/* =======================================
    وضعيات العرض
    ======================================= */
 .mode-draw .drawing-tools { display: flex; }
@@ -740,20 +672,45 @@ body {
    توافق مع الشاشات الصغيرة
    ======================================= */
 @media (max-width: 1200px) {
-    .drawing-tools { flex-wrap: wrap; width: 90%; bottom: 10px; padding: 8px; }
-    .drawing-tools button { flex: 1 1 auto; min-width: 70px; padding: 5px 10px; font-size: 11px; }
-    .hint { display: none; }
-    #sceneList { width: 220px; }
-    .scene-panel { width: 200px; }
-    .project-panel { right: 240px; width: 200px; }
+    .drawing-tools {
+        flex-wrap: wrap;
+        width: 90%;
+        bottom: 10px;
+        padding: 8px;
+    }
+    
+    .drawing-tools button {
+        flex: 1 1 auto;
+        min-width: 70px;
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+    
+    .hint {
+        display: none;
+    }
+    
+    .scene-panel {
+        width: 200px;
+    }
+    
+    .project-panel {
+        right: 240px;
+        width: 200px;
+    }
 }
 
 @media (max-width: 768px) {
     .mode-bar-container { height: 25px; }
     .mode-bar { height: 45px; gap: 8px; }
     .mode-btn { padding: 4px 12px; font-size: 12px; }
-    .toolbar .logo { font-size: 16px; }
-    .controls button { padding: 4px 10px; font-size: 11px; }
-    #sceneList { width: 200px; top: 60px; left: 10px; }
-    #sceneListToggle { top: 60px; left: 10px; width: 40px; height: 40px; }
+    
+    .toolbar .logo {
+        font-size: 16px;
+    }
+    
+    .controls button {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
 }
