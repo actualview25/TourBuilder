@@ -1322,19 +1322,20 @@ function updateScenePanel() {
         item.className = 'scene-item';
         
         if (sceneManager.currentScene && sceneManager.currentScene.id === scene.id) {
-            item.style.background = 'rgba(74, 108, 143, 0.7)';
-            item.style.border = '2px solid #88aaff';
+            item.classList.add('active');
         }
         
         const infoCount = scene.hotspots?.filter(h => h.type === 'INFO').length || 0;
         const sceneCount = scene.hotspots?.filter(h => h.type === 'SCENE').length || 0;
         const totalPoints = infoCount + sceneCount;
         
+        const icon = scene.id.includes('start') ? '🏠' : (sceneCount > 0 ? '🚪' : '🌄');
+        
         item.innerHTML = `
-            <span class='scene-icon'>🌄</span>
-            <span class='scene-name'>${scene.name}</span>
+            <span class='scene-icon'>${icon}</span>
+            <span class='scene-name' title='${scene.name}'>${scene.name}</span>
             <span class='scene-hotspots' title='معلومات: ${infoCount} | انتقال: ${sceneCount}'>
-                ${totalPoints} نقطة
+                ${totalPoints}
             </span>
             <button class='delete-scene-btn' data-id='${scene.id}' title='حذف المشهد'>🗑️</button>
         `;
@@ -1750,13 +1751,20 @@ function updateHotspotPositions() {
 // دوال التحكم بلوحة المشاهد (قابلة للطي)
 // =======================================
 function initScenePanelControls() {
+    console.log('🔧 تهيئة أزرار لوحة المشاهد...');
+    
     const panel = document.getElementById('scenePanel');
     const header = document.getElementById('scenePanelHeader');
-    const toggleBtn = document.getElementById('toggleScenePanel');
-    const closeBtn = document.getElementById('closeScenePanel');
+    const toggleBtn = document.getElementById('toggleScenePanelBtn');
+    const closeBtn = document.getElementById('closeScenePanelBtn');
     const showBtn = document.getElementById('showScenePanelBtn');
     
-    if (!panel || !header) return;
+    if (!panel) {
+        console.log('❌ لوحة المشاهد غير موجودة');
+        return;
+    }
+    
+    console.log('✅ تم العثور على لوحة المشاهد');
     
     // متغيرات للسحب
     let isDragging = false;
@@ -1764,97 +1772,83 @@ function initScenePanelControls() {
     
     // طي/فتح اللوحة
     if (toggleBtn) {
-        toggleBtn.onclick = () => {
+        console.log('✅ زر الطي موجود');
+        toggleBtn.onclick = function(e) {
+            e.stopPropagation();
             panel.classList.toggle('collapsed');
             toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
+            console.log('🔄 طي/فتح اللوحة');
         };
+    } else {
+        console.log('❌ زر الطي غير موجود');
     }
     
     // إخفاء اللوحة
     if (closeBtn) {
-        closeBtn.onclick = () => {
+        console.log('✅ زر الإخفاء موجود');
+        closeBtn.onclick = function(e) {
+            e.stopPropagation();
             panel.style.display = 'none';
             if (showBtn) showBtn.classList.add('visible');
+            console.log('🔄 إخفاء اللوحة');
         };
+    } else {
+        console.log('❌ زر الإخفاء غير موجود');
     }
     
     // إظهار اللوحة
     if (showBtn) {
-        showBtn.onclick = () => {
+        console.log('✅ زر الإظهار موجود');
+        showBtn.onclick = function() {
             panel.style.display = 'flex';
             showBtn.classList.remove('visible');
+            console.log('🔄 إظهار اللوحة');
+        };
+    } else {
+        console.log('❌ زر الإظهار غير موجود');
+    }
+    
+    // وظيفة السحب (اختيارية)
+    if (header) {
+        header.onmousedown = function(e) {
+            if (e.target.tagName === 'BUTTON') return;
+            
+            isDragging = true;
+            const rect = panel.getBoundingClientRect();
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = rect.left;
+            startTop = rect.top;
+            
+            header.style.cursor = 'grabbing';
+            e.preventDefault();
         };
     }
     
-    // وظيفة السحب
-    header.onmousedown = (e) => {
-        // منع السحب إذا كان الضغط على زر
-        if (e.target.tagName === 'BUTTON') return;
-        
-        isDragging = true;
-        
-        // حساب الموضع الحالي
-        const rect = panel.getBoundingClientRect();
-        startX = e.clientX;
-        startY = e.clientY;
-        startLeft = rect.left;
-        startTop = rect.top;
-        
-        // تغيير المؤشر
-        header.style.cursor = 'grabbing';
-        
-        // منع تحديد النص أثناء السحب
-        e.preventDefault();
-    };
-    
-    document.onmousemove = (e) => {
+    document.onmousemove = function(e) {
         if (!isDragging) return;
         
-        // حساب الحركة
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
         
-        // تطبيق الموقع الجديد
         panel.style.left = (startLeft + dx) + 'px';
         panel.style.top = (startTop + dy) + 'px';
-        panel.style.right = 'auto'; // إلغاء right
-        panel.style.bottom = 'auto';
+        panel.style.right = 'auto';
     };
     
-    document.onmouseup = () => {
-        isDragging = false;
-        header.style.cursor = 'grab';
-    };
-    
-    // حفظ الموقع في localStorage عند الإغلاق
-    window.addEventListener('beforeunload', () => {
-        const rect = panel.getBoundingClientRect();
-        localStorage.setItem('scenePanelPos', JSON.stringify({
-            left: rect.left,
-            top: rect.top
-        }));
-    });
-    
-    // استرجاع الموقع المحفوظ
-    const savedPos = localStorage.getItem('scenePanelPos');
-    if (savedPos) {
-        try {
-            const pos = JSON.parse(savedPos);
-            panel.style.left = pos.left + 'px';
-            panel.style.top = pos.top + 'px';
-            panel.style.right = 'auto';
-            panel.style.bottom = 'auto';
-        } catch (e) {
-            console.log('لا يمكن استرجاع الموقع المحفوظ');
+    document.onmouseup = function() {
+        if (isDragging) {
+            isDragging = false;
+            if (header) header.style.cursor = 'grab';
         }
-    }
+    };
 }
 
 // استدعاء الدالة بعد تحميل الصفحة
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initScenePanelControls);
 } else {
-    initScenePanelControls();
+    setTimeout(initScenePanelControls, 100); // تأخير بسيط للتأكد
 }
 // =======================================
 // ١٧. بدء التشغيل
