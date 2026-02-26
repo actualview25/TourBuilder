@@ -142,7 +142,7 @@ class SceneManager {
         return hotspot;
     }
 
-    switchToScene(sceneId) {
+switchToScene(sceneId) {
         const sceneData = this.scenes.find(s => s.id === sceneId);
         if (!sceneData) return false;
 
@@ -358,7 +358,6 @@ class TourExporter {
             align-items: center;
             justify-content: center;
         }
-        
         .hotspot-icon-image {
             width: 36px;
             height: 36px;
@@ -413,10 +412,84 @@ class TourExporter {
         .tooltip-body {
             line-height: 1.5;
         }
+        
+        /* القائمة الجانبية للمشاهد */
+        .scene-list-panel {
+            position: fixed;
+            bottom: 100px;
+            left: 20px;
+            background: rgba(20, 30, 40, 0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid #4a6c8f;
+            border-radius: 15px;
+            color: white;
+            z-index: 200;
+            padding: 15px;
+            min-width: 220px;
+            max-width: 280px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            direction: rtl;
+        }
+        
+        .scene-list-panel h3 {
+            margin: 0 0 10px 0;
+            color: #88aaff;
+            font-size: 16px;
+            text-align: center;
+            border-bottom: 1px solid #4a6c8f;
+            padding-bottom: 8px;
+        }
+        
+        .scene-list-panel ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .scene-list-panel li {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .scene-list-panel li:hover {
+            background: rgba(74, 108, 143, 0.3);
+        }
+        
+        .scene-list-panel li.active {
+            background: rgba(74, 108, 143, 0.6);
+            border-right: 3px solid #88aaff;
+        }
+        
+        .scene-list-panel li span {
+            flex: 1;
+        }
+        
+        .scene-list-panel .scene-icon {
+            font-size: 16px;
+        }
+        
+        .scene-list-panel .scene-hotspot-count {
+            font-size: 11px;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 12px;
+            color: #88aaff;
+        }
     </style>
 </head>
 <body>
-    <div class="info">🏗️ ${projectName}</div>
+
+<div class="info">🏗️ ${projectName}</div>
     <div id="container"></div>
     <button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
     
@@ -424,11 +497,13 @@ class TourExporter {
         <h3>🔘 التحكم بالمسارات</h3>
         <div id="paths-toggle-list"></div>
     </div>
+    
     <!-- القائمة الجانبية للمشاهد -->
-<div class="scene-list-panel">
-    <h3>🏠 قائمة المشاهد</h3>
-    <ul id="scene-list-sidebar"></ul>
-</div>
+    <div class="scene-list-panel">
+        <h3>🏠 قائمة المشاهد</h3>
+        <ul id="scene-list-sidebar"></ul>
+    </div>
+    
     <script>
         let autoRotate = true;
         let currentSceneIndex = 0;
@@ -676,6 +751,31 @@ class TourExporter {
                                 });
                             }, 200);
                         }
+                        
+                        // تحديث القائمة الجانبية
+                        updateSceneSidebar();
+                    });
+                }
+                
+                // تحديث القائمة الجانبية
+                function updateSceneSidebar() {
+                    const list = document.getElementById('scene-list-sidebar');
+                    if (!list) return;
+                    
+                    list.innerHTML = '';
+                    scenes.forEach((scene, index) => {
+                        const li = document.createElement('li');
+                        li.className = index === currentSceneIndex ? 'active' : '';
+                        li.onclick = () => loadScene(index);
+                        
+                        const hotspotCount = scene.hotspots ? scene.hotspots.length : 0;
+                        
+                        li.innerHTML = \`
+                            <span class="scene-icon">\${index === 0 ? '🏠' : '🏢'}</span>
+                            <span>\${scene.displayName || scene.name}</span>
+                            <span class="scene-hotspot-count">\${hotspotCount} نقطة</span>
+                        \`;
+                        list.appendChild(li);
                     });
                 }
                 
@@ -687,30 +787,7 @@ class TourExporter {
                     camera.updateProjectionMatrix();
                     renderer.setSize(window.innerWidth, window.innerHeight);
                 });
-                // تحديث القائمة الجانبية
-function updateSceneSidebar() {
-    const list = document.getElementById('scene-list-sidebar');
-    if (!list) return;
-    
-    list.innerHTML = '';
-    scenes.forEach((scene, index) => {
-        const li = document.createElement('li');
-        li.className = index === currentSceneIndex ? 'active' : '';
-        li.onclick = () => loadScene(index);
-        
-        const hotspotCount = scene.hotspots ? scene.hotspots.length : 0;
-        
-        li.innerHTML = `
-            <span class="scene-icon">${index === 0 ? '🏠' : '🏢'}</span>
-            <span>${scene.displayName || scene.name}</span>
-            <span class="scene-hotspot-count">${hotspotCount} نقطة</span>
-        `;
-        list.appendChild(li);
-    });
-}
-
-// استدعائها بعد تحميل المشهد
-updateSceneSidebar();
+                
                 function animate() {
                     requestAnimationFrame(animate);
                     controls.update();
@@ -783,6 +860,7 @@ let markerPreview = null;
 let exportCanvas, exportContext;
 let sceneManager;
 let hotspotMode = null;
+let hotspotIcons = {}; // تخزين مراجع أيقونات HTML
 
 const pathColors = { EL: 0xffcc00, AC: 0x00ccff, WP: 0x0066cc, WA: 0xff3300, GS: 0x33cc33 };
 let currentPathType = 'EL';
@@ -987,50 +1065,7 @@ function createStraightPath(points) {
 }
 
 // =======================================
-// ٦. دوال Hotspots (مطورة بالكامل)
-// =======================================
-
-// إعادة بناء Hotspots في المشهد (عرض احترافي)
-function rebuildHotspots(hotspots) {
-    if (!scene) return;
-
-    // إزالة النقاط القديمة
-    scene.children.forEach(child => {
-        if (child.userData && child.userData.type === 'hotspot') {
-            scene.remove(child);
-        }
-    });
-
-    if (!hotspots || hotspots.length === 0) return;
-
-    hotspots.forEach(h => {
-        // إنشاء كرة شفافة (تمثل نقطة التفاعل)
-        const geometry = new THREE.SphereGeometry(10, 24, 24);
-        const material = new THREE.MeshStandardMaterial({
-            color: h.type === 'SCENE' ? 0x44aaff : 0xffaa44,
-            emissive: h.type === 'SCENE' ? 0x44aaff : 0xffaa44,
-            emissiveIntensity: 0.4,
-            transparent: true,
-            opacity: 0.3
-        });
-
-        const marker = new THREE.Mesh(geometry, material);
-        marker.position.set(h.position.x, h.position.y, h.position.z);
-        marker.userData = {
-            type: 'hotspot',
-            hotspotId: h.id,
-            hotspotType: h.type,
-            data: h.data,
-            isInTool: true // لتمييز أن هذه النقطة في وضع التحرير
-        };
-        scene.add(marker);
-    });
-
-    console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة`);
-}
-
-// =======================================
-// ٦. دوال Hotspots (مطورة بالكامل مع أيقونات)
+// ٦. دوال Hotspots (موحدة ومطورة)
 // =======================================
 
 // دالة مساعدة لإنشاء عنصر hotspot في DOM (للأداة)
@@ -1061,16 +1096,19 @@ function createHotspotElement(position, type, data, hotspotId) {
     return div;
 }
 
-// تعديل دالة rebuildHotspots لاستخدام الأيقونات
+// إعادة بناء Hotspots في المشهد (عرض احترافي مع أيقونات)
 function rebuildHotspots(hotspots) {
     if (!scene) return;
 
-    // إزالة النقاط القديمة
+    // إزالة النقاط القديمة من المشهد ثلاثي الأبعاد
     scene.children.forEach(child => {
         if (child.userData && child.userData.type === 'hotspot') {
             scene.remove(child);
         }
     });
+
+    // إزالة الأيقونات القديمة من DOM
+    document.querySelectorAll('.scene-hotspot-marker, .info-hotspot-marker').forEach(el => el.remove());
 
     if (!hotspots || hotspots.length === 0) return;
 
@@ -1107,10 +1145,8 @@ function rebuildHotspots(hotspots) {
             h.data, 
             h.id
         );
-        
-        // تخزين مرجع للعنصر
-        if (!window.hotspotIcons) window.hotspotIcons = {};
-        window.hotspotIcons[h.id] = iconElement;
+// تخزين مرجع للعنصر
+        hotspotIcons[h.id] = iconElement;
         
         document.body.appendChild(iconElement);
     });
@@ -1129,109 +1165,7 @@ window.deleteHotspotFromUI = function(hotspotId) {
         // إزالة الأيقونة
         const icon = document.querySelector(`[data-id="${hotspotId}"]`);
         if (icon) icon.remove();
-    }
-};
-
-// =======================================
-// ٦. دوال Hotspots (مطورة بالكامل مع أيقونات)
-// =======================================
-
-// دالة مساعدة لإنشاء عنصر hotspot في DOM (للأداة)
-function createHotspotElement(position, type, data, hotspotId) {
-    const div = document.createElement('div');
-    div.className = type === 'SCENE' ? 'scene-hotspot-marker' : 'info-hotspot-marker';
-    div.style.position = 'absolute';
-    div.style.left = position.x + 'px';
-    div.style.top = position.y + 'px';
-    div.style.transform = 'translate(-50%, -50%)';
-    div.setAttribute('data-id', hotspotId);
-    div.setAttribute('data-type', type);
-    
-    const iconUrl = type === 'SCENE' ? 'icon/hotspot.png' : 'icon/info.png';
-    const displayText = type === 'SCENE' ? 
-        (data.targetSceneName || 'انتقال') : 
-        (data.title || 'معلومات');
-    
-    div.innerHTML = `
-        <img src="${iconUrl}" alt="${type}" style="width: 40px; height: 40px; filter: drop-shadow(0 0 10px ${type === 'SCENE' ? '#44aaff' : '#ffaa44'});">
-        <div class="hotspot-label">${displayText}</div>
-        <div class="hotspot-controls">
-            <button class="edit-btn" onclick="window.editHotspotFromUI('${hotspotId}')" title="تعديل">✏️</button>
-            <button class="delete-btn" onclick="window.deleteHotspotFromUI('${hotspotId}')" title="حذف">🗑️</button>
-        </div>
-    `;
-    
-    return div;
-}
-
-// تعديل دالة rebuildHotspots لاستخدام الأيقونات
-function rebuildHotspots(hotspots) {
-    if (!scene) return;
-
-    // إزالة النقاط القديمة
-    scene.children.forEach(child => {
-        if (child.userData && child.userData.type === 'hotspot') {
-            scene.remove(child);
-        }
-    });
-
-    if (!hotspots || hotspots.length === 0) return;
-
-    hotspots.forEach(h => {
-        // إضافة نقطة في المشهد (كرة شفافة للتفاعل)
-        const geometry = new THREE.SphereGeometry(8, 16, 16);
-        const material = new THREE.MeshStandardMaterial({
-            color: h.type === 'SCENE' ? 0x44aaff : 0xffaa44,
-            emissive: h.type === 'SCENE' ? 0x44aaff : 0xffaa44,
-            emissiveIntensity: 0.3,
-            transparent: true,
-            opacity: 0.2
-        });
-
-        const marker = new THREE.Mesh(geometry, material);
-        marker.position.set(h.position.x, h.position.y, h.position.z);
-        marker.userData = {
-            type: 'hotspot',
-            hotspotId: h.id,
-            hotspotType: h.type,
-            data: h.data
-        };
-        scene.add(marker);
-
-        // تحويل إحداثيات 3D إلى 2D للأيقونة
-        const vector = marker.position.clone().project(camera);
-        const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-        const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-
-        // إنشاء عنصر HTML للأيقونة
-        const iconElement = createHotspotElement(
-            { x, y }, 
-            h.type, 
-            h.data, 
-            h.id
-        );
-        
-        // تخزين مرجع للعنصر
-        if (!window.hotspotIcons) window.hotspotIcons = {};
-        window.hotspotIcons[h.id] = iconElement;
-        
-        document.body.appendChild(iconElement);
-    });
-
-    console.log(`✅ تم إعادة بناء ${hotspots.length} نقطة مع أيقونات`);
-}
-
-// دوال للتحكم من UI
-window.editHotspotFromUI = function(hotspotId) {
-    editHotspot(hotspotId);
-};
-
-window.deleteHotspotFromUI = function(hotspotId) {
-    if (confirm('هل أنت متأكد من حذف هذه النقطة؟')) {
-        deleteHotspotById(hotspotId);
-        // إزالة الأيقونة
-        const icon = document.querySelector(`[data-id="${hotspotId}"]`);
-        if (icon) icon.remove();
+        delete hotspotIcons[hotspotId];
     }
 };
 
@@ -1239,23 +1173,21 @@ window.deleteHotspotFromUI = function(hotspotId) {
 function deleteHotspotById(hotspotId) {
     if (!sceneManager || !sceneManager.currentScene) return;
 
-    if (confirm('هل أنت متأكد من حذف هذه النقطة؟')) {
-        // حذف من البيانات
-        sceneManager.currentScene.hotspots = sceneManager.currentScene.hotspots.filter(
-            h => h.id !== hotspotId
-        );
+    // حذف من البيانات
+    sceneManager.currentScene.hotspots = sceneManager.currentScene.hotspots.filter(
+        h => h.id !== hotspotId
+    );
 
-        // حذف من المشهد
-        scene.children.forEach(child => {
-            if (child.userData && child.userData.hotspotId === hotspotId) {
-                scene.remove(child);
-            }
-        });
+    // حذف من المشهد ثلاثي الأبعاد
+    scene.children.forEach(child => {
+        if (child.userData && child.userData.hotspotId === hotspotId) {
+            scene.remove(child);
+        }
+    });
 
-        sceneManager.saveScenes();
-        updateScenePanel();
-        console.log('🗑️ تم حذف النقطة');
-    }
+    sceneManager.saveScenes();
+    updateScenePanel();
+    console.log('🗑️ تم حذف النقطة');
 }
 
 // دالة تحرير Hotspot
@@ -1292,7 +1224,7 @@ function editHotspot(hotspotId) {
             }
         }
 
-    const newDesc = prompt('تعديل الوصف:', hotspot.data.description || '');
+        const newDesc = prompt('تعديل الوصف:', hotspot.data.description || '');
         if (newDesc !== null) {
             hotspot.data.description = newDesc;
         }
@@ -1301,6 +1233,91 @@ function editHotspot(hotspotId) {
     sceneManager.saveScenes();
     rebuildHotspots(sceneManager.currentScene.hotspots);
     alert('✅ تم تحديث النقطة');
+}
+
+// دالة إضافة Hotspot جديدة
+function addHotspot(position) {
+    if (!sceneManager || !sceneManager.currentScene) {
+        alert('❌ لا يوجد مشهد نشط');
+        return;
+    }
+
+    if (hotspotMode === 'INFO') {
+        const title = prompt('أدخل عنوان المعلومات:');
+        if (!title) return;
+        const content = prompt('أدخل نص المعلومات:');
+        if (!content) return;
+
+        const data = { title, content, type: 'INFO' };
+
+        const hotspot = sceneManager.addHotspot(
+            sceneManager.currentScene.id,
+            'INFO',
+            position,
+            data
+        );
+
+        if (hotspot) {
+            // إعادة بناء جميع النقاط (بما فيها الجديدة)
+            rebuildHotspots(sceneManager.currentScene.hotspots);
+
+            alert(`✅ تم إضافة نقطة معلومات: "${title}"`);
+            if (typeof updateScenePanel === 'function') updateScenePanel();
+        }
+
+    } else if (hotspotMode === 'SCENE') {
+        const otherScenes = sceneManager.scenes.filter(s => s.id !== sceneManager.currentScene.id);
+
+        if (otherScenes.length === 0) {
+            alert('❌ لا يوجد مشاهد أخرى للانتقال إليها');
+            return;
+        }
+
+        let sceneList = '';
+        otherScenes.forEach((s, index) => {
+            sceneList += `${index + 1}. ${s.name}\n`;
+        });
+
+        const choice = prompt(
+            `اختر المشهد للانتقال إليه:\n\n${sceneList}\nأدخل رقم المشهد:`
+        );
+
+        if (!choice) return;
+
+        const selectedIndex = parseInt(choice) - 1;
+        if (selectedIndex < 0 || selectedIndex >= otherScenes.length) {
+            alert('❌ اختيار غير صالح');
+            return;
+        }
+
+        const targetScene = otherScenes[selectedIndex];
+        const description = prompt(`أدخل وصفاً لهذه النقطة:`) || `انتقال إلى ${targetScene.name}`;
+
+        const data = {
+            targetSceneId: targetScene.id,
+            targetSceneName: targetScene.name,
+            description,
+            type: 'SCENE'
+        };
+
+        const hotspot = sceneManager.addHotspot(
+            sceneManager.currentScene.id,
+            'SCENE',
+            position,
+            data
+        );
+
+        if (hotspot) {
+            // إعادة بناء جميع النقاط (بما فيها الجديدة)
+            rebuildHotspots(sceneManager.currentScene.hotspots);
+
+            alert(`✅ تم إضافة نقطة انتقال إلى: "${targetScene.name}"`);
+            if (typeof updateScenePanel === 'function') updateScenePanel();
+        }
+    }
+
+    hotspotMode = null;
+    document.body.style.cursor = 'default';
 }
 
 // =======================================
@@ -1727,3 +1744,5 @@ function animate() {
 // ١٧. بدء التشغيل
 // =======================================
 init();
+
+                     
