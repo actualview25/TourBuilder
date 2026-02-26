@@ -142,7 +142,6 @@ class SceneManager {
         return hotspot;
     }
 
-    // عند التبديل بين المشاهد - إعادة بناء النقاط
     switchToScene(sceneId) {
         const sceneData = this.scenes.find(s => s.id === sceneId);
         if (!sceneData) return false;
@@ -175,11 +174,9 @@ class SceneManager {
             });
         }
 
-        // إعادة بناء النقاط (باستخدام الدالة الجديدة)
         if (sceneData.hotspots) {
             rebuildHotspots(sceneData.hotspots);
         } else {
-            // إزالة أي نقاط قديمة إذا لم يكن هناك نقاط
             document.querySelectorAll('.scene-hotspot-marker, .info-hotspot-marker').forEach(el => el.remove());
         }
         
@@ -188,7 +185,7 @@ class SceneManager {
         return true;
     }
 
-deleteScene(sceneId) {
+    deleteScene(sceneId) {
         const index = this.scenes.findIndex(s => s.id === sceneId);
         if (index !== -1) {
             this.scenes.splice(index, 1);
@@ -420,7 +417,7 @@ class TourExporter {
         .tooltip-body {
             line-height: 1.5;
         }
-        
+
         /* القائمة الجانبية للمشاهد */
         .scene-list-panel {
             position: fixed;
@@ -496,8 +493,7 @@ class TourExporter {
     </style>
 </head>
 <body>
-
-<div class="info">🏗️ ${projectName}</div>
+    <div class="info">🏗️ ${projectName}</div>
     <div id="container"></div>
     <button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
     
@@ -1061,7 +1057,8 @@ function createStraightPath(points) {
             emissive: color,
             emissiveIntensity: 0.4
         }));
-        cylinder.applyQuaternion(quaternion);
+
+    cylinder.applyQuaternion(quaternion);
         
         const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
         cylinder.position.copy(center);
@@ -1295,7 +1292,7 @@ function editHotspot(hotspotId) {
             }
         }
 
-        const newDesc = prompt('تعديل الوصف:', hotspot.data.description || '');
+    const newDesc = prompt('تعديل الوصف:', hotspot.data.description || '');
         if (newDesc !== null) {
             hotspot.data.description = newDesc;
         }
@@ -1444,7 +1441,7 @@ async function exportCompleteTour() {
             }))
         }));
 
-   const projectName = projectManager.currentProject?.name || `tour-${Date.now()}`;
+        const projectName = projectManager.currentProject?.name || `tour-${Date.now()}`;
         await tourExporter.exportTour(projectName, exportScenes);
 
         hideLoader();
@@ -1747,6 +1744,7 @@ function updateHotspotPositions() {
         }
     });
 }
+
 // =======================================
 // دوال التحكم بلوحة المشاهد (قابلة للطي)
 // =======================================
@@ -1848,7 +1846,7 @@ function initScenePanelControls() {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initScenePanelControls);
 } else {
-    setTimeout(initScenePanelControls, 100); // تأخير بسيط للتأكد
+    setTimeout(initScenePanelControls, 100);
 }
 
 // ========== دوال إظهار/إخفاء قائمة المشاهد ==========
@@ -1858,7 +1856,7 @@ function toggleSceneList() {
     const list = document.getElementById('sceneList');
     
     if (list) {
-        if (list.style.display === 'none') {
+        if (list.style.display === 'none' || getComputedStyle(list).display === 'none') {
             list.style.display = 'block';
         } else {
             list.style.display = 'none';
@@ -1899,7 +1897,8 @@ if (!document.getElementById('sceneListToggle')) {
     toggleBtn.addEventListener('click', toggleSceneList);
     document.body.appendChild(toggleBtn);
 }
+
 // =======================================
 // ١٧. بدء التشغيل
 // =======================================
-init(); 
+init();
