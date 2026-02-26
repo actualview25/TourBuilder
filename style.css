@@ -20,7 +20,7 @@ body {
 }
 
 /* =======================================
-   شريط الأدوات العلوي - Glassmorphism
+   شريط الأدوات العلوي
    ======================================= */
 .toolbar {
     position: fixed;
@@ -30,7 +30,6 @@ body {
     height: 60px;
     background: rgba(20, 30, 40, 0.4);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(74, 108, 143, 0.3);
     display: flex;
     align-items: center;
@@ -93,7 +92,6 @@ body {
     height: 50px;
     background: rgba(20, 30, 40, 0.5);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(74, 108, 143, 0.3);
     display: flex;
     align-items: center;
@@ -141,7 +139,6 @@ body {
     left: 20px;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     color: white;
     padding: 6px 16px;
     border-radius: 30px;
@@ -164,7 +161,6 @@ body {
     z-index: 900;
     background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     padding: 8px 12px;
     border-radius: 40px;
     border: 1px solid rgba(74, 108, 143, 0.3);
@@ -204,7 +200,6 @@ body {
     z-index: 900;
     background: rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     padding: 8px 16px;
     border-radius: 40px;
     border: 1px solid rgba(74, 108, 143, 0.3);
@@ -236,7 +231,7 @@ body {
 #clearAll { background: rgba(136, 34, 34, 0.4); }
 
 /* =======================================
-   شريط Hotspots
+   شريط Hotspots (محدث)
    ======================================= */
 .hotspot-toolbar {
     position: fixed;
@@ -276,6 +271,107 @@ body {
 .hotspot-btn.info { 
     background: rgba(255, 170, 68, 0.3);
 }
+.hotspot-btn.delete {
+    background: rgba(136, 34, 34, 0.4);
+    color: white;
+    font-size: 20px;
+}
+.hotspot-btn.delete:hover {
+    background: rgba(136, 34, 34, 0.8);
+}
+
+/* =======================================
+   أيقونات Hotspots في المشهد
+   ======================================= */
+.scene-hotspot-marker, .info-hotspot-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.2s ease;
+    pointer-events: all;
+}
+
+.scene-hotspot-marker:hover, .info-hotspot-marker:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    filter: drop-shadow(0 0 15px currentColor);
+}
+
+.scene-hotspot-marker img, .info-hotspot-marker img {
+    width: 40px;
+    height: 40px;
+    filter: drop-shadow(0 0 10px currentColor);
+    pointer-events: none;
+}
+
+.hotspot-label {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 30, 40, 0.95);
+    backdrop-filter: blur(5px);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    white-space: nowrap;
+    border: 2px solid currentColor;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+.scene-hotspot-marker:hover .hotspot-label,
+.info-hotspot-marker:hover .hotspot-label {
+    opacity: 1;
+}
+
+.hotspot-controls {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    display: flex;
+    gap: 5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1002;
+}
+
+.scene-hotspot-marker:hover .hotspot-controls,
+.info-hotspot-marker:hover .hotspot-controls {
+    opacity: 1;
+}
+
+.hotspot-controls button {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.hotspot-controls button:hover {
+    transform: scale(1.1);
+}
+
+.hotspot-controls .edit-btn {
+    background: #4a6c8f;
+}
+
+.hotspot-controls .delete-btn {
+    background: #882222;
+}
 
 /* =======================================
    التلميحات
@@ -286,7 +382,6 @@ body {
     left: 20px;
     background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     color: rgba(255,255,255,0.7);
     padding: 8px 12px;
     border-radius: 8px;
@@ -296,7 +391,7 @@ body {
     border: 1px solid rgba(74, 108, 143, 0.2);
     text-align: right;
     box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-    max-width: 180px;
+    max-width: 200px;
     opacity: 0.5;
     transition: opacity 0.2s ease;
 }
@@ -341,7 +436,6 @@ body {
     max-height: 60vh;
     background: rgba(20, 30, 40, 0.25);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(74, 108, 143, 0.3);
     border-radius: 12px;
     color: white;
@@ -450,7 +544,6 @@ body {
     width: 260px;
     background: rgba(20, 30, 40, 0.3);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(74, 108, 143, 0.3);
     border-radius: 12px;
     color: white;
@@ -522,7 +615,6 @@ body {
     z-index: 10000;
     font-weight: 500;
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 }
 
 /* =======================================
@@ -549,105 +641,6 @@ body {
     background: rgba(255, 0, 0, 0.1);
     opacity: 1;
     color: #ff8888;
-}
-
-/* =======================================
-   أيقونات Hotspots
-   ======================================= */
-.hotspot-icon-scene {
-    width: 32px;
-    height: 32px;
-    background-image: var(--hotspot-icon, url('icon/hotspot.png'));
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    display: inline-block;
-}
-
-.hotspot-icon-info {
-    width: 32px;
-    height: 32px;
-    background-image: var(--info-icon, url('icon/info.png'));
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    display: inline-block;
-}
-
-/* =======================================
-   أنماط Hotspots في الجولة المصدرة
-   ======================================= */
-.hotspot-icon-wrapper {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.hotspot-icon-image {
-    width: 36px;
-    height: 36px;
-    object-fit: contain;
-    z-index: 2;
-    filter: drop-shadow(0 0 10px currentColor);
-    transition: all 0.3s ease;
-}
-
-.hotspot-glow {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.3;
-    animation: pulse 2s infinite;
-    z-index: 1;
-}
-
-.hotspot:hover .hotspot-icon-image {
-    transform: scale(1.2);
-}
-
-.hotspot:hover .hotspot-glow {
-    opacity: 0.5;
-    animation: pulse 1s infinite;
-}
-
-.tooltip-arrow {
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 8px solid currentColor;
-}
-
-.tooltip-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-
-.tooltip-icon {
-    font-size: 16px;
-}
-
-.tooltip-body {
-    line-height: 1.5;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 0.3; }
-    50% { transform: scale(1.2); opacity: 0.5; }
-    100% { transform: scale(1); opacity: 0.3; }
 }
 
 /* =======================================
@@ -713,317 +706,4 @@ body {
         padding: 4px 10px;
         font-size: 11px;
     }
-}
-
-/* =======================================
-   Hotspots في وضع التحرير (الأداة)
-   ======================================= */
-.hotspot-editor-marker {
-    position: relative;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.hotspot-editor-marker:hover {
-    filter: brightness(1.2);
-    transform: scale(1.05);
-}
-
-.hotspot-editor-marker::after {
-    content: '✏️';
-    position: absolute;
-    top: -20px;
-    right: -20px;
-    font-size: 14px;
-    background: rgba(0,0,0,0.6);
-    padding: 2px 5px;
-    border-radius: 12px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-}
-
-.hotspot-editor-marker:hover::after {
-    opacity: 1;
-}
-
-/* تلميح للحذف */
-.hotspot-editor-marker[data-type="SCENE"]:active::after,
-.hotspot-editor-marker[data-type="INFO"]:active::after {
-    content: '🗑️ انقر مع Ctrl للحذف';
-    opacity: 1;
-    background: rgba(255,0,0,0.7);
-}
-/* =======================================
-   Hotspots في وضع التحرير (الأداة) - محدث
-   ======================================= */
-
-/* تحسين شكل الأيقونات في الأزرار */
-.hotspot-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.4);
-    border: 2px solid rgba(255,255,255,0.2);
-    transition: all 0.2s ease;
-}
-
-.hotspot-btn:hover {
-    transform: scale(1.1);
-    border-color: white;
-    background: rgba(0,0,0,0.6);
-}
-
-.hotspot-btn.scene {
-    background: rgba(68, 170, 255, 0.3);
-}
-.hotspot-btn.scene:hover {
-    background: rgba(68, 170, 255, 0.6);
-}
-
-.hotspot-btn.info {
-    background: rgba(255, 170, 68, 0.3);
-}
-.hotspot-btn.info:hover {
-    background: rgba(255, 170, 68, 0.6);
-}
-
-/* النقاط في المشهد (وضع التحرير) */
-.hotspot-editor-marker {
-    position: relative;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.hotspot-editor-marker:hover {
-    filter: brightness(1.2);
-    transform: scale(1.05);
-}
-
-/* تلميح التعديل */
-.hotspot-editor-marker::after {
-    content: '✏️';
-    position: absolute;
-    top: -25px;
-    right: -25px;
-    font-size: 16px;
-    background: rgba(0,0,0,0.7);
-    padding: 4px 8px;
-    border-radius: 20px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    border: 1px solid currentColor;
-    white-space: nowrap;
-}
-
-.hotspot-editor-marker:hover::after {
-    opacity: 1;
-}
-
-/* تلميح الحذف عند الضغط على Ctrl */
-.hotspot-editor-marker:active::after {
-    content: '🗑️ انقر مع Ctrl للحذف';
-    opacity: 1;
-    background: rgba(255,0,0,0.8);
-    border-color: #ff8888;
-}
-
-/* تمييز النقاط حسب النوع */
-.scene-hotspot-marker {
-    box-shadow: 0 0 20px rgba(68, 170, 255, 0.5);
-    border: 2px solid #44aaff;
-}
-
-.info-hotspot-marker {
-    box-shadow: 0 0 20px rgba(255, 170, 68, 0.5);
-    border: 2px solid #ffaa44;
-}
-
-/* تحسين التلميحات */
-.hint small {
-    display: block;
-    margin-top: 4px;
-    color: #88aaff;
-    font-size: 10px;
-}
-
-.hint small:last-child {
-    color: #ffaa44;
-    margin-top: 2px;
-}
-
-/* =======================================
-   Hotspots في الأداة - باستخدام الأيقونات
-   ======================================= */
-
-/* النقاط في المشهد */
-.scene-hotspot-marker, .info-hotspot-marker {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    pointer-events: all;
-}
-
-.scene-hotspot-marker:hover, .info-hotspot-marker:hover {
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 15px currentColor);
-}
-
-/* عرض المعلومات بجانب النقطة */
-.hotspot-label {
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(20, 30, 40, 0.95);
-    backdrop-filter: blur(5px);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    white-space: nowrap;
-    border: 2px solid currentColor;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-.scene-hotspot-marker:hover .hotspot-label,
-.info-hotspot-marker:hover .hotspot-label {
-    opacity: 1;
-}
-
-/* أزرار التحكم بالنقاط */
-.hotspot-controls {
-    position: absolute;
-    top: -20px;
-    right: -20px;
-    display: flex;
-    gap: 5px;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.scene-hotspot-marker:hover .hotspot-controls,
-.info-hotspot-marker:hover .hotspot-controls {
-    opacity: 1;
-}
-
-.hotspot-controls button {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    transition: all 0.2s;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.hotspot-controls button:hover {
-    transform: scale(1.1);
-}
-
-.hotspot-controls .edit-btn {
-    background: #4a6c8f;
-}
-
-.hotspot-controls .delete-btn {
-    background: #882222;
-}
-
-/* زر الحذف في الشريط */
-.hotspot-btn.delete {
-    background: rgba(136, 34, 34, 0.4);
-    color: white;
-    font-size: 20px;
-}
-
-.hotspot-btn.delete:hover {
-    background: rgba(136, 34, 34, 0.8);
-}
-
-/* =======================================
-   القائمة الجانبية للمشاهد في الجولة المصدرة
-   ======================================= */
-.scene-list-panel {
-    position: fixed;
-    bottom: 100px;
-    left: 20px;
-    background: rgba(20, 30, 40, 0.85);
-    backdrop-filter: blur(10px);
-    border: 2px solid #4a6c8f;
-    border-radius: 15px;
-    color: white;
-    z-index: 200;
-    padding: 15px;
-    min-width: 220px;
-    max-width: 280px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    direction: rtl;
-}
-
-.scene-list-panel h3 {
-    margin: 0 0 10px 0;
-    color: #88aaff;
-    font-size: 16px;
-    text-align: center;
-    border-bottom: 1px solid #4a6c8f;
-    padding-bottom: 8px;
-}
-
-.scene-list-panel ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.scene-list-panel li {
-    padding: 8px 12px;
-    margin: 4px 0;
-    background: rgba(255,255,255,0.05);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.scene-list-panel li:hover {
-    background: rgba(74, 108, 143, 0.3);
-}
-
-.scene-list-panel li.active {
-    background: rgba(74, 108, 143, 0.6);
-    border-right: 3px solid #88aaff;
-}
-
-.scene-list-panel li span {
-    flex: 1;
-}
-
-.scene-list-panel .scene-icon {
-    font-size: 16px;
-}
-
-.scene-list-panel .scene-hotspot-count {
-    font-size: 11px;
-    background: rgba(255,255,255,0.1);
-    padding: 2px 6px;
-    border-radius: 12px;
-    color: #88aaff;
 }
