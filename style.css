@@ -715,3 +715,42 @@ body {
     }
 }
 
+/* =======================================
+   Hotspots في وضع التحرير (الأداة)
+   ======================================= */
+.hotspot-editor-marker {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hotspot-editor-marker:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+
+.hotspot-editor-marker::after {
+    content: '✏️';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 14px;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 5px;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.hotspot-editor-marker:hover::after {
+    opacity: 1;
+}
+
+/* تلميح للحذف */
+.hotspot-editor-marker[data-type="SCENE"]:active::after,
+.hotspot-editor-marker[data-type="INFO"]:active::after {
+    content: '🗑️ انقر مع Ctrl للحذف';
+    opacity: 1;
+    background: rgba(255,0,0,0.7);
+}
