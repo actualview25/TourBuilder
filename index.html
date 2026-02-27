@@ -2,47 +2,49 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>جولة افتراضية متكاملة</title>
+    <title>جولة افتراضية</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- ====== CSS كامل ====== -->
+    <!-- ملف CSS الرئيسي -->
     <link rel="stylesheet" href="style.css">
-    
-    <!-- ====== Three.js & OrbitControls ====== -->
+
+    <!-- Three.js -->
     <script src="https://unpkg.com/three@0.130.1/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.130.1/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-    <!-- الحاوية الرئيسية -->
+
+    <!-- الحاوية الرئيسية للمشهد -->
     <div id="container"></div>
 
-    <!-- لوحة تحميل -->
-    <div id="loader">⏳ جاري التحميل...</div>
+    <!-- أزرار الوضعيات -->
+    <button class="mode-btn" id="modeDraw">✏️ وضع الرسم</button>
+    <button class="mode-btn" id="modeView">👁️ وضع العرض</button>
+
+    <!-- أزرار التحكم بالرسم -->
+    <button id="toggleDraw">✏️ تفعيل الرسم</button>
+    <button id="toggleRotate">▶️ تشغيل التدوير</button>
+    <button id="finalizePath">💾 حفظ المسار</button>
+    <button id="clearAll">🧹 مسح جميع المسارات</button>
+
+    <!-- أزرار إضافة نقاط Hotspots -->
+    <button id="hotspotScene">🚪 إضافة نقطة انتقال</button>
+    <button id="hotspotInfo">📝 إضافة نقطة معلومات</button>
+
+    <!-- زر إضافة مشهد جديد -->
+    <button id="addSceneBtn">➕ إضافة مشهد</button>
+
+    <!-- زر تصدير الجولة -->
+    <button id="exportTour">📤 تصدير الجولة</button>
 
     <!-- لوحة المشاهد -->
-    <div id="scenePanel">
-        <div id="sceneList"></div>
-    </div>
+    <div id="sceneList"></div>
 
-    <!-- أزرار التحكم -->
-    <div style="position: fixed; top:10px; right:10px; z-index:5000; display:flex; gap:4px;">
-        <button id="toggleRotate" class="control-btn">⏸️ إيقاف التدوير</button>
-        <button id="toggleDraw" class="control-btn">✏️ تفعيل الرسم</button>
-        <button id="finalizePath" class="control-btn">💾 حفظ المسار</button>
-        <button id="clearAll" class="control-btn">🗑️ مسح جميع المسارات</button>
-        <button id="hotspotScene" class="control-btn">🚪 إضافة نقطة انتقال</button>
-        <button id="hotspotInfo" class="control-btn">📝 إضافة نقطة معلومات</button>
-        <button id="addSceneBtn" class="control-btn">➕ إضافة مشهد</button>
-        <button id="exportTour" class="control-btn">📤 تصدير الجولة</button>
-    </div>
+    <!-- مؤشر التحميل -->
+    <div id="loader">⏳ جاري التحميل...</div>
 
-    <!-- أزرار الوضعيات -->
-    <div style="position: fixed; top:10px; left:10px; z-index:5000; display:flex; gap:4px;">
-        <button id="modeDraw" class="mode-btn active">وضع الرسم</button>
-        <button id="modeView" class="mode-btn">وضع العرض</button>
-    </div>
+    <!-- ملف JS الرئيسي -->
+    <script src="main.js"></script>
 
-    <!-- JS الجولة الافتراضية -->
-    <script src="script.js"></script>
 </body>
 </html>
