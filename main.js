@@ -637,6 +637,123 @@ class TourExporter {
             .hotspot-marker img { width: 35px; height: 35px; }
             #autoRotateBtn { font-size: 14px; padding: 10px 20px; }
         }
+        /* ===== تحسين النوافذ - Glassmorphism ===== */
+
+/* نافذة التحكم بالمسارات */
+.paths-control-panel {
+    background: rgba(20, 30, 40, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 2px solid rgba(74, 108, 143, 0.5) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* نافذة قائمة المشاهد */
+.scene-list-panel {
+    background: rgba(20, 30, 40, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 2px solid rgba(74, 108, 143, 0.5) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* رأس النوافذ */
+.panel-header {
+    background: rgba(30, 40, 50, 0.8) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border-bottom: 2px solid rgba(74, 108, 143, 0.5) !important;
+}
+
+/* نافذة المعلومات */
+.custom-info-window {
+    background: rgba(20, 30, 40, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 2px solid #ffaa44 !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* زر الدوران */
+#autoRotateBtn {
+    background: rgba(20, 30, 40, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 2px solid rgba(74, 108, 143, 0.5) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* معلومات المشروع */
+.info {
+    background: rgba(20, 30, 40, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 2px solid rgba(74, 108, 143, 0.5) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+}
+/* تحسين الأيقونات والنقر */
+.hotspot-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer !important;
+    z-index: 1000;
+    pointer-events: auto !important;
+    transition: all 0.2s ease;
+}
+
+.hotspot-marker img {
+    display: block !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50%;
+    pointer-events: none;
+    box-shadow: 0 0 15px currentColor;
+}
+
+.hotspot-marker:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    filter: drop-shadow(0 0 15px gold);
+    z-index: 1001;
+}
+
+.hotspot-marker:hover .hotspot-label {
+    opacity: 1 !important;
+}
+
+.hotspot-label {
+    position: absolute;
+    top: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 30, 40, 0.95);
+    backdrop-filter: blur(5px);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    white-space: nowrap;
+    border: 2px solid;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1002;
+}
+
+/* للتأكد من أن النقر يعمل على كامل مساحة الأيقونة */
+.hotspot-marker::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    z-index: -1;
+}
     </style>
 </head>
 <body>
@@ -697,43 +814,89 @@ class TourExporter {
                 container.appendChild(item);
             });
         }
+   function createHotspotElement(x, y, type, data) {
+    // إنشاء العنصر الرئيسي
+    const div = document.createElement('div');
+    div.className = 'hotspot-marker';
+    div.style.left = x + 'px';
+    div.style.top = y + 'px';
+    div.style.position = 'absolute';
+    div.style.transform = 'translate(-50%, -50%)';
+    div.style.cursor = 'pointer';
+    div.style.zIndex = '1000';
+    div.style.pointerEvents = 'auto';
+    div.style.transition = 'all 0.2s ease';
+    
+    // اختيار الأيقونة المناسبة
+    const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
+    const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
+    const displayText = type === 'SCENE' 
+        ? (data.targetSceneName || 'انتقال') 
+        : (data.title || 'معلومات');
+    
+    // إنشاء عنصر الصورة
+    const img = document.createElement('img');
+    img.src = iconUrl;
+    img.alt = type;
+    img.style.width = '40px';
+    img.style.height = '40px';
+    img.style.borderRadius = '50%';
+    img.style.border = '2px solid ' + borderColor;
+    img.style.background = 'rgba(0,0,0,0.3)';
+    img.style.cursor = 'pointer';
+    img.style.pointerEvents = 'none';
+    img.style.display = 'block';
+    
+    // إنشاء تسمية النقطة
+    const label = document.createElement('div');
+    label.className = 'hotspot-label';
+    label.style.position = 'absolute';
+    label.style.top = '-40px';
+    label.style.left = '50%';
+    label.style.transform = 'translateX(-50%)';
+    label.style.background = 'rgba(20, 30, 40, 0.95)';
+    label.style.color = 'white';
+    label.style.padding = '6px 12px';
+    label.style.borderRadius = '20px';
+    label.style.fontSize = '12px';
+    label.style.whiteSpace = 'nowrap';
+    label.style.border = '2px solid ' + borderColor;
+    label.style.opacity = '0';
+    label.style.transition = 'opacity 0.2s ease';
+    label.style.pointerEvents = 'none';
+    label.textContent = displayText;
+    
+    div.appendChild(img);
+    div.appendChild(label);
+    
+    // حدث النقر
+    div.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
         
-        function createHotspotElement(x, y, type, data) {
-            const div = document.createElement('div');
-            div.className = 'hotspot-marker';
-            div.style.left = x + 'px';
-            div.style.top = y + 'px';
-            
-            const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
-            const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
-            const displayText = type === 'SCENE' 
-                ? (data.targetSceneName || 'انتقال') 
-                : (data.title || 'معلومات');
-            
-            div.innerHTML = '<img src="' + iconUrl + '" alt="' + type + '" style="border: 2px solid ' + borderColor + ';">' +
-                '<div class="hotspot-label" style="border-color: ' + borderColor + ';">' + displayText + '</div>';
-            
-            // ✅ إصلاح النقر للكمبيوتر والهاتف
-            div.addEventListener('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
-                
-                if (type === 'INFO') {
-                    showInfoWindow(data.title, data.content);
-                } else {
-                    const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
-                    if (targetIndex !== -1) {
-                        this.style.transform = 'scale(1.5)';
-                        setTimeout(() => loadScene(targetIndex), 300);
-                    }
-                }
-            });
-            
-            // ✅ إضافة مؤشر اليد
-            div.style.cursor = 'pointer';
-            
-            return div;
+        if (type === 'INFO') {
+            showInfoWindow(data.title, data.content);
+        } else {
+            const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
+            if (targetIndex !== -1) {
+                this.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                setTimeout(() => loadScene(targetIndex), 300);
+            }
         }
+        return false;
+    });
+    
+    // حدث hover
+    div.addEventListener('mouseenter', function() {
+        label.style.opacity = '1';
+    });
+    
+    div.addEventListener('mouseleave', function() {
+        label.style.opacity = '0';
+    });
+    
+    return div;
+}
         
         function showInfoWindow(title, content) {
             // إزالة أي نافذة سابقة
