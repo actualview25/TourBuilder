@@ -10,15 +10,23 @@
     <!-- أيقونات Hotspots -->
     <link rel="icon" type="image/png" href="icon/hotspot.png">
     
-    <!-- استيراد المكتبات المحلية -->
-<!-- الترتيب الصحيح - مهم جداً -->
-<script src="vendor/three.min.js"></script>        <!-- أولاً: three.js -->
-<script src="vendor/OrbitControls.js"></script>    <!-- ثانياً: OrbitControls -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- ✅ Three.js من رابط خارجي (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- ✅ OrbitControls محلي -->
+    <script src="vendor/OrbitControls.js"></script>
+    
+    <!-- مكتبات أخرى -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
-    <!-- شريط الأدوات العلوي -->
+    <!-- ... باقي المحتوى كما هو ... -->
+    
+    <script src="main.js"></script>
+</body>
+</html>
+<!-- شريط الأدوات العلوي -->
     <div class="toolbar">
         <div class="logo">🏗️ Actual view Studio</div>
         <div class="controls">
