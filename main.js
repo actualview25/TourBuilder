@@ -1,7 +1,15 @@
-// ✅ استيراد من المسار المحلي - هذا صحيح 100%
-import * as THREE from './vendor/three.module.js';
-import { OrbitControls } from './vendor/OrbitControls.js';
+// =======================================
+// استخدام النسخة الكلاسيكية من Three.js
+// =======================================
+const THREE = window.THREE;
+const OrbitControls = THREE.OrbitControls;
 
+// =======================================
+// ١. إدارة المشاريع
+// =======================================
+class ProjectManager {
+    // ... باقي الكود كما هو ...
+}
 // =======================================
 // ١. إدارة المشاريع
 // =======================================
@@ -176,18 +184,12 @@ class SceneManager {
             });
         }
 
-        // إعادة بناء الهوتسبوت عند تغيير المشهد
-        if (sceneData.hotspots) {
-            rebuildHotspots(sceneData.hotspots);
-        } else {
-            Object.values(hotspotMarkers).forEach(marker => {
-                if (marker && marker.parentNode) {
-                    marker.parentNode.removeChild(marker);
-                }
-            });
-            hotspotMarkers = {};
-        }
-        
+        /// إعادة بناء الهوتسبوت عند تغيير المشهد
+if (sceneData.hotspots) {
+    HotspotSystem.rebuild(sceneData.hotspots);
+} else {
+    HotspotSystem.clear();
+}
         if (typeof updateScenePanel === 'function') updateScenePanel();
         this.saveScenes();
         return true;
@@ -929,7 +931,84 @@ function createStraightPath(points) {
         paths.push(cylinder);
     }
 }
+function addHotspot(position) {
+    if (!sceneManager || !sceneManager.currentScene) {
+        alert('❌ لا يوجد مشهد نشط');
+        return;
+    }
 
+    if (hotspotMode === 'INFO') {
+        const title = prompt('📝 أدخل عنوان المعلومات:');
+        if (!title) return;
+        const content = prompt('📄 أدخل نص المعلومات:');
+        if (!content) return;
+
+        const data = { title, content };
+
+        const hotspot = sceneManager.addHotspot(
+            sceneManager.currentScene.id,
+            'INFO',
+            position,
+            data
+        );
+
+        if (hotspot) {
+            HotspotSystem.create(position, 'INFO', data, hotspot.id);
+            showCustomInfoWindow('✅ تمت الإضافة', `تم إضافة نقطة معلومات: "${title}"`, 'info');
+            if (typeof updateScenePanel === 'function') updateScenePanel();
+        }
+
+    } else if (hotspotMode === 'SCENE') {
+        const otherScenes = sceneManager.scenes.filter(s => s.id !== sceneManager.currentScene.id);
+
+        if (otherScenes.length === 0) {
+            alert('❌ لا يوجد مشاهد أخرى للانتقال إليها');
+            return;
+        }
+
+        let sceneList = '';
+        otherScenes.forEach((s, index) => {
+            sceneList += `${index + 1}. ${s.name}\n`;
+        });
+
+        const choice = prompt(
+            `اختر المشهد للانتقال إليه:\n\n${sceneList}\nأدخل رقم المشهد:`
+        );
+
+        if (!choice) return;
+
+        const selectedIndex = parseInt(choice) - 1;
+        if (selectedIndex < 0 || selectedIndex >= otherScenes.length) {
+            alert('❌ اختيار غير صالح');
+            return;
+        }
+
+        const targetScene = otherScenes[selectedIndex];
+        const description = prompt(`📝 أدخل وصفاً لهذه النقطة:`) || `انتقال إلى ${targetScene.name}`;
+
+        const data = {
+            targetSceneId: targetScene.id,
+            targetSceneName: targetScene.name,
+            description
+        };
+
+        const hotspot = sceneManager.addHotspot(
+            sceneManager.currentScene.id,
+            'SCENE',
+            position,
+            data
+        );
+
+        if (hotspot) {
+            HotspotSystem.create(position, 'SCENE', data, hotspot.id);
+            showCustomInfoWindow('✅ تمت الإضافة', `تم إضافة نقطة انتقال إلى: "${targetScene.name}"`, 'scene');
+            if (typeof updateScenePanel === 'function') updateScenePanel();
+        }
+    }
+
+    hotspotMode = null;
+    document.body.style.cursor = 'default';
+}
 // =======================================
 // دوال Hotspots المحسنة
 // =======================================
@@ -1046,27 +1125,8 @@ function addHotspot(position) {
         );
 
         if (hotspot) {
-            const geometry = new THREE.SphereGeometry(15, 32, 32);
-            const material = new THREE.MeshStandardMaterial({
-                color: 0xffaa44,
-                emissive: 0xffaa44,
-                emissiveIntensity: 0.3,
-                transparent: true,
-                opacity: 0.2
-            });
-
-            const marker = new THREE.Mesh(geometry, material);
-            marker.position.copy(position);
-            marker.userData = {
-                type: 'hotspot-background',
-                hotspotId: hotspot.id
-            };
-            scene.add(marker);
-            
-            rebuildHotspots(sceneManager.currentScene.hotspots);
-            
+            HotspotSystem.create(position, 'INFO', data, hotspot.id);
             showCustomInfoWindow('✅ تمت الإضافة', `تم إضافة نقطة معلومات: "${title}"`, 'info');
-            
             if (typeof updateScenePanel === 'function') updateScenePanel();
         }
 
@@ -1112,33 +1172,15 @@ function addHotspot(position) {
         );
 
         if (hotspot) {
-            const geometry = new THREE.SphereGeometry(15, 32, 32);
-            const material = new THREE.MeshStandardMaterial({
-                color: 0x44aaff,
-                emissive: 0x44aaff,
-                emissiveIntensity: 0.3,
-                transparent: true,
-                opacity: 0.2
-            });
-
-            const marker = new THREE.Mesh(geometry, material);
-            marker.position.copy(position);
-            marker.userData = {
-                type: 'hotspot-background',
-                hotspotId: hotspot.id
-            };
-            scene.add(marker);
-            
-            rebuildHotspots(sceneManager.currentScene.hotspots);
-            
+            HotspotSystem.create(position, 'SCENE', data, hotspot.id);
             showCustomInfoWindow('✅ تمت الإضافة', `تم إضافة نقطة انتقال إلى: "${targetScene.name}"`, 'scene');
-            
             if (typeof updateScenePanel === 'function') updateScenePanel();
         }
     }
 
     hotspotMode = null;
     document.body.style.cursor = 'default';
+}
 }
 
 window.editHotspotFromUI = function(hotspotId) {
@@ -1667,7 +1709,9 @@ function animate() {
     requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
-    updateHotspotPositions();
+    
+    // تحديث مواقع الأيقونات فقط - بدون إعادة بناء
+    HotspotSystem.updatePositions();
 }
 
 init();
