@@ -1,6 +1,3 @@
-
-// استخدام النسخة الكلاسيكية من Three.js
-// =======================================
 const THREE = window.THREE;
 const OrbitControls = THREE.OrbitControls;
 
@@ -314,7 +311,7 @@ class SceneManager {
             }));
         }
 
-        this.currentScene = sceneData;
+    this.currentScene = sceneData;
 
         paths.forEach(p => scene.remove(p));
         paths = [];
@@ -396,15 +393,19 @@ class TourExporter {
         folder.file('style.css', this.generatePlayerCSS());
         folder.file('README.md', this.generateReadme(projectName));
         
+        // إضافة مجلد icon مع الأيقونات
+        const iconFolder = folder.folder('icon');
+        // سيتم إضافة الأيقونات لاحقاً عند التصدير الفعلي
+        
         const content = await this.zip.generateAsync({ type: 'blob' });
         saveAs(content, `${projectName}.zip`);
     }
 
-  generatePlayerHTML(projectName) {
-    const hotspotBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIzSURBVFiF7ZbNaxNBGMZ/djdpk0hS9KIoigp68RRyUw8iKHgRLyIoePCi4F8g3nrwU0Tx4lEQvSh4EcF78NqLIAp68SNoFZE2TdMk3R2f2SSbdNPd2Z0NIvpAXjLMvM/8ZucjMwsHqIEa+J+hlJpOkrS0Z0mS1NM0nSu7l+M4h5VSy1rrn1rrb6W4LmBZ1hWl1LKUsl3L+t+01rdLcUMApdRVpdTC3r6iKOqMx+O+UsoPw/CFlHK1lFoJMAzjiVJqRQgR+b5/37Ks4+Fw+DaKovvtdvux4ziLUkq/LEcIYVvW3SRJ+lLKL5qmZ9I0HUopDc/zTmZZtpZlWZJl2YYoG4MQYgSAYRgIIW5IKZ1iPGmaXgPA8zySJOlKKdM0TdM0rZfRB8iyrC2lTNI0nSmKIl3X69M0PTRN0+WyHMa11pckSRohhC2l/JYkyXBRPrdt25RSr5Zl3zFN88F4PP4mpdwJguBpFEX3m83mGRhzLwjDMHzJmP0wDMMXWZZ93G63H5fN78sopdA5N0opP0mSl/P5vN5sNh/zAymE+LqcT2uN1jqRUn6Joqg9nU4fFNM2DMMo2l95GGP/SylvR1H0oEifMzsIgoNSyjaMpZRfl8vlvTAMP0dRdG/btvu+7z9jzG4X6Wc3j8OYe7Lf75+M47hXdXyUUh8BgDF7yhj7yZhbzOfz22maHjPGTjPGxJ+WnzE2Wq/Xh5RSl1ar1Yk8zzvL5fJ4GIa9JEk6URT1lFL9NE17cRwfybLsp9Z6tVqtDsI4fAtjX6rGgRrY4/wCJ8zvggPQ/IEAAAAASUVORK5CYII=';
-    const infoBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI5SURBVFiF7ZbPaxNBFMfnt5vdJBIp1l6kFQU9eCk9tQcVBC+iIAgK4kXw7l/w4EEQ70178aAHQfBPRBCvXrwIgqBQ6FURtPUDLVIrSdP9MW+TTbrZzWazWwX7hQWZZeZ95v2Y994bGAVK0P8ZY2yP1rohpXzDOS9JKfcaY56Ypvk4DMMyY+xrFEWJ53nblFKPm812qVR6qJRa55w/aF3GGJ9zHiqlZqIoOgIAtm2f6nQ6FxhjZZZlH6IoOtsfhzF2l2VZXSlV55y/CYLgJgCkaToex/G0lHIGAAqFgimESBhjUwCglNqqlPoqhIgBQEq5GEXRac55RUr5xXGcQQBQSq2GYfgGAJRS61LKz4yxm2EYjhbzL5VKawBgrgM3DONBEARHlFKbAIBS6nOl1B6l1DwA6Hq9frRQKNSiKNohl6vVal+hUNjfbDaPAkCxWHzKGNtXKBSqk8nksWEYZ5Ikqbquu1Yul2d938+63e5UoVA4I6W8CgC2bT9JkuQeAGRZ5gOAaZqjUkpTSrmZZdl9pVQtSZJ7xWKxBAA6jmOO42wIIa4BQLlcDjjn3w3DqAkhVgGAc34tjuM5pdS8EOJXmUwmE0KIvQDAOT8KACzLspc8z3vLGJuJomg6TVPP87zJLMu8TqfzI89zLwiCvZxzkWVZP5/P5wFgLMs2pJTVKIp6nPOs2Wx+Y4z9FkKcBICRUmkpy7K6lPJGHMfHS6XSEs65ZVnWbD6f38rzfMxxnM+B759I0/Qp5/w4Y6wQJMl2IcRcGIaHhRDbgyB4JKU8yRirCiE+D7z/H6AE9Y1+As0ZxH2vO/WTAAAAAElFTkSuQmCC';
-    
-    return `<!DOCTYPE html>
+    generatePlayerHTML(projectName) {
+        const hotspotBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIzSURBVFiF7ZbNaxNBGMZ/djdpk0hS9KIoigp68RRyUw8iKHgRLyIoePCi4F8g3nrwU0Tx4lEQvSh4EcF78NqLIAp68SNoFZE2TdMk3R2f2SSbdNPd2Z0NIvpAXjLMvM/8ZucjMwsHqIEa+J+hlJpOkrS0Z0mS1NM0nSu7l+M4h5VSy1rrn1rrb6W4LmBZ1hWl1LKUsl3L+t+01rdLcUMApdRVpdTC3r6iKOqMx+O+UsoPw/CFlHK1lFoJMAzjiVJqRQgR+b5/37Ks4+Fw+DaKovvtdvux4ziLUkq/LEcIYVvW3SRJ+lLKL5qmZ9I0HUopDc/zTmZZtpZlWZJl2YYoG4MQYgSAYRgIIW5IKZ1iPGmaXgPA8zySJOlKKdM0TdM0rZfRB8iyrC2lTNI0nSmKIl3X69M0PTRN0+WyHMa11pckSRohhC2l/JYkyXBRPrdt25RSr5Zl3zFN88F4PP4mpdwJguBpFEX3m83mGRhzLwjDMHzJmP0wDMMXWZZ93G63H5fN78sopdA5N0opP0mSl/P5vN5sNh/zAymE+LqcT2uN1jqRUn6Joqg9nU4fFNM2DMMo2l95GGP/SylvR1H0oEifMzsIgoNSyjaMpZRfl8vlvTAMP0dRdG/btvu+7z9jzG4X6Wc3j8OYe7Lf75+M47hXdXyUUh8BgDF7yhj7yZhbzOfz22maHjPGTjPGxJ+WnzE2Wq/Xh5RSl1ar1Yk8zzvL5fJ4GIa9JEk6URT1lFL9NE17cRwfybLsp9Z6tVqtDsI4fAtjX6rGgRrY4/wCJ8zvggPQ/IEAAAAASUVORK5CYII=';
+        const infoBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI5SURBVFiF7ZbPaxNBFMfnt5vdJBIp1l6kFQU9eCk9tQcVBC+iIAgK4kXw7l/w4EEQ70178aAHQfBPRBCvXrwIgqBQ6FURtPUDLVIrSdP9MW+TTbrZzWazWwX7hQWZZeZ95v2Y994bGAVK0P8ZY2yP1rohpXzDOS9JKfcaY56Ypvk4DMMyY+xrFEWJ53nblFKPm812qVR6qJRa55w/aF3GGJ9zHiqlZqIoOgIAtm2f6nQ6FxhjZZZlH6IoOtsfhzF2l2VZXSlV55y/CYLgJgCkaToex/G0lHIGAAqFgimESBhjUwCglNqqlPoqhIgBQEq5GEXRac55RUr5xXGcQQBQSq2GYfgGAJRS61LKz4yxm2EYjhbzL5VKawBgrgM3DONBEARHlFKbAIBS6nOl1B6l1DwA6Hq9frRQKNSiKNohl6vVal+hUNjfbDaPAkCxWHzKGNtXKBSqk8nksWEYZ5Ikqbquu1Yul2d938+63e5UoVA4I6W8gC2bT9JkuQeAGRZ5gOAaZqjUkpTSrmZZdl9pVQtSZJ7xWKxBAA6jmOO42wIIa4BQLlcDjjn3w3DqAkhVgGAc34tjuM5pdS8EOJXmUwmE0KIvQDAOT8KACzLspc8z3vLGJuJomg6TVPP87zJLMu8TqfzI89zLwiCvZxzkWVZP5/P5wFgLMs2pJTVKIp6nPOs2Wx+Y4z9FkKcBICRUmkpy7K6lPJGHMfHS6XSEs65ZVnWbD6f38rzfMxxnM+B759I0/Qp5/w4Y6wQJMl2IcRcGIaHhRDbgyB4JKU8yRirCiE+D7z/H6AE9Y1+As0ZxH2vO/WTAAAAAElFTkSuQmCC';
+        
+        return `<!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
@@ -417,30 +418,57 @@ class TourExporter {
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
         #container { width: 100vw; height: 100vh; background: #000; }
         
+        /* معلومات المشروع */
         .info {
             position: absolute; top: 20px; left: 20px;
-            background: rgba(0, 0, 0, 0.7); color: white;
-            padding: 10px 20px; border-radius: 30px;
-            border: 2px solid #4a6c8f; z-index: 100;
-            font-weight: bold; backdrop-filter: blur(5px); font-size: 14px;
+            background: rgba(20, 30, 40, 0.75);
+            backdrop-filter: blur(12px);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 2px solid rgba(74, 108, 143, 0.5);
+            z-index: 100;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         
+        /* زر التدوير - بنفس التصميم */
         #autoRotateBtn {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 12px 24px; background: rgba(0, 0, 0, 0.7); color: white;
-            border: 2px solid #4a6c8f; border-radius: 30px; cursor: pointer;
-            z-index: 100; font-size: 16px; backdrop-filter: blur(5px);
+            padding: 12px 24px;
+            background: rgba(20, 30, 40, 0.75);
+            backdrop-filter: blur(12px);
+            color: white;
+            border: 2px solid rgba(74, 108, 143, 0.5);
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 100;
+            font-size: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
         }
-        #autoRotateBtn:hover { background: rgba(74, 108, 143, 0.8); transform: translateX(-50%) scale(1.05); }
+        #autoRotateBtn:hover {
+            background: rgba(74, 108, 143, 0.8);
+            transform: translateX(-50%) scale(1.05);
+            border-color: rgba(136, 170, 255, 0.8);
+        }
         
+        /* قائمة المشاهد الجانبية - بنفس التصميم */
         .scene-list-panel {
             position: fixed; top: 50%; left: 20px; transform: translateY(-50%);
             width: 260px; max-height: 70vh;
-            background: rgba(20, 30, 40, 0.75); backdrop-filter: blur(12px);
-            border: 2px solid #4a6c8f; border-radius: 16px; color: white;
-            z-index: 200; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            direction: rtl; overflow: hidden; display: flex; flex-direction: column;
+            background: rgba(20, 30, 40, 0.75);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(74, 108, 143, 0.5);
+            border-radius: 16px;
+            color: white;
+            z-index: 200;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            direction: rtl;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             transition: all 0.3s ease;
         }
         .scene-list-panel.collapsed { width: 50px; overflow: hidden; }
@@ -448,9 +476,13 @@ class TourExporter {
         .scene-list-panel.collapsed .scene-list-container { display: none; }
         
         .panel-header {
-            padding: 15px; background: rgba(30, 40, 50, 0.95);
-            border-bottom: 1px solid #4a6c8f; display: flex;
-            justify-content: space-between; align-items: center; cursor: pointer;
+            padding: 15px;
+            background: rgba(30, 40, 50, 0.9);
+            border-bottom: 2px solid rgba(74, 108, 143, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
         }
         .panel-header h3 { margin: 0; color: #88aaff; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .panel-toggle {
@@ -478,63 +510,117 @@ class TourExporter {
         .scene-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .scene-hotspot-count { font-size: 11px; background: rgba(74, 108, 143, 0.4); padding: 2px 6px; border-radius: 12px; color: #88aaff; }
         
+        /* لوحة التحكم بالمسارات - بنفس التصميم */
         .paths-control-panel {
             position: fixed; top: 20px; right: 20px;
-            background: rgba(20, 30, 40, 0.85); backdrop-filter: blur(10px);
-            border: 2px solid #4a6c8f; border-radius: 15px; color: white;
-            z-index: 200; padding: 15px; min-width: 200px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); direction: rtl;
+            background: rgba(20, 30, 40, 0.75);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(74, 108, 143, 0.5);
+            border-radius: 15px;
+            color: white;
+            z-index: 200;
+            padding: 15px;
+            min-width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            direction: rtl;
         }
-        .paths-control-panel h3 { margin: 0 0 10px 0; color: #88aaff; font-size: 16px; text-align: center; border-bottom: 1px solid #4a6c8f; padding-bottom: 8px; }
+        .paths-control-panel h3 { margin: 0 0 10px 0; color: #88aaff; font-size: 16px; text-align: center; border-bottom: 2px solid rgba(74, 108, 143, 0.5); padding-bottom: 8px; }
         .path-toggle-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .path-toggle-item:last-child { border-bottom: none; }
         .path-toggle-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #4a6c8f; }
         .path-toggle-item label { flex: 1; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
         .path-color-dot { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
         
+        /* نظام Hotspots - محسن */
         .hotspot-marker {
-            position: absolute; transform: translate(-50%, -50%);
-            cursor: pointer; z-index: 100; transition: all 0.2s ease;
-            pointer-events: all;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer !important;
+            z-index: 1000;
+            transition: all 0.2s ease;
+            pointer-events: auto !important;
         }
         .hotspot-marker img {
-            width: 40px; height: 40px; filter: drop-shadow(0 0 10px currentColor);
-            pointer-events: none; transition: all 0.2s ease;
-            border-radius: 50%; background: rgba(0,0,0,0.3);
+            width: 40px;
+            height: 40px;
+            filter: drop-shadow(0 0 10px currentColor);
+            pointer-events: none;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid;
         }
-        .hotspot-marker:hover img { transform: scale(1.15); filter: drop-shadow(0 0 15px gold); }
+        .hotspot-marker:hover img {
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 15px gold);
+        }
         
         .hotspot-label {
             position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
-            background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(5px);
-            color: white; padding: 6px 12px; border-radius: 20px;
-            font-size: 12px; white-space: nowrap; border: 2px solid;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0;
-            transition: opacity 0.2s ease; pointer-events: none; z-index: 101;
+            background: rgba(20, 30, 40, 0.95);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            border: 2px solid;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 1001;
             font-weight: 500;
         }
+
         .hotspot-marker:hover .hotspot-label { opacity: 1; }
         
+        /* نافذة المعلومات المحسنة - بنفس التصميم */
         .custom-info-window {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(10px);
-            border: 2px solid #ffaa44; border-radius: 20px; padding: 20px 30px;
-            color: white; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            max-width: 400px; width: 90%; animation: slideUp 0.3s ease; direction: rtl;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 30, 40, 0.95);
+            backdrop-filter: blur(12px);
+            border: 2px solid #ffaa44;
+            border-radius: 20px;
+            padding: 20px 30px;
+            color: white;
+            z-index: 10000;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+            direction: rtl;
+            pointer-events: auto;
         }
         .custom-info-window .window-header {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
-            padding-bottom: 10px; border-bottom: 2px solid #ffaa44;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ffaa44;
         }
         .custom-info-window .window-header img { width: 30px; height: 30px; }
         .custom-info-window .window-header h3 { margin: 0; color: #ffaa44; font-size: 18px; font-weight: bold; }
         .custom-info-window .window-content { margin-bottom: 20px; line-height: 1.6; font-size: 14px; }
         .custom-info-window .window-close {
-            background: rgba(255,255,255,0.1); border: 2px solid #ffaa44; color: white;
-            padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;
-            transition: all 0.2s; width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #ffaa44;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer !important;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
         }
-        .custom-info-window .window-close:hover { background: #ffaa44; color: black; }
+        .custom-info-window .window-close:hover {
+            background: #ffaa44;
+            color: black;
+        }
         
         @keyframes slideUp {
             from { transform: translate(-50%, 100%); opacity: 0; }
@@ -617,8 +703,6 @@ class TourExporter {
             div.className = 'hotspot-marker';
             div.style.left = x + 'px';
             div.style.top = y + 'px';
-            div.style.cursor = 'pointer';
-            div.style.zIndex = '1000';
             
             const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
             const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
@@ -626,9 +710,10 @@ class TourExporter {
                 ? (data.targetSceneName || 'انتقال') 
                 : (data.title || 'معلومات');
             
-            div.innerHTML = '<img src="' + iconUrl + '" alt="' + type + '" style="border: 2px solid ' + borderColor + '; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); cursor: pointer; pointer-events: none;">' +
+            div.innerHTML = '<img src="' + iconUrl + '" alt="' + type + '" style="border: 2px solid ' + borderColor + ';">' +
                 '<div class="hotspot-label" style="border-color: ' + borderColor + ';">' + displayText + '</div>';
             
+            // ✅ إصلاح النقر للكمبيوتر والهاتف
             div.addEventListener('click', function(e) {
                 e.stopPropagation();
                 e.preventDefault();
@@ -644,12 +729,14 @@ class TourExporter {
                 }
             });
             
+            // ✅ إضافة مؤشر اليد
             div.style.cursor = 'pointer';
             
             return div;
         }
         
         function showInfoWindow(title, content) {
+            // إزالة أي نافذة سابقة
             document.querySelectorAll('.custom-info-window').forEach(el => el.remove());
             
             const win = document.createElement('div');
@@ -661,10 +748,16 @@ class TourExporter {
                 '<div class="window-content">' + (content || '') + '</div>' +
                 '<button class="window-close">حسناً</button>';
             
-            win.querySelector('.window-close').onclick = () => win.remove();
+            win.querySelector('.window-close').onclick = function() {
+                win.remove();
+            };
+            
             document.body.appendChild(win);
             
-            setTimeout(() => win.remove(), 5000);
+            // إغلاق تلقائي بعد 5 ثوان
+            setTimeout(function() {
+                if (win.parentNode) win.remove();
+            }, 5000);
         }
         
         function rebuildHotspots() {
@@ -708,7 +801,9 @@ class TourExporter {
                 div.className = 'path-toggle-item';
                 div.innerHTML = '<input type="checkbox" id="toggle-' + type + '" checked data-type="' + type + '">' +
                     '<label for="toggle-' + type + '"><span class="path-color-dot" style="background:' + pathColors[type] + '"></span> ' + type + '</label>';
-                div.querySelector('input').addEventListener('change', e => togglePathsByType(type, e.target.checked));
+                div.querySelector('input').addEventListener('change', function(e) {
+                    togglePathsByType(type, e.target.checked);
+                });
                 toggleList.appendChild(div);
             });
         }
@@ -736,8 +831,10 @@ class TourExporter {
                 scene3D.add(sphereMesh);
                 
                 if (sceneData.paths) {
-                    sceneData.paths.forEach(pathData => {
-                        const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                    sceneData.paths.forEach(function(pathData) {
+                        const points = pathData.points.map(function(p) { 
+                            return new THREE.Vector3(p.x, p.y, p.z); 
+                        });
                         for (let i = 0; i < points.length - 1; i++) {
                             const start = points[i];
                             const end = points[i + 1];
@@ -766,7 +863,7 @@ class TourExporter {
                         }
                     });
                     
-                    document.querySelectorAll('#paths-toggle-list input').forEach(cb => {
+                    document.querySelectorAll('#paths-toggle-list input').forEach(function(cb) {
                         togglePathsByType(cb.dataset.type, cb.checked);
                     });
                 }
@@ -777,8 +874,8 @@ class TourExporter {
         }
         
         fetch('tour-data.json')
-            .then(res => res.json())
-            .then(data => {
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
                 scenes = data;
                 
                 scene3D = new THREE.Scene();
@@ -806,8 +903,8 @@ class TourExporter {
                     document.getElementById('autoRotateBtn').textContent = 
                         autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
                 };
-                
-                createPathsTogglePanel();
+
+               createPathsTogglePanel();
                 initScenePanel();
                 loadScene(0);
                 
@@ -826,27 +923,31 @@ class TourExporter {
                 }
                 animate();
             })
-            .catch(err => console.error('خطأ في تحميل البيانات:', err));
+            .catch(function(err) { 
+                console.error('خطأ في تحميل البيانات:', err); 
+            });
     </script>
 </body>
 </html>`;
-}
+    }
 
-generatePlayerCSS() {
+    generatePlayerCSS() {
         return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
 #container { width: 100vw; height: 100vh; background: #000; }
 .info {
     position: absolute;
     top: 20px;
     left: 20px;
-    background: rgba(0,0,0,0.7);
+    background: rgba(20, 30, 40, 0.75);
+    backdrop-filter: blur(12px);
     color: white;
     padding: 10px 20px;
     border-radius: 30px;
-    border: 2px solid #4a6c8f;
+    border: 2px solid rgba(74, 108, 143, 0.5);
     z-index: 100;
     font-weight: bold;
-    backdrop-filter: blur(5px);
+    font-size: 14px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }`;
     }
 
@@ -1255,8 +1356,8 @@ function showCustomInfoWindow(title, content, type = 'info') {
         </div>
         <button class="window-close" style="border-color: ${colors[type]};" onclick="this.parentElement.remove()">حسناً</button>
     `;
-    
-    document.body.appendChild(win);
+
+document.body.appendChild(win);
     
     setTimeout(() => {
         if (win.parentElement) win.remove();
@@ -1548,6 +1649,14 @@ function setupEvents() {
         };
     }
 
+    const hotspotInfo = document.getElementById('hotspotInfo');
+    if (hotspotInfo) {
+        hotspotInfo.onclick = () => {
+            hotspotMode = 'INFO';
+            document.body.style.cursor = 'cell';
+        };
+    }
+
     const addSceneBtn = document.getElementById('addSceneBtn');
     if (addSceneBtn) addSceneBtn.onclick = addNewScene;
 
@@ -1614,13 +1723,9 @@ if (document.readyState === 'loading') {
 // =======================================
 // ١٧. التهيئة والتشغيل
 // =======================================
-// =======================================
-// ١٧. التهيئة والتشغيل
-// =======================================
 function init() {
     console.log('🚀 بدء التهيئة...');
     
-    // ✅ التحقق من وجود العنصر
     const container = document.getElementById('container');
     if (!container) {
         console.error('❌ عنصر #container غير موجود في الصفحة');
@@ -1637,9 +1742,6 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
-
-    // ... باقي الكود كما هو
-
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambientLight);
@@ -1682,4 +1784,3 @@ function animate() {
 
 // بدء التشغيل
 init();
-
