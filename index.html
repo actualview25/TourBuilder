@@ -10,23 +10,14 @@
     <!-- أيقونات Hotspots -->
     <link rel="icon" type="image/png" href="icon/hotspot.png">
     
-    <!-- ✅ Three.js من رابط خارجي (CDN) -->
+    <!-- المكتبات - ترتيب مهم -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- ✅ OrbitControls محلي -->
-    <script src="vendor/OrbitControls.js"></script>
-    
-    <!-- مكتبات أخرى -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
-    <!-- ... باقي المحتوى كما هو ... -->
-    
-    <script src="main.js"></script>
-</body>
-</html>
-<!-- شريط الأدوات العلوي -->
+    <!-- شريط الأدوات العلوي -->
     <div class="toolbar">
         <div class="logo">🏗️ Actual view Studio</div>
         <div class="controls">
@@ -59,7 +50,7 @@
         <div class="color-btn GS" onclick="window.changeType('GS')"></div>
     </div>
 
-    <!-- حاوية المشهد -->
+    <!-- ✅ حاوية المشهد - تأكد من وجودها -->
     <div id="container"></div>
 
     <!-- أدوات الرسم -->
@@ -117,7 +108,8 @@
         document.documentElement.style.setProperty('--info-icon', 'url("icon/info.png")');
     </script>
 
-    <script src="main.js"></script>
+    <!-- ✅ تأكد من أن السكربت يُحمل بعد تحميل الصفحة -->
+    <script src="main.js" defer></script>
     
     <script>
         window.changeType = function(type) {
