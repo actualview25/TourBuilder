@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-;
+// ✅ استيراد من المسار المحلي - هذا صحيح 100%
+import * as THREE from './vendor/three.module.js';
+import { OrbitControls } from './vendor/OrbitControls.js';
 
 // =======================================
 // ١. إدارة المشاريع
