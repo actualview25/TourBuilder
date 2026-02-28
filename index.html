@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Actual View Studio - باني الجولات الإحترافي</title>
+    <title>Actual View Studio - باني الجولات</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
@@ -10,9 +10,15 @@
     <!-- أيقونات Hotspots -->
     <link rel="icon" type="image/png" href="icon/hotspot.png">
     
-    <!-- المكتبات - ترتيب مهم -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
@@ -50,7 +56,7 @@
         <div class="color-btn GS" onclick="window.changeType('GS')"></div>
     </div>
 
-    <!-- ✅ حاوية المشهد - تأكد من وجودها -->
+    <!-- حاوية المشهد -->
     <div id="container"></div>
 
     <!-- أدوات الرسم -->
@@ -108,8 +114,7 @@
         document.documentElement.style.setProperty('--info-icon', 'url("icon/info.png")');
     </script>
 
-    <!-- ✅ تأكد من أن السكربت يُحمل بعد تحميل الصفحة -->
-    <script src="main.js" defer></script>
+    <script type="module" src="main.js"></script>
     
     <script>
         window.changeType = function(type) {
