@@ -1618,8 +1618,18 @@ if (document.readyState === 'loading') {
 // =======================================
 // ١٧. التهيئة والتشغيل
 // =======================================
+// =======================================
+// ١٧. التهيئة والتشغيل
+// =======================================
 function init() {
     console.log('🚀 بدء التهيئة...');
+    
+    // ✅ التحقق من وجود العنصر
+    const container = document.getElementById('container');
+    if (!container) {
+        console.error('❌ عنصر #container غير موجود في الصفحة');
+        return;
+    }
     
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
@@ -1630,7 +1640,10 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
-    document.getElementById('container').appendChild(renderer.domElement);
+    container.appendChild(renderer.domElement);
+
+    // ... باقي الكود كما هو
+
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambientLight);
