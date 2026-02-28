@@ -780,6 +780,71 @@ class TourExporter {
     cursor: pointer;
     z-index: -1;
 }
+/* تحسين النقر على القائمة */
+.scene-item, .scene-item * {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+.scene-list-container {
+    pointer-events: auto !important;
+}
+
+.scene-list-panel {
+    pointer-events: auto !important;
+}
+/* ===== نفس ألوان الأداة الأصلية ===== */
+
+/* نافذة التحكم بالمسارات */
+.paths-control-panel {
+    background: rgba(20, 30, 40, 0.25) !important;  /* ✅ نفس شفافية الأداة */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(74, 108, 143, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* نافذة قائمة المشاهد */
+.scene-list-panel {
+    background: rgba(20, 30, 40, 0.25) !important;  /* ✅ نفس شفافية الأداة */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(74, 108, 143, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* رأس النوافذ */
+.panel-header {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-bottom: 1px solid rgba(74, 108, 143, 0.2) !important;
+}
+
+/* نافذة المعلومات */
+.custom-info-window {
+    background: rgba(20, 30, 40, 0.3) !important;  /* ✅ أكثر شفافية */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(74, 108, 143, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* زر الدوران */
+#autoRotateBtn {
+    background: rgba(20, 30, 40, 0.25) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(74, 108, 143, 0.3) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* معلومات المشروع */
+.info {
+    background: rgba(20, 30, 40, 0.25) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(74, 108, 143, 0.3) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+}
     </style>
 </head>
 <body>
