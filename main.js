@@ -1,10 +1,9 @@
-// =======================================
-// استخدام النسخة الكلاسيكية من Three.js (مع CDN)
-// =======================================
+
 const THREE = window.THREE;
 const OrbitControls = THREE.OrbitControls;
 
-
+console.log('✅ THREE loaded:', !!THREE);
+console.log('✅ OrbitControls loaded:', !!OrbitControls);
 // ١. إدارة المشاريع
 // =======================================
 class ProjectManager {
