@@ -9,7 +9,7 @@ const OrbitControls = THREE.OrbitControls;
 // =======================================
 class ProjectManager {
     // ... الكود كما هو ...
-}
+
     constructor() {
         this.projects = [];
         this.currentProject = null;
