@@ -1,19 +1,19 @@
 // =======================================
-// استخدام النسخة الكلاسيكية من Three.js
+// استخدام النسخة الكلاسيكية من Three.js (مع CDN)
 // =======================================
 const THREE = window.THREE;
 const OrbitControls = THREE.OrbitControls;
+
+// التحقق من التحميل
+console.log('✅ THREE loaded:', !!THREE);
+console.log('✅ OrbitControls loaded:', !!OrbitControls);
 
 // =======================================
 // ١. إدارة المشاريع
 // =======================================
 class ProjectManager {
-    // ... باقي الكود كما هو ...
+    // ... الكود كما هو ...
 }
-// =======================================
-// ١. إدارة المشاريع
-// =======================================
-class ProjectManager {
     constructor() {
         this.projects = [];
         this.currentProject = null;
