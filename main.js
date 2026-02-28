@@ -854,7 +854,7 @@ class TourExporter {
     div.style.transition = 'all 0.2s ease';
     
     // اختيار الأيقونة المناسبة
-    const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
+    const iconUrl = type === 'SCENE' ? 'icon/hotspot.png' : 'icon/info.png';
     const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
     const displayText = type === 'SCENE' 
         ? (data.targetSceneName || 'انتقال') 
