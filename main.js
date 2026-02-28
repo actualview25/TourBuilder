@@ -522,6 +522,39 @@ class TourExporter {
             color: white; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             max-width: 400px; width: 90%; animation: slideUp 0.3s ease; direction: rtl;
         }
+
+        /* تحسين منطقة النقر */
+.hotspot-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer !important;
+    z-index: 1000;
+    transition: all 0.2s ease;
+    pointer-events: auto !important; /* مهم جداً للكمبيوتر */
+}
+
+.hotspot-marker img {
+    width: 40px;
+    height: 40px;
+    pointer-events: none; /* الصورة لا تمنع النقر */
+}
+
+.hotspot-marker:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    filter: drop-shadow(0 0 15px gold);
+}
+
+/* تحسين النافذة للكمبيوتر */
+.custom-info-window button {
+    cursor: pointer !important;
+    transition: all 0.2s;
+}
+
+.custom-info-window button:hover {
+    background: #ffaa44 !important;
+    color: black !important;
+}
+
         .custom-info-window .window-header {
             display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
             padding-bottom: 10px; border-bottom: 2px solid #ffaa44;
@@ -613,61 +646,89 @@ class TourExporter {
                 container.appendChild(item);
             });
         }
-        
         function createHotspotElement(x, y, type, data) {
-            const div = document.createElement('div');
-            div.className = 'hotspot-marker';
-            div.style.left = x + 'px';
-            div.style.top = y + 'px';
-            
-            const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
-            const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
-            const displayText = type === 'SCENE' 
-                ? (data.targetSceneName || 'انتقال') 
-                : (data.title || 'معلومات');
-            
-            div.innerHTML = \`
-                <img src="\${iconUrl}" alt="\${type}" style="border: 2px solid \${borderColor};">
-                <div class="hotspot-label" style="border-color: \${borderColor};">\${displayText}</div>
-            \`;
-            
-            if (type === 'INFO') {
-                div.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showInfoWindow(data.title, data.content);
-                });
-            } else {
-                div.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
-                    if (targetIndex !== -1) {
-                        loadScene(targetIndex);
-                    }
-                });
-            }
-            
-            return div;
-        }
+    const div = document.createElement('div');
+    div.className = 'hotspot-marker';
+    div.style.left = x + 'px';
+    div.style.top = y + 'px';
+    div.style.cursor = 'pointer';
+    div.style.zIndex = '1000';
+    
+    const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
+    const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
+    const displayText = type === 'SCENE' 
+        ? (data.targetSceneName || 'انتقال') 
+        : (data.title || 'معلومات');
+    
+    div.innerHTML = `
+        <img src="${iconUrl}" alt="${type}" style="border: 2px solid ${borderColor}; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); cursor: pointer; pointer-events: none;">
+        <div class="hotspot-label" style="border-color: ${borderColor};">${displayText}</div>
+    `;
+    
+    // ✅ إصلاح أحداث النقر - تعمل على الكمبيوتر والهاتف
+    div.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
         
-        function showInfoWindow(title, content) {
-            document.querySelectorAll('.custom-info-window').forEach(el => el.remove());
-            
-            const win = document.createElement('div');
-            win.className = 'custom-info-window';
-            win.innerHTML = \`
-                <div class="window-header">
-                    <img src="\${ICONS.info}">
-                    <h3>\${title || 'معلومات'}</h3>
-                </div>
-                <div class="window-content">\${content || ''}</div>
-                <button class="window-close">حسناً</button>
-            \`;
-            
-            win.querySelector('.window-close').onclick = () => win.remove();
-            document.body.appendChild(win);
-            
-            setTimeout(() => win.remove(), 5000);
+        if (type === 'INFO') {
+            showInfoWindow(data.title, data.content);
+        } else {
+            const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
+            if (targetIndex !== -1) {
+                // إضافة تأثير بصري قبل الانتقال
+                this.style.transform = 'scale(1.5)';
+                setTimeout(() => loadScene(targetIndex), 300);
+            }
         }
+    });
+    
+    // ✅ إضافة مؤشر اليد للكمبيوتر
+    div.style.cursor = 'pointer';
+    
+    return div;
+}
+        function showInfoWindow(title, content) {
+    // إزالة أي نافذة سابقة
+    document.querySelectorAll('.custom-info-window').forEach(el => el.remove());
+    
+    const win = document.createElement('div');
+    win.className = 'custom-info-window';
+    win.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(20, 30, 40, 0.95);
+        backdrop-filter: blur(10px);
+        border: 2px solid #ffaa44;
+        border-radius: 20px;
+        padding: 20px 30px;
+        color: white;
+        z-index: 10000;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        max-width: 400px;
+        width: 90%;
+        direction: rtl;
+        text-align: right;
+    `;
+    
+    win.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #ffaa44;">
+            <img src="${ICONS.info}" style="width: 30px; height: 30px;">
+            <h3 style="margin: 0; color: #ffaa44; font-size: 18px;">${title || 'معلومات'}</h3>
+        </div>
+        <div style="margin-bottom: 20px; line-height: 1.6; font-size: 14px;">${content || ''}</div>
+        <button style="background: rgba(255,255,255,0.1); border: 2px solid #ffaa44; color: white; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; width: 100%;">حسناً</button>
+    `;
+    
+    win.querySelector('button').onclick = () => win.remove();
+    document.body.appendChild(win);
+    
+    // إغلاق تلقائي بعد 5 ثوان
+    setTimeout(() => {
+        if (win.parentNode) win.remove();
+    }, 5000);
+}
         
         function rebuildHotspots() {
             document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
