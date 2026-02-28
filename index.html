@@ -10,15 +10,9 @@
     <!-- أيقونات Hotspots -->
     <link rel="icon" type="image/png" href="icon/hotspot.png">
     
-    <script type="importmap">
-        {
-            
-            <script src="vendor/three.min.js"></script>
-            <script src="vendor/OrbitControls.js"></script>
-            }
-        }
-    </script>
-    
+    <!-- استيراد المكتبات المحلية -->
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
@@ -114,7 +108,7 @@
         document.documentElement.style.setProperty('--info-icon', 'url("icon/info.png")');
     </script>
 
-    <script type="module" src="main.js"></script>
+    <script src="main.js"></script>
     
     <script>
         window.changeType = function(type) {
