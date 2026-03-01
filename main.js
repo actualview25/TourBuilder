@@ -1050,7 +1050,59 @@ function createMeasureLabel(text, position) {
 
     return sprite;
 }
+function handleMeasureClick(point) {
+    if (!measureStartPoint) {
+        // تسجيل النقطة الأولى
+        measureStartPoint = point.clone();
 
+        // مؤقت بصري صغير للنقطة
+        const geometry = new THREE.SphereGeometry(0.2, 8, 8);
+        const material = new THREE.MeshStandardMaterial({ color: 0xffcc00 });
+        const marker = new THREE.Mesh(geometry, material);
+        marker.position.copy(measureStartPoint);
+        scene.add(marker);
+        measureTempLine = marker; // نستخدمه كمرجع مؤقت للنقطة الأولى
+
+        console.log('📏 نقطة البداية تم اختيارها');
+    } else {
+        // النقطة الثانية
+        const endPoint = point.clone();
+
+        // إزالة المؤقت القديم
+        if (measureTempLine) {
+            scene.remove(measureTempLine);
+            measureTempLine = null;
+        }
+
+        // إنشاء الخط بين النقطتين
+        const line = createMeasureLine(measureStartPoint, endPoint);
+        scene.add(line);
+
+        // حساب المسافة (بافتراض نفس وحدة المشهد)
+        const distance = measureStartPoint.distanceTo(endPoint).toFixed(2);
+
+        // إنشاء ملصق القياس
+        const midPoint = new THREE.Vector3().addVectors(measureStartPoint, endPoint).multiplyScalar(0.5);
+        const label = createMeasureLabel(distance, midPoint);
+        scene.add(label);
+
+        // حفظ القياس في المشهد الحالي
+        const sceneIndex = sceneManager ? sceneManager.currentSceneIndex : 0;
+        if (!measurementsByScene[sceneIndex]) measurementsByScene[sceneIndex] = [];
+        measurementsByScene[sceneIndex].push({
+            start: measureStartPoint.clone(),
+            end: endPoint.clone(),
+            value: distance,
+            line,
+            label
+        });
+
+        console.log(`📏 القياس: ${distance} وحدة`);
+
+        // إعادة تعيين نقطة البداية
+        measureStartPoint = null;
+    }
+}
 // =======================================
 function setupMarkerPreview() {
     const geometry = new THREE.SphereGeometry(8, 16, 16);
