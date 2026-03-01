@@ -967,7 +967,17 @@ let markerPreview = null;
 let exportCanvas, exportContext;
 let sceneManager;
 let hotspotMode = null;
+// ===============================
+// MEASURE TOOL STATE
+// ===============================
+let measureMode = false;
+let measureStartPoint = null;
+let measureTempLine = null;
 
+let measurementsByScene = {}; 
+// {
+//   sceneIndex: [ { start, end, value, line, label } ]
+// }
 window.setCurrentPathType = (t) => {
     currentPathType = t;
     if (markerPreview) {
@@ -979,8 +989,68 @@ window.setCurrentPathType = (t) => {
 const projectManager = new ProjectManager();
 const tourExporter = new TourExporter();
 
+function setMeasureMode(active) {
+    measureMode = active;
+
+    if (typeof setDrawMode === 'function') {
+        setDrawMode(false);
+    }
+
+    measureStartPoint = null;
+
+    if (measureTempLine) {
+        scene.remove(measureTempLine);
+        measureTempLine = null;
+    }
+
+    console.log(active ? '📏 Measure Mode ON' : '📏 Measure Mode OFF');
+}
+
 // =======================================
-// ٦. دوال الرسم الأساسية
+// ٧. دوال أداة القياس
+// =======================================
+
+function showMeasurementsForScene(sceneIndex) {
+    // إزالة القديمة
+    Object.values(measurementsByScene).flat().forEach(m => {
+        scene.remove(m.line);
+        scene.remove(m.label);
+    });
+
+    // إظهار الخاصة بالمشهد
+    const list = measurementsByScene[sceneIndex] || [];
+    list.forEach(m => {
+        scene.add(m.line);
+        scene.add(m.label);
+    });
+}
+
+function createMeasureLabel(text, position) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = 256;
+    canvas.height = 64;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '24px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(material);
+
+    sprite.scale.set(0.6, 0.15, 1);
+    sprite.position.copy(position);
+
+    return sprite;
+}
+
 // =======================================
 function setupMarkerPreview() {
     const geometry = new THREE.SphereGeometry(8, 16, 16);
@@ -1008,7 +1078,14 @@ function onClick(e) {
 
     if (hits.length) {
         const point = hits[0].point.clone();
-        
+
+        // ======== إضافة شرط القياس هنا ========
+        if (measureMode) {
+            handleMeasureClick(point);
+            return; // تمنع أي منطق آخر عند القياس
+        }
+        // =====================================
+
         if (hotspotMode) {
             addHotspot(point);
             hotspotMode = null;
