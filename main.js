@@ -2229,37 +2229,39 @@ function addNewScene() {
 // =======================================
 // ١٢. دوال التحميل والتصدير
 // =======================================
-function showLoader(message) {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        loader.style.display = 'flex';
-        loader.textContent = message || '⏳ جاري التحميل...';
-    }
-}
-
-function hideLoader() {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        loader.style.display = 'none';
-    }
-}
 // =======================================
-// تصدير الجولة كاملة
+// تصدير الجولة كاملة - نسخة تعتمد على tourExporter
 // =======================================
 async function exportCompleteTour() {
-    if (!sceneManager || sceneManager.scenes.length === 0) {
+    if (!window.sceneManager || window.sceneManager.scenes.length === 0) {
         alert('❌ لا توجد مشاهد للتصدير');
         return;
+    }
+
+    // تعريف showLoader محلياً (احتياطي)
+    function showLoader(message) {
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.display = 'flex';
+            loader.textContent = message || '⏳ جاري التحميل...';
+        }
+    }
+
+    function hideLoader() {
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.display = 'none';
+        }
     }
 
     showLoader('جاري تحضير الجولة...');
 
     try {
-        // استخدام projectManager العمومي
-        const projectName = window.projectManager?.currentProject?.name || `tour-${Date.now()}`;
+        // استخدام sceneManager مباشرة
+        const scenes = window.sceneManager.scenes;
         
         // تجهيز بيانات المشاهد للتصدير
-        const exportScenes = sceneManager.scenes.map(s => ({
+        const exportScenes = scenes.map(s => ({
             id: s.id,
             name: s.name,
             originalImage: s.originalImage,
@@ -2273,8 +2275,11 @@ async function exportCompleteTour() {
             measurements: s.measurements || []
         }));
 
-        // استخدام كائن tourExporter للتصدير
-        await tourExporter.exportTour(projectName, exportScenes);
+        // اسم المشروع
+        const projectName = `tour-${Date.now()}`;
+
+        // ✅ استخدام tourExporter الموجود (الذي يعرف generatePlayerHTML)
+        await window.tourExporter.exportTour(projectName, exportScenes);
 
         hideLoader();
         alert(`✅ تم تصدير الجولة بنجاح!\n📁 الملف: ${projectName}.zip`);
@@ -2283,13 +2288,6 @@ async function exportCompleteTour() {
         console.error('❌ خطأ في التصدير:', error);
         alert('حدث خطأ في التصدير: ' + error.message);
         hideLoader();
-    }
-}
-function clearAllPaths() {
-    if (confirm('هل أنت متأكد من مسح جميع المسارات؟')) {
-        paths.forEach(p => scene.remove(p));
-        paths = [];
-        clearCurrentDrawing();
     }
 }
 
