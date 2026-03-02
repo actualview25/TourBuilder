@@ -2290,7 +2290,31 @@ async function exportCompleteTour() {
         hideLoader();
     }
 }
-
+// =======================================
+// مسح جميع المسارات
+// =======================================
+function clearAllPaths() {
+    if (confirm('🗑️ هل أنت متأكد من مسح جميع المسارات؟')) {
+        // إزالة جميع المسارات من المشهد
+        paths.forEach(p => {
+            if (p.parent) {
+                p.parent.remove(p);
+            } else {
+                scene.remove(p);
+            }
+        });
+        
+        // تفريغ المصفوفات
+        paths = [];
+        
+        // مسح الرسم الحالي
+        if (typeof clearCurrentDrawing === 'function') {
+            clearCurrentDrawing();
+        }
+        
+        console.log('✅ تم مسح جميع المسارات');
+    }
+}
 // =======================================
 // ١٣. تحميل البانوراما
 // =======================================
