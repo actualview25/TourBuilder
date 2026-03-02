@@ -1061,3 +1061,44 @@ body {
     background: rgba(255, 0, 0, 0.15);
     color: #ff8888;
 }
+/* =======================================
+   القضاء على الشريط الأبيض نهائياً
+   ======================================= */
+
+/* تأكد من أن الخلفية سوداء بالكامل */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: black !important;
+    overflow-x: hidden;
+}
+
+/* الحاوية الرئيسية تغطي كل شيء */
+#container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* إزالة أي حدود من toolbar */
+.toolbar {
+    border: none !important;
+    outline: none !important;
+}
+
+/* إزالة أي شيء غريب */
+*::before, *::after {
+    border: none !important;
+    outline: none !important;
+}
+
+/* منع أي شريط جانبي */
+body {
+    overflow-y: hidden;
+}
