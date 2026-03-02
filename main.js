@@ -685,6 +685,44 @@ to { transform: translate(-50%, 0); opacity: 1; }
 #autoRotateBtn { font-size: 14px; padding: 10px 20px; }
 #toggleMeasurements { bottom: 70px; right: 10px; padding: 8px 16px; font-size: 12px; }
 }
+/* تحسينات للهواتف */
+@media (max-width: 768px) {
+    .scene-list-panel {
+        width: 200px;
+        left: 10px;
+    }
+    
+    .scene-list-panel.collapsed {
+        width: 40px;
+        left: 0;
+    }
+    
+    .scene-list-panel.collapsed .panel-header h3 span:last-child,
+    .scene-list-panel.collapsed .scene-list-container {
+        display: none;
+    }
+    
+    /* تكبير منطقة النقر */
+    .panel-toggle {
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+    }
+    
+    /* مؤشر مرئي على الحافة اليسرى */
+    .scene-list-panel.collapsed::after {
+        content: '☰';
+        position: absolute;
+        top: 50%;
+        right: -5px;
+        transform: translateY(-50%);
+        color: #88aaff;
+        font-size: 24px;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+}
+
 </style>
 </head>
 <body>
@@ -698,13 +736,13 @@ to { transform: translate(-50%, 0); opacity: 1; }
         <div id="paths-toggle-list"></div>
     </div>
     
-    <div class="scene-list-panel" id="sceneListPanel">
-        <div class="panel-header" id="panelHeader">
-            <h3><span>📋</span><span>قائمة المشاهد</span></h3>
-            <button class="panel-toggle" id="togglePanelBtn">◀</button>
-        </div>
-        <div class="scene-list-container" id="sceneListContainer"></div>
+<div class="scene-list-panel" id="sceneListPanel">
+    <div class="panel-header" id="panelHeader">
+        <h3><span>📋</span><span>قائمة المشاهد</span></h3>
+        <button class="panel-toggle" id="togglePanelBtn">◀</button>
     </div>
+    <div class="scene-list-container" id="sceneListContainer"></div>
+</div>
 
     <script>
         // الأيقونات
@@ -1046,17 +1084,82 @@ function updateMeasurementPositions() {
             });
         }
 
-        // ===== دوال المشاهد =====
-        function initScenePanel() {
-            const panel = document.getElementById('sceneListPanel');
-            const toggleBtn = document.getElementById('togglePanelBtn');
-            if (!panel || !toggleBtn) return;
-            toggleBtn.addEventListener('click', () => {
-                panel.classList.toggle('collapsed');
-                toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
-            });
+      // دالة تهيئة لوحة المشاهد - محسنة للهواتف
+function initScenePanel() {
+    const panel = document.getElementById('sceneListPanel');
+    const toggleBtn = document.getElementById('togglePanelBtn');
+    const panelHeader = document.getElementById('panelHeader');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // فتح/إغلاق اللوحة عند النقر على الزر
+    toggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        panel.classList.toggle('collapsed');
+        
+        // تغيير اتجاه السهم
+        if (panel.classList.contains('collapsed')) {
+            toggleBtn.textContent = '▶';
+            // تخزين الحالة في localStorage للهواتف
+            localStorage.setItem('scenePanelCollapsed', 'true');
+        } else {
+            toggleBtn.textContent = '◀';
+            localStorage.setItem('scenePanelCollapsed', 'false');
         }
-
+    });
+    
+    // فتح/إغلاق اللوحة عند النقر على رأس اللوحة (للهواتف)
+    if (panelHeader) {
+        panelHeader.addEventListener('click', function(e) {
+            // لا تفعل شيئاً إذا كان النقر على الزر نفسه
+            if (e.target === toggleBtn) return;
+            
+            panel.classList.toggle('collapsed');
+            
+            if (panel.classList.contains('collapsed')) {
+                toggleBtn.textContent = '▶';
+                localStorage.setItem('scenePanelCollapsed', 'true');
+            } else {
+                toggleBtn.textContent = '◀';
+                localStorage.setItem('scenePanelCollapsed', 'false');
+            }
+        });
+    }
+    
+    // استعادة الحالة السابقة
+    const savedState = localStorage.getItem('scenePanelCollapsed');
+    if (savedState === 'true') {
+        panel.classList.add('collapsed');
+        toggleBtn.textContent = '▶';
+    }
+    
+    // للهواتف: نقر مزدوج على الحافة اليسرى يعيد فتح اللوحة
+    let touchStartX = 0;
+    document.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+    });
+    
+    document.addEventListener('touchend', function(e) {
+        const touchEndX = e.changedTouches[0].clientX;
+        const panelCollapsed = panel.classList.contains('collapsed');
+        
+        // إذا كانت اللوحة مغلقة والمستخدم نقر على الجانب الأيسر
+        if (panelCollapsed && touchStartX < 50 && touchEndX > 100) {
+            panel.classList.remove('collapsed');
+            toggleBtn.textContent = '◀';
+            localStorage.setItem('scenePanelCollapsed', 'false');
+        }
+        
+        // إذا كانت اللوحة مفتوحة والمستخدم سحب لليسار
+        if (!panelCollapsed && touchStartX < 100 && touchStartX - touchEndX > 50) {
+            panel.classList.add('collapsed');
+            toggleBtn.textContent = '▶';
+            localStorage.setItem('scenePanelCollapsed', 'true');
+        }
+    });
+    
+    console.log('✅ لوحة المشاهد مهيأة للهواتف');
+}
         function updateSceneList() {
             const container = document.getElementById('sceneListContainer');
             if (!container) return;
