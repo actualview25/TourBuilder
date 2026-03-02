@@ -1231,6 +1231,9 @@ let measureTempLine = null;
 let measureGroups = [];
 
 // إنشاء خط القياس - مسطرة صفراء واضحة
+// =======================================
+// دالة createMeasureLine - مع علامات المسطرة
+// =======================================
 function createMeasureLine(point1, point2) {
     const group = new THREE.Group();
     
@@ -1240,16 +1243,14 @@ function createMeasureLine(point1, point2) {
     const distance = direction.length();
     const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     
-    // ===== الجسم الرئيسي - خط أصفر سميك =====
+    // الجسم الرئيسي - خط أصفر
     const lineGeo = new THREE.CylinderGeometry(2, 2, distance, 8);
     const lineMat = new THREE.MeshStandardMaterial({
         color: 0xffaa44,
-        emissive: 0x442200,
-        emissiveIntensity: 0.3
+        emissive: 0x442200
     });
     const line = new THREE.Mesh(lineGeo, lineMat);
     
-    // تدوير الخط ليوازي الاتجاه
     const quaternion = new THREE.Quaternion();
     quaternion.setFromUnitVectors(
         new THREE.Vector3(0, 1, 0),
@@ -1259,7 +1260,7 @@ function createMeasureLine(point1, point2) {
     line.position.copy(midPoint);
     group.add(line);
     
-    // ===== كرات في الأطراف =====
+    // كرات في الأطراف
     const sphereGeo = new THREE.SphereGeometry(4, 16, 16);
     const sphereMat = new THREE.MeshStandardMaterial({
         color: 0xffaa44,
@@ -1274,14 +1275,35 @@ function createMeasureLine(point1, point2) {
     sphere2.position.copy(end);
     group.add(sphere2);
     
+    // ===== علامات المسطرة (تدرجات) =====
+    const numMarks = Math.floor(distance / 3); // علامة كل 3 وحدات
+    for (let i = 1; i < numMarks; i++) {
+        const t = i / numMarks;
+        const pos = new THREE.Vector3().lerpVectors(start, end, t);
+        
+        // علامات بيضاء
+        const markGeo = new THREE.BoxGeometry(1, 3, 1);
+        const markMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff,
+            emissive: 0x333333
+        });
+        const mark = new THREE.Mesh(markGeo, markMat);
+        mark.position.copy(pos);
+        mark.quaternion.copy(quaternion);
+        group.add(mark);
+    }
+    
     return group;
 }
 
 // إنشاء ملصق القياس - نص كبير وواضح
+// =======================================
+// دالة createMeasureLabel - نسخة مؤكدة 100%
+// =======================================
 function createMeasureLabel(text, position) {
     const group = new THREE.Group();
     
-    // Canvas كبير
+    // Canvas ضخم جداً
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
@@ -1297,22 +1319,51 @@ function createMeasureLabel(text, position) {
     ctx.lineWidth = 20;
     ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
     
-    // نص عملاق
-    ctx.font = 'bold 180px "Arial", sans-serif';
+    // نص أبيض عملاق
+    ctx.font = 'bold 200px "Arial", "Segoe UI", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2);
     
+    // ظل للنص
+    ctx.shadowColor = '#ffaa44';
+    ctx.shadowBlur = 30;
+    ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2);
+    
     const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.SpriteMaterial({ map: texture });
+    const material = new THREE.SpriteMaterial({ 
+        map: texture,
+        transparent: false,
+        depthTest: false, // مهم: يظهر فوق كل شيء
+        depthWrite: false
+    });
+    
     const sprite = new THREE.Sprite(material);
     
-    // حجم كبير في المشهد
-    sprite.scale.set(6, 3, 1);
-    sprite.position.copy(position.clone().add(new THREE.Vector3(0, 15, 0)));
+    // حجم ضخم جداً
+    sprite.scale.set(10, 5, 1);
+    
+    // رفع النص عالياً فوق الخط
+    const labelPos = position.clone().add(new THREE.Vector3(0, 30, 0));
+    sprite.position.copy(labelPos);
     
     group.add(sprite);
+    
+    // إضافة خط رابط من النص للخط
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
+        position,
+        labelPos
+    ]);
+    const lineMat = new THREE.LineBasicMaterial({ 
+        color: 0xffaa44,
+        transparent: true,
+        opacity: 0.3
+    });
+    const line = new THREE.Line(lineGeo, lineMat);
+    group.add(line);
+    
+    console.log('📏 تم إنشاء ملصق:', text + ' m', 'في الموقع:', labelPos);
     
     return group;
 }
@@ -1359,6 +1410,7 @@ function setMeasureMode(active) {
 }
 
 // معالجة النقر للقياس
+// معالجة النقر للقياس
 function handleMeasureClick(point) {
     if (!measureStartPoint) {
         // النقطة الأولى
@@ -1404,17 +1456,18 @@ function handleMeasureClick(point) {
             return;
         }
         
-        // إنشاء وإضافة القياس
+        // إنشاء الخط
         const lineGroup = createMeasureLine(measureStartPoint, endPoint);
         scene.add(lineGroup);
+        measureGroups.push(lineGroup);
         
+        // 🔴 🔴 🔴 الأهم: إنشاء الملصق وإضافته للمشهد
         const midPoint = new THREE.Vector3().addVectors(measureStartPoint, endPoint).multiplyScalar(0.5);
         const labelGroup = createMeasureLabel(realLength, midPoint);
-        scene.add(labelGroup);
-        
-        // حفظ في القائمة
-        measureGroups.push(lineGroup);
+        scene.add(labelGroup);  // ✅ هذا السطر كان ناقصاً!
         measureGroups.push(labelGroup);
+        
+        console.log('✅ تم إضافة الملصق:', realLength + 'm');
         
         // حفظ القياس
         const measurement = {
