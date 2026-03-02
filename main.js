@@ -1252,32 +1252,21 @@ function createMeasureLine(point1, point2) {
     const distance = direction.length();
     const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     
-    // ===== 1. الجسم الرئيسي (مسطرة صفراء) =====
-    const lineGeo = new THREE.CylinderGeometry(1.5, 1.5, distance, 8);
-    const lineMat = new THREE.MeshStandardMaterial({
-        color: 0xffaa44,
-        emissive: 0x442200,
-        emissiveIntensity: 0.5
-    });
+    // خط أصفر سميك
+    const lineGeo = new THREE.CylinderGeometry(2, 2, distance, 8);
+    const lineMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
     const line = new THREE.Mesh(lineGeo, lineMat);
     
-    // تدوير الاسطوانة لتصبح باتجاه الخط
+    // تدوير الخط
     const quaternion = new THREE.Quaternion();
-    quaternion.setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0),
-        direction.clone().normalize()
-    );
+    quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
     line.applyQuaternion(quaternion);
     line.position.copy(midPoint);
     group.add(line);
     
-    // ===== 2. أطراف مضيئة =====
+    // كرات في الأطراف
     const sphereGeo = new THREE.SphereGeometry(3, 16, 16);
-    const sphereMat = new THREE.MeshStandardMaterial({
-        color: 0xffaa44,
-        emissive: 0xff4400,
-        emissiveIntensity: 0.8
-    });
+    const sphereMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
     
     const sphere1 = new THREE.Mesh(sphereGeo, sphereMat);
     sphere1.position.copy(start);
@@ -1289,7 +1278,6 @@ function createMeasureLine(point1, point2) {
     
     return group;
 }
-
 // =======================================
 // دالة createMeasureLabel - النسخة النهائية
 // =======================================
@@ -1303,17 +1291,17 @@ function createMeasureLabel(text, position) {
     canvas.width = 512;
     canvas.height = 256;
     
-    // خلفية سوداء شفافة
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    // خلفية سوداء
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // إطار ذهبي
+    // إطار أصفر
     ctx.strokeStyle = '#ffaa44';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
     
     // نص أبيض كبير
-    ctx.font = 'bold 60px Arial';
+    ctx.font = 'bold 100px Arial';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -1323,9 +1311,9 @@ function createMeasureLabel(text, position) {
     const material = new THREE.SpriteMaterial({ map: texture });
     const sprite = new THREE.Sprite(material);
     
-    // حجم مناسب
-    sprite.scale.set(2, 1, 1);
-    sprite.position.copy(position.clone().add(new THREE.Vector3(0, 8, 0)));
+    // حجم كبير
+    sprite.scale.set(3, 1.5, 1);
+    sprite.position.copy(position.clone().add(new THREE.Vector3(0, 15, 0)));
     
     group.add(sprite);
     
@@ -1334,37 +1322,24 @@ function createMeasureLabel(text, position) {
 // معالجة النقر للقياس
 function handleMeasureClick(point) {
     if (!measureStartPoint) {
-        // تسجيل النقطة الأولى
+        // النقطة الأولى
         measureStartPoint = point.clone();
         
-        // إظهار مؤشر بصري
-        const geometry = new THREE.SphereGeometry(6, 16, 16);
-        const material = new THREE.MeshStandardMaterial({ 
-            color: 0xffaa44,
-            emissive: 0xffaa44,
-            emissiveIntensity: 0.5
-        });
-        const marker = new THREE.Mesh(geometry, material);
+        // مؤشر مؤقت
+        const markerGeo = new THREE.SphereGeometry(4, 16, 16);
+        const markerMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
+        const marker = new THREE.Mesh(markerGeo, markerMat);
         marker.position.copy(measureStartPoint);
         scene.add(marker);
-        
-        // حفظ المؤشر للإزالة لاحقاً
         measureTempLine = marker;
         
-        // تحديث شريط الحالة
         document.getElementById('status').innerHTML = '📏 اختر النقطة الثانية';
-        
-        console.log('📏 نقطة البداية:',
-            `X: ${point.x.toFixed(2)}`,
-            `Y: ${point.y.toFixed(2)}`,
-            `Z: ${point.z.toFixed(2)}`
-        );
         
     } else {
         // النقطة الثانية
         const endPoint = point.clone();
         
-        // إزالة المؤشر القديم
+        // إزالة المؤشر
         if (measureTempLine) {
             scene.remove(measureTempLine);
             measureTempLine = null;
@@ -1373,72 +1348,56 @@ function handleMeasureClick(point) {
         // حساب المسافة
         const distance = measureStartPoint.distanceTo(endPoint);
         
-        // طلب إدخال القياس الحقيقي
-        const realLength = prompt('📏 أدخل الطول الحقيقي (بالأمتار):', distance.toFixed(2));
+        // إدخال الطول
+        const realLength = prompt('📏 أدخل الطول (بالمتر):', distance.toFixed(2));
         if (realLength === null) {
             measureStartPoint = null;
             return;
         }
         
-        const realHeight = prompt('📏 أدخل الارتفاع (بالأمتار):', '0');
+        // إدخال الارتفاع
+        const realHeight = prompt('📏 أدخل الارتفاع (بالمتر):', '0');
         if (realHeight === null) {
             measureStartPoint = null;
             return;
         }
         
-        // إنشاء مجموعة القياس
-        const measureGroup = createMeasureLine(measureStartPoint, endPoint);
-        scene.add(measureGroup);
-        measureGroups.push(measureGroup);
+        // 🔴 🔴 🔴 الأهم: إنشاء وإضافة القياس
+        // 1. إنشاء الخط
+        const lineGroup = createMeasureLine(measureStartPoint, endPoint);
+        scene.add(lineGroup);
         
-        // إنشاء ملصق القياس
+        // 2. إنشاء الملصق
         const midPoint = new THREE.Vector3().addVectors(measureStartPoint, endPoint).multiplyScalar(0.5);
-        const label = createMeasureLabel(realLength + 'م', midPoint);
-        scene.add(label);
-        measureGroups.push(label);
+        const labelGroup = createMeasureLabel(realLength, midPoint);
+        scene.add(labelGroup); // ✅ هذا السطر كان ناقصاً!
+        
+        // 3. حفظ في القائمة
+        measureGroups.push(lineGroup);
+        measureGroups.push(labelGroup);
         
         // حفظ القياس
         const measurement = {
             id: `measure-${Date.now()}`,
-            start: {
-                x: measureStartPoint.x,
-                y: measureStartPoint.y,
-                z: measureStartPoint.z
-            },
-            end: {
-                x: endPoint.x,
-                y: endPoint.y,
-                z: endPoint.z
-            },
+            start: { x: measureStartPoint.x, y: measureStartPoint.y, z: measureStartPoint.z },
+            end: { x: endPoint.x, y: endPoint.y, z: endPoint.z },
             length: parseFloat(realLength),
             height: parseFloat(realHeight),
-            sceneId: sceneManager.currentScene?.id,
-            sceneName: sceneManager.currentScene?.name,
-            created: new Date().toISOString()
+            sceneId: sceneManager.currentScene?.id
         };
-
-    SceneManager
+        
         if (sceneManager) {
             sceneManager.addMeasurement(sceneManager.currentScene.id, measurement);
         }
         
-        // عرض ملخص
-        showCustomInfoWindow(
-            '📏 تم إضافة القياس',
-            `الطول: ${realLength} م<br>الارتفاع: ${realHeight} م`,
-            'success'
-        );
-        
-        console.log('📏 تم حفظ القياس:', measurement);
+        // رسالة نجاح
+        showCustomInfoWindow('📏 تم القياس', `الطول: ${realLength} m`, 'success');
         
         // إعادة تعيين
         measureStartPoint = null;
-        
-        // تحديث شريط الحالة
         document.getElementById('status').innerHTML = 'النوع الحالي: <span style="color:#ffcc00;">EL</span>';
     }
 }
-
 // تفعيل/إلغاء وضع القياس
 function setMeasureMode(active) {
     measureMode = active;
