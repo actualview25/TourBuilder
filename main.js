@@ -438,270 +438,282 @@ class TourExporter {
         saveAs(content, `${projectName}.zip`);
     }
 
-   generatePlayerHTML(projectName) {
+generatePlayerHTML(projectName) {
 return `<!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>${projectName} - جولة افتراضية</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
-#container { width: 100vw; height: 100vh; background: #000; }
-
-.info {
-position: absolute; top: 20px; left: 20px;
-background: rgba(0, 0, 0, 0.7); color: white;
-padding: 10px 20px; border-radius: 30px;
-border: 2px solid #4a6c8f; z-index: 100;
-font-weight: bold; backdrop-filter: blur(5px); font-size: 14px;
-}
-
-#autoRotateBtn {
-position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-padding: 12px 24px; background: rgba(0, 0, 0, 0.7); color: white;
-border: 2px solid #4a6c8f; border-radius: 30px; cursor: pointer;
-z-index: 100; font-size: 16px; backdrop-filter: blur(5px);
-transition: all 0.3s ease;
-}
-#autoRotateBtn:hover { background: rgba(74, 108, 143, 0.8); transform: translateX(-50%) scale(1.05); }
-
-.scene-list-panel {
-position: fixed; top: 50%; left: 20px; transform: translateY(-50%);
-width: 260px; max-height: 70vh;
-background: rgba(20, 30, 40, 0.75); backdrop-filter: blur(12px);
-border: 2px solid #4a6c8f; border-radius: 16px; color: white;
-z-index: 200; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-direction: rtl; overflow: hidden; display: flex; flex-direction: column;
-transition: all 0.3s ease;
-}
-.scene-list-panel.collapsed { width: 50px; overflow: hidden; }
-.scene-list-panel.collapsed .panel-header h3 span:last-child,
-.scene-list-panel.collapsed .scene-list-container { display: none; }
-
-.panel-header {
-padding: 15px; background: rgba(30, 40, 50, 0.95);
-border-bottom: 1px solid #4a6c8f; display: flex;
-justify-content: space-between; align-items: center; cursor: pointer;
-}
-.panel-header h3 { margin: 0; color: #88aaff; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-.panel-toggle {
-background: none; border: none; color: white; font-size: 18px; cursor: pointer;
-width: 30px; height: 30px; border-radius: 50%; display: flex;
-align-items: center; justify-content: center; transition: all 0.2s;
-}
-.panel-toggle:hover { background: rgba(255,255,255,0.1); color: #88aaff; }
-
-.scene-list-container {
-max-height: calc(70vh - 60px); overflow-y: auto; padding: 10px;
-}
-.scene-list-container::-webkit-scrollbar { width: 4px; }
-.scene-list-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
-.scene-list-container::-webkit-scrollbar-thumb { background: rgba(74, 108, 143, 0.5); border-radius: 4px; }
-
-.scene-item {
-padding: 10px 12px; margin: 4px 0; background: rgba(255,255,255,0.03);
-border-radius: 8px; cursor: pointer; display: flex; align-items: center;
-gap: 10px; transition: all 0.2s ease; border: 1px solid transparent; font-size: 13px;
-}
-.scene-item:hover { background: rgba(74, 108, 143, 0.2); border-color: rgba(74, 108, 143, 0.3); }
-.scene-item.active { background: rgba(74, 108, 143, 0.6); border-right: 3px solid #88aaff; }
-.scene-icon { font-size: 18px; }
-.scene-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.scene-hotspot-count { font-size: 11px; background: rgba(74, 108, 143, 0.4); padding: 2px 6px; border-radius: 12px; color: #88aaff; }
-
-.paths-control-panel {
-position: fixed; top: 20px; right: 20px;
-background: rgba(20, 30, 40, 0.85); backdrop-filter: blur(10px);
-border: 2px solid #4a6c8f; border-radius: 15px; color: white;
-z-index: 200; padding: 15px; min-width: 200px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.5); direction: rtl;
-}
-.paths-control-panel h3 { margin: 0 0 10px 0; color: #88aaff; font-size: 16px; text-align: center; border-bottom: 1px solid #4a6c8f; padding-bottom: 8px; }
-.path-toggle-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.path-toggle-item:last-child { border-bottom: none; }
-.path-toggle-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #4a6c8f; }
-.path-toggle-item label { flex: 1; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-.path-color-dot { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
-
-/* أنماط Hotspots */
-.hotspot-marker {
-position: absolute;
-transform: translate(-50%, -50%);
-cursor: pointer !important;
-z-index: 1000;
-pointer-events: auto !important;
-transition: none;
-}
-.hotspot-marker img {
-width: 40px;
-height: 40px;
-filter: drop-shadow(0 0 10px currentColor);
-pointer-events: none;
-transition: transform 0.2s ease;
-border-radius: 50%;
-background: rgba(0,0,0,0.3);
-border: 2px solid;
-}
-.hotspot-marker:hover img {
-transform: scale(1.15);
-filter: drop-shadow(0 0 15px gold);
-}
-
-.hotspot-label {
-position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
-background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(5px);
-color: white; padding: 6px 12px; border-radius: 20px;
-font-size: 12px; white-space: nowrap; border: 2px solid;
-box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0;
-transition: opacity 0.2s ease; pointer-events: none; z-index: 101;
-font-weight: 500;
-}
-.hotspot-marker:hover .hotspot-label { opacity: 1; }
-
-/* أنماط القياسات */
-.measurement-line {
-position: absolute;
-pointer-events: none;
-z-index: 500;
-border-top: 2px solid #ffaa44;
-transform-origin: 0 0;
-}
-.measurement-label {
-position: absolute;
-background: rgba(0, 0, 0, 0.8);
-color: #ffaa44;
-padding: 4px 8px;
-border-radius: 4px;
-font-size: 12px;
-border: 1px solid #ffaa44;
-white-space: nowrap;
-transform: translate(-50%, -50%);
-pointer-events: none;
-z-index: 501;
-font-weight: bold;
-backdrop-filter: blur(5px);
-}
-.measurement-point {
-position: absolute;
-width: 8px;
-height: 8px;
-background: #ffaa44;
-border-radius: 50%;
-transform: translate(-50%, -50%);
-pointer-events: none;
-z-index: 502;
-box-shadow: 0 0 10px #ffaa44;
-}
-
-/* نافذة المعلومات */
-.custom-info-window {
-position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(10px);
-border: 2px solid #ffaa44; border-radius: 20px; padding: 20px 30px;
-color: white; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-max-width: 400px; width: 90%; animation: slideUp 0.3s ease; direction: rtl;
-}
-.custom-info-window .window-header {
-display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
-padding-bottom: 10px; border-bottom: 2px solid #ffaa44;
-}
-.custom-info-window .window-header img { width: 30px; height: 30px; }
-.custom-info-window .window-header h3 { margin: 0; color: #ffaa44; font-size: 18px; font-weight: bold; }
-.custom-info-window .window-content { margin-bottom: 20px; line-height: 1.6; font-size: 14px; }
-.custom-info-window .window-close {
-background: rgba(255,255,255,0.1); border: 2px solid #ffaa44; color: white;
-padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;
-transition: all 0.2s; width: 100%;
-}
-.custom-info-window .window-close:hover { background: #ffaa44; color: black; }
-
-/* زر إظهار/إخفاء القياسات */
-#toggleMeasurements {
-position: fixed;
-bottom: 80px;
-right: 20px;
-padding: 10px 20px;
-background: rgba(136, 68, 136, 0.8);
-color: white;
-border: 2px solid #ffaa44;
-border-radius: 30px;
-cursor: pointer;
-z-index: 200;
-font-size: 14px;
-backdrop-filter: blur(5px);
-transition: all 0.3s ease;
-}
-#toggleMeasurements:hover {
-background: #884488;
-transform: scale(1.05);
-}
-#toggleMeasurements.active {
-background: #884488;
-box-shadow: 0 0 15px #ffaa44;
-}
-
-@keyframes slideUp {
-from { transform: translate(-50%, 100%); opacity: 0; }
-to { transform: translate(-50%, 0); opacity: 1; }
-}
-
-@media (max-width: 768px) {
-.scene-list-panel { width: 200px; left: 10px; }
-.scene-list-panel.collapsed { width: 40px; }
-.paths-control-panel { top: 10px; right: 10px; padding: 10px; min-width: 150px; }
-.paths-control-panel h3 { font-size: 14px; }
-.path-toggle-item label { font-size: 12px; }
-.custom-info-window { width: 90%; padding: 15px 20px; bottom: 20px; }
-.hotspot-marker img { width: 35px; height: 35px; }
-#autoRotateBtn { font-size: 14px; padding: 10px 20px; }
-#toggleMeasurements { bottom: 70px; right: 10px; padding: 8px 16px; font-size: 12px; }
-}
-/* تحسينات للهواتف */
-@media (max-width: 768px) {
-    .scene-list-panel {
-        width: 200px;
-        left: 10px;
-    }
-    
-    .scene-list-panel.collapsed {
-        width: 40px;
-        left: 0;
-    }
-    
-    .scene-list-panel.collapsed .panel-header h3 span:last-child,
-    .scene-list-panel.collapsed .scene-list-container {
-        display: none;
-    }
-    
-    /* تكبير منطقة النقر */
-    .panel-toggle {
-        width: 44px;
-        height: 44px;
-        font-size: 24px;
-    }
-    
-    /* مؤشر مرئي على الحافة اليسرى */
-    .scene-list-panel.collapsed::after {
-        content: '☰';
-        position: absolute;
-        top: 50%;
-        right: -5px;
-        transform: translateY(-50%);
-        color: #88aaff;
-        font-size: 24px;
-        opacity: 0.5;
-        pointer-events: none;
-    }
-}
-
-</style>
+    <meta charset="UTF-8">
+    <title>${projectName} - جولة افتراضية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
+        #container { width: 100vw; height: 100vh; background: #000; }
+        
+        .info {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(0, 0, 0, 0.7); color: white;
+            padding: 10px 20px; border-radius: 30px;
+            border: 2px solid #4a6c8f; z-index: 100;
+            font-weight: bold; backdrop-filter: blur(5px); font-size: 14px;
+        }
+        
+        #autoRotateBtn {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 24px; background: rgba(0, 0, 0, 0.7); color: white;
+            border: 2px solid #4a6c8f; border-radius: 30px; cursor: pointer;
+            z-index: 100; font-size: 16px; backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        #autoRotateBtn:hover { background: rgba(74, 108, 143, 0.8); transform: translateX(-50%) scale(1.05); }
+        
+        .scene-list-panel {
+            position: fixed; top: 50%; left: 20px; transform: translateY(-50%);
+            width: 260px; max-height: 70vh;
+            background: rgba(20, 30, 40, 0.75); backdrop-filter: blur(12px);
+            border: 2px solid #4a6c8f; border-radius: 16px; color: white;
+            z-index: 200; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            direction: rtl; overflow: hidden; display: flex; flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        .scene-list-panel.collapsed { width: 50px; overflow: hidden; }
+        .scene-list-panel.collapsed .panel-header h3 span:last-child,
+        .scene-list-panel.collapsed .scene-list-container { display: none; }
+        
+        .panel-header {
+            padding: 15px; background: rgba(30, 40, 50, 0.95);
+            border-bottom: 1px solid #4a6c8f; display: flex;
+            justify-content: space-between; align-items: center; cursor: pointer;
+        }
+        .panel-header h3 { margin: 0; color: #88aaff; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .panel-toggle {
+            background: none; border: none; color: white; font-size: 18px; cursor: pointer;
+            width: 30px; height: 30px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .panel-toggle:hover { background: rgba(255,255,255,0.1); color: #88aaff; }
+        
+        .scene-list-container {
+            max-height: calc(70vh - 60px); overflow-y: auto; padding: 10px;
+        }
+        .scene-list-container::-webkit-scrollbar { width: 4px; }
+        .scene-list-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .scene-list-container::-webkit-scrollbar-thumb { background: rgba(74, 108, 143, 0.5); border-radius: 4px; }
+        
+        .scene-item {
+            padding: 10px 12px; margin: 4px 0; background: rgba(255,255,255,0.03);
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center;
+            gap: 10px; transition: all 0.2s ease; border: 1px solid transparent; font-size: 13px;
+        }
+        .scene-item:hover { background: rgba(74, 108, 143, 0.2); border-color: rgba(74, 108, 143, 0.3); }
+        .scene-item.active { background: rgba(74, 108, 143, 0.6); border-right: 3px solid #88aaff; }
+        .scene-icon { font-size: 18px; }
+        .scene-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .scene-hotspot-count { font-size: 11px; background: rgba(74, 108, 143, 0.4); padding: 2px 6px; border-radius: 12px; color: #88aaff; }
+        
+        .paths-control-panel {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(20, 30, 40, 0.85); backdrop-filter: blur(10px);
+            border: 2px solid #4a6c8f; border-radius: 15px; color: white;
+            z-index: 200; padding: 15px; min-width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); direction: rtl;
+        }
+        .paths-control-panel h3 { margin: 0 0 10px 0; color: #88aaff; font-size: 16px; text-align: center; border-bottom: 1px solid #4a6c8f; padding-bottom: 8px; }
+        .path-toggle-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .path-toggle-item:last-child { border-bottom: none; }
+        .path-toggle-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #4a6c8f; }
+        .path-toggle-item label { flex: 1; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .path-color-dot { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
+        
+        /* أنماط Hotspots */
+        .hotspot-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer !important;
+            z-index: 1000;
+            pointer-events: auto !important;
+            transition: none;
+        }
+        .hotspot-marker img {
+            width: 40px;
+            height: 40px;
+            filter: drop-shadow(0 0 10px currentColor);
+            pointer-events: none;
+            transition: transform 0.2s ease;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid;
+        }
+        .hotspot-marker:hover img {
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 15px gold);
+        }
+        
+        .hotspot-label {
+            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(5px);
+            color: white; padding: 6px 12px; border-radius: 20px;
+            font-size: 12px; white-space: nowrap; border: 2px solid;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0;
+            transition: opacity 0.2s ease; pointer-events: none; z-index: 101;
+            font-weight: 500;
+        }
+        .hotspot-marker:hover .hotspot-label { opacity: 1; }
+        
+        /* أنماط القياسات */
+        .measurement-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 500;
+            border-top: 6px solid #ffaa44;
+            box-shadow: 0 0 30px #ffaa44;
+            border-radius: 6px;
+            transform-origin: 0 0;
+            height: 6px;
+        }
+        
+        .measurement-point {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #ffaa44;
+            border-radius: 50%;
+            box-shadow: 0 0 30px #ffaa44;
+            transform: translate(-50%, -50%);
+            z-index: 501;
+        }
+        
+        .measurement-label {
+            position: absolute;
+            background: linear-gradient(135deg, #000000 0%, #222222 100%);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 60px;
+            font-size: 48px;
+            font-weight: bold;
+            border: 6px solid #ffaa44;
+            box-shadow: 0 0 60px #ffaa44;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            z-index: 503;
+            backdrop-filter: blur(10px);
+            text-shadow: 4px 4px 8px black;
+            letter-spacing: 2px;
+        }
+        
+        /* نافذة المعلومات */
+        .custom-info-window {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(10px);
+            border: 2px solid #ffaa44; border-radius: 20px; padding: 20px 30px;
+            color: white; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            max-width: 400px; width: 90%; animation: slideUp 0.3s ease; direction: rtl;
+        }
+        .custom-info-window .window-header {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+            padding-bottom: 10px; border-bottom: 2px solid #ffaa44;
+        }
+        .custom-info-window .window-header img { width: 30px; height: 30px; }
+        .custom-info-window .window-header h3 { margin: 0; color: #ffaa44; font-size: 18px; font-weight: bold; }
+        .custom-info-window .window-content { margin-bottom: 20px; line-height: 1.6; font-size: 14px; }
+        .custom-info-window .window-close {
+            background: rgba(255,255,255,0.1); border: 2px solid #ffaa44; color: white;
+            padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;
+            transition: all 0.2s; width: 100%;
+        }
+        .custom-info-window .window-close:hover { background: #ffaa44; color: black; }
+        
+        /* زر إظهار/إخفاء القياسات */
+        #toggleMeasurements {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(136, 68, 136, 0.8);
+            color: white;
+            border: 2px solid #ffaa44;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 200;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        #toggleMeasurements:hover {
+            background: #884488;
+            transform: scale(1.05);
+        }
+        #toggleMeasurements.active {
+            background: #884488;
+            box-shadow: 0 0 15px #ffaa44;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translate(-50%, 100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        
+        /* تحسينات للهواتف */
+        @media (max-width: 768px) {
+            .scene-list-panel {
+                width: 200px;
+                left: 10px;
+            }
+            .scene-list-panel.collapsed {
+                width: 40px;
+                left: 0;
+            }
+            .scene-list-panel.collapsed .panel-header h3 span:last-child,
+            .scene-list-panel.collapsed .scene-list-container {
+                display: none;
+            }
+            .panel-toggle {
+                width: 44px;
+                height: 44px;
+                font-size: 24px;
+            }
+            .scene-list-panel.collapsed::after {
+                content: '☰';
+                position: absolute;
+                top: 50%;
+                right: -5px;
+                transform: translateY(-50%);
+                color: #88aaff;
+                font-size: 24px;
+                opacity: 0.5;
+                pointer-events: none;
+            }
+            .paths-control-panel {
+                top: 10px;
+                right: 10px;
+                padding: 10px;
+                min-width: 150px;
+            }
+            .paths-control-panel h3 { font-size: 14px; }
+            .path-toggle-item label { font-size: 12px; }
+            .custom-info-window {
+                width: 90%;
+                padding: 15px 20px;
+                bottom: 20px;
+            }
+            .hotspot-marker img { width: 35px; height: 35px; }
+            #autoRotateBtn {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+            #toggleMeasurements {
+                bottom: 70px;
+                right: 10px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="info">🏗️ ${projectName}</div>
+    <div class="info">🏗️ ${projectName}</div>
     <div id="container"></div>
     <button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
     <button id="toggleMeasurements" class="active">📏 إخفاء القياسات</button>
@@ -711,13 +723,13 @@ to { transform: translate(-50%, 0); opacity: 1; }
         <div id="paths-toggle-list"></div>
     </div>
     
-<div class="scene-list-panel" id="sceneListPanel">
-    <div class="panel-header" id="panelHeader">
-        <h3><span>📋</span><span>قائمة المشاهد</span></h3>
-        <button class="panel-toggle" id="togglePanelBtn">◀</button>
+    <div class="scene-list-panel" id="sceneListPanel">
+        <div class="panel-header" id="panelHeader">
+            <h3><span>📋</span><span>قائمة المشاهد</span></h3>
+            <button class="panel-toggle" id="togglePanelBtn">◀</button>
+        </div>
+        <div class="scene-list-container" id="sceneListContainer"></div>
     </div>
-    <div class="scene-list-container" id="sceneListContainer"></div>
-</div>
 
     <script>
         // الأيقونات
@@ -744,168 +756,98 @@ to { transform: translate(-50%, 0); opacity: 1; }
             WA: '#ff3300', 
             GS: '#33cc33' 
         };
-        
-        // ===== دوال القياس =====
-       // ===== دوال القياس المحسنة للجولة المستخرجة =====
-function createMeasurementElement(measurement) {
-    const elements = {};
-    
-    // إنشاء خط المسطرة
-    const lineDiv = document.createElement('div');
-    lineDiv.className = 'measurement-line';
-    lineDiv.style.position = 'absolute';
-    lineDiv.style.borderTop = '6px solid #ffaa44';
-    lineDiv.style.boxShadow = '0 0 30px #ffaa44';
-    lineDiv.style.borderRadius = '6px';
-    lineDiv.style.transformOrigin = '0 0';
-    lineDiv.style.zIndex = '500';
-    lineDiv.style.height = '6px';
-    
-    // إنشاء نقطة البداية (كرة كبيرة)
-    const startPoint = document.createElement('div');
-    startPoint.className = 'measurement-point';
-    startPoint.style.position = 'absolute';
-    startPoint.style.width = '16px';
-    startPoint.style.height = '16px';
-    startPoint.style.background = '#ffaa44';
-    startPoint.style.borderRadius = '50%';
-    startPoint.style.boxShadow = '0 0 30px #ffaa44';
-    startPoint.style.transform = 'translate(-50%, -50%)';
-    startPoint.style.zIndex = '501';
-    
-    // إنشاء نقطة النهاية (كرة كبيرة)
-    const endPoint = document.createElement('div');
-    endPoint.className = 'measurement-point';
-    endPoint.style.position = 'absolute';
-    endPoint.style.width = '16px';
-    endPoint.style.height = '16px';
-    endPoint.style.background = '#ffaa44';
-    endPoint.style.borderRadius = '50%';
-    endPoint.style.boxShadow = '0 0 30px #ffaa44';
-    endPoint.style.transform = 'translate(-50%, -50%)';
-    endPoint.style.zIndex = '501';
-    
-    // إنشاء علامات المسطرة
-    const distance = Math.sqrt(
-        Math.pow(measurement.end.x - measurement.start.x, 2) +
-        Math.pow(measurement.end.y - measurement.start.y, 2) +
-        Math.pow(measurement.end.z - measurement.start.z, 2)
-    );
-    
-    const numMarks = Math.floor(distance / 2);
-    for (let i = 1; i < numMarks; i += 2) {
-        const mark = document.createElement('div');
-        mark.className = 'measurement-mark';
-        mark.style.position = 'absolute';
-        mark.style.width = '2px';
-        mark.style.height = i % 4 === 0 ? '12px' : '6px';
-        mark.style.background = i % 4 === 0 ? '#ffffff' : '#ffaa44';
-        mark.style.transform = 'translate(-50%, -50%)';
-        mark.style.zIndex = '502';
-        mark._t = i / numMarks;
-        document.body.appendChild(mark);
-        elements['mark' + i] = mark;
-    }
-    
-    // إنشاء ملصق القياس (عملاق)
-    const label = document.createElement('div');
-    label.className = 'measurement-label';
-    label.style.position = 'absolute';
-    label.style.background = 'linear-gradient(135deg, #000000 0%, #222222 100%)';
-    label.style.color = 'white';
-    label.style.padding = '20px 40px';
-    label.style.borderRadius = '60px';
-    label.style.fontSize = '48px';
-    label.style.fontWeight = 'bold';
-    label.style.border = '6px solid #ffaa44';
-    label.style.boxShadow = '0 0 60px #ffaa44';
-    label.style.transform = 'translate(-50%, -50%)';
-    label.style.whiteSpace = 'nowrap';
-    label.style.zIndex = '503';
-    label.style.backdropFilter = 'blur(10px)';
-    label.style.textShadow = '4px 4px 8px black';
-    label.style.letterSpacing = '2px';
-    label.textContent = measurement.length + ' m';
-    
-    // حفظ الإحداثيات
-    lineDiv._start = new THREE.Vector3(measurement.start.x, measurement.start.y, measurement.start.z);
-    lineDiv._end = new THREE.Vector3(measurement.end.x, measurement.end.y, measurement.end.z);
-    startPoint._worldPos = new THREE.Vector3(measurement.start.x, measurement.start.y, measurement.start.z);
-    endPoint._worldPos = new THREE.Vector3(measurement.end.x, measurement.end.y, measurement.end.z);
-    label._worldPos = new THREE.Vector3().addVectors(startPoint._worldPos, endPoint._worldPos).multiplyScalar(0.5);
-    
-    document.body.appendChild(lineDiv);
-    document.body.appendChild(startPoint);
-    document.body.appendChild(endPoint);
-    document.body.appendChild(label);
-    
-    return { line: lineDiv, start: startPoint, end: endPoint, label };
-}
 
-// دالة تحديث مواقع القياسات
-function updateMeasurementPositions() {
-    if (!camera) return;
-    
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    
-    measurementElements.forEach(elem => {
-        if (!elem.line || !elem.line._start || !elem.line._end) return;
-        
-        const start = elem.line._start.clone().project(camera);
-        const end = elem.line._end.clone().project(camera);
-        
-        if (start.z > 1 || end.z > 1) {
-            elem.line.style.display = 'none';
-            elem.start.style.display = 'none';
-            elem.end.style.display = 'none';
-            elem.label.style.display = 'none';
-            return;
+        // ===== دوال القياس =====
+        function createMeasurementElement(measurement) {
+            const elements = {};
+            
+            const lineDiv = document.createElement('div');
+            lineDiv.className = 'measurement-line';
+            
+            const startPoint = document.createElement('div');
+            startPoint.className = 'measurement-point';
+            
+            const endPoint = document.createElement('div');
+            endPoint.className = 'measurement-point';
+            
+            const label = document.createElement('div');
+            label.className = 'measurement-label';
+            label.textContent = measurement.length + ' m';
+            
+            lineDiv._start = new THREE.Vector3(measurement.start.x, measurement.start.y, measurement.start.z);
+            lineDiv._end = new THREE.Vector3(measurement.end.x, measurement.end.y, measurement.end.z);
+            startPoint._worldPos = new THREE.Vector3(measurement.start.x, measurement.start.y, measurement.start.z);
+            endPoint._worldPos = new THREE.Vector3(measurement.end.x, measurement.end.y, measurement.end.z);
+            label._worldPos = new THREE.Vector3().addVectors(startPoint._worldPos, endPoint._worldPos).multiplyScalar(0.5);
+            
+            document.body.appendChild(lineDiv);
+            document.body.appendChild(startPoint);
+            document.body.appendChild(endPoint);
+            document.body.appendChild(label);
+            
+            return { line: lineDiv, start: startPoint, end: endPoint, label };
         }
-        
-        const x1 = (start.x * 0.5 + 0.5) * width;
-        const y1 = (-start.y * 0.5 + 0.5) * height;
-        const x2 = (end.x * 0.5 + 0.5) * width;
-        const y2 = (-end.y * 0.5 + 0.5) * height;
-        
-        if (x1 < -100 || x1 > width + 100 || y1 < -100 || y1 > height + 100 ||
-            x2 < -100 || x2 > width + 100 || y2 < -100 || y2 > height + 100) {
-            elem.line.style.display = 'none';
-            elem.start.style.display = 'none';
-            elem.end.style.display = 'none';
-            elem.label.style.display = 'none';
-            return;
+
+        function updateMeasurementPositions() {
+            if (!camera) return;
+            
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            measurementElements.forEach(elem => {
+                if (!elem.line || !elem.line._start || !elem.line._end) return;
+                
+                const start = elem.line._start.clone().project(camera);
+                const end = elem.line._end.clone().project(camera);
+                
+                if (start.z > 1 || end.z > 1) {
+                    elem.line.style.display = 'none';
+                    elem.start.style.display = 'none';
+                    elem.end.style.display = 'none';
+                    elem.label.style.display = 'none';
+                    return;
+                }
+                
+                const x1 = (start.x * 0.5 + 0.5) * width;
+                const y1 = (-start.y * 0.5 + 0.5) * height;
+                const x2 = (end.x * 0.5 + 0.5) * width;
+                const y2 = (-end.y * 0.5 + 0.5) * height;
+                
+                if (x1 < -100 || x1 > width + 100 || y1 < -100 || y1 > height + 100 ||
+                    x2 < -100 || x2 > width + 100 || y2 < -100 || y2 > height + 100) {
+                    elem.line.style.display = 'none';
+                    elem.start.style.display = 'none';
+                    elem.end.style.display = 'none';
+                    elem.label.style.display = 'none';
+                    return;
+                }
+                
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                elem.line.style.display = showMeasurements ? 'block' : 'none';
+                elem.line.style.left = x1 + 'px';
+                elem.line.style.top = y1 + 'px';
+                elem.line.style.width = length + 'px';
+                elem.line.style.transform = 'rotate(' + angle + 'deg)';
+                
+                elem.start.style.display = showMeasurements ? 'block' : 'none';
+                elem.start.style.left = x1 + 'px';
+                elem.start.style.top = y1 + 'px';
+                
+                elem.end.style.display = showMeasurements ? 'block' : 'none';
+                elem.end.style.left = x2 + 'px';
+                elem.end.style.top = y2 + 'px';
+                
+                const midX = (x1 + x2) / 2;
+                const midY = (y1 + y2) / 2;
+                elem.label.style.display = showMeasurements ? 'block' : 'none';
+                elem.label.style.left = midX + 'px';
+                elem.label.style.top = (midY - 50) + 'px';
+            });
         }
-        
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-        
-        // تحديث الخط
-        elem.line.style.display = showMeasurements ? 'block' : 'none';
-        elem.line.style.left = x1 + 'px';
-        elem.line.style.top = y1 + 'px';
-        elem.line.style.width = length + 'px';
-        elem.line.style.transform = 'rotate(' + angle + 'deg)';
-        
-        // تحديث نقاط البداية والنهاية
-        elem.start.style.display = showMeasurements ? 'block' : 'none';
-        elem.start.style.left = x1 + 'px';
-        elem.start.style.top = y1 + 'px';
-        
-        elem.end.style.display = showMeasurements ? 'block' : 'none';
-        elem.end.style.left = x2 + 'px';
-        elem.end.style.top = y2 + 'px';
-        
-        // تحديث الملصق (في المنتصف مع إزاحة كبيرة للأعلى)
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
-        elem.label.style.display = showMeasurements ? 'block' : 'none';
-        elem.label.style.left = midX + 'px';
-        elem.label.style.top = (midY - 100) + 'px';
-    });
-}
 
         function clearMeasurements() {
             measurementElements.forEach(elem => {
@@ -931,29 +873,29 @@ function updateMeasurementPositions() {
         // ===== دوال Hotspots =====
         function createHotspotElement(x, y, type, data) {
             type = type.toUpperCase();
-
+            
             const div = document.createElement('div');
             div.className = 'hotspot-marker';
             div.style.left = x + 'px';
             div.style.top = y + 'px';
-
+            
             const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
             const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
             const displayText = type === 'SCENE'
                 ? (data.targetSceneName || 'انتقال')
                 : (data.title || 'معلومات');
-
+            
             div.innerHTML =
                 '<img src="' + iconUrl + '" alt="' + type + '" ' +
                 'style="border: 2px solid ' + borderColor + '; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); pointer-events: none;">' +
                 '<div class="hotspot-label" style="border-color: ' + borderColor + ';">' +
                 displayText +
                 '</div>';
-
+            
             div.addEventListener('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
-
+                
                 if (type === 'INFO') {
                     showInfoWindow(data.title, data.content);
                 } else {
@@ -963,10 +905,11 @@ function updateMeasurementPositions() {
                     }
                 }
             });
-
+            
             return div;
         }
-        function showInfoWindow(title, content) {
+        
+       function showInfoWindow(title, content) {
             document.querySelectorAll('.custom-info-window').forEach(el => el.remove());
             
             const win = document.createElement('div');
@@ -1013,25 +956,25 @@ function updateMeasurementPositions() {
         function updateHotspotsPosition() {
             const width = window.innerWidth;
             const height = window.innerHeight;
-
+            
             Object.values(hotspotMarkers).forEach(el => {
                 if (!el._worldPosition) return;
-
+                
                 const projected = el._worldPosition.clone().project(camera);
-
+                
                 if (projected.z > 1) {
                     el.style.display = 'none';
                     return;
                 }
-
+                
                 const x = (projected.x * 0.5 + 0.5) * width;
                 const y = (-projected.y * 0.5 + 0.5) * height;
-
+                
                 if (x < -100 || x > width + 100 || y < -100 || y > height + 100) {
                     el.style.display = 'none';
                     return;
                 }
-
+                
                 el.style.display = 'block';
                 el.style.left = x + 'px';
                 el.style.top = y + 'px';
@@ -1059,82 +1002,59 @@ function updateMeasurementPositions() {
             });
         }
 
-      // دالة تهيئة لوحة المشاهد - محسنة للهواتف
-function initScenePanel() {
-    const panel = document.getElementById('sceneListPanel');
-    const toggleBtn = document.getElementById('togglePanelBtn');
-    const panelHeader = document.getElementById('panelHeader');
-    
-    if (!panel || !toggleBtn) return;
-    
-    // فتح/إغلاق اللوحة عند النقر على الزر
-    toggleBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        panel.classList.toggle('collapsed');
-        
-        // تغيير اتجاه السهم
-        if (panel.classList.contains('collapsed')) {
-            toggleBtn.textContent = '▶';
-            // تخزين الحالة في localStorage للهواتف
-            localStorage.setItem('scenePanelCollapsed', 'true');
-        } else {
-            toggleBtn.textContent = '◀';
-            localStorage.setItem('scenePanelCollapsed', 'false');
-        }
-    });
-    
-    // فتح/إغلاق اللوحة عند النقر على رأس اللوحة (للهواتف)
-    if (panelHeader) {
-        panelHeader.addEventListener('click', function(e) {
-            // لا تفعل شيئاً إذا كان النقر على الزر نفسه
-            if (e.target === toggleBtn) return;
+        // ===== دوال المشاهد =====
+        function initScenePanel() {
+            const panel = document.getElementById('sceneListPanel');
+            const toggleBtn = document.getElementById('togglePanelBtn');
+            const panelHeader = document.getElementById('panelHeader');
             
-            panel.classList.toggle('collapsed');
+            if (!panel || !toggleBtn) return;
             
-            if (panel.classList.contains('collapsed')) {
-                toggleBtn.textContent = '▶';
-                localStorage.setItem('scenePanelCollapsed', 'true');
-            } else {
-                toggleBtn.textContent = '◀';
-                localStorage.setItem('scenePanelCollapsed', 'false');
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                panel.classList.toggle('collapsed');
+                toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
+                localStorage.setItem('scenePanelCollapsed', panel.classList.contains('collapsed'));
+            });
+            
+            if (panelHeader) {
+                panelHeader.addEventListener('click', function(e) {
+                    if (e.target === toggleBtn) return;
+                    panel.classList.toggle('collapsed');
+                    toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
+                    localStorage.setItem('scenePanelCollapsed', panel.classList.contains('collapsed'));
+                });
             }
-        });
-    }
-    
-    // استعادة الحالة السابقة
-    const savedState = localStorage.getItem('scenePanelCollapsed');
-    if (savedState === 'true') {
-        panel.classList.add('collapsed');
-        toggleBtn.textContent = '▶';
-    }
-    
-    // للهواتف: نقر مزدوج على الحافة اليسرى يعيد فتح اللوحة
-    let touchStartX = 0;
-    document.addEventListener('touchstart', function(e) {
-        touchStartX = e.touches[0].clientX;
-    });
-    
-    document.addEventListener('touchend', function(e) {
-        const touchEndX = e.changedTouches[0].clientX;
-        const panelCollapsed = panel.classList.contains('collapsed');
-        
-        // إذا كانت اللوحة مغلقة والمستخدم نقر على الجانب الأيسر
-        if (panelCollapsed && touchStartX < 50 && touchEndX > 100) {
-            panel.classList.remove('collapsed');
-            toggleBtn.textContent = '◀';
-            localStorage.setItem('scenePanelCollapsed', 'false');
+
+            const savedState = localStorage.getItem('scenePanelCollapsed');
+            if (savedState === 'true') {
+                panel.classList.add('collapsed');
+                toggleBtn.textContent = '▶';
+            }
+            
+            let touchStartX = 0;
+            document.addEventListener('touchstart', function(e) {
+                touchStartX = e.touches[0].clientX;
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                const touchEndX = e.changedTouches[0].clientX;
+                const panelCollapsed = panel.classList.contains('collapsed');
+                
+                if (panelCollapsed && touchStartX < 50 && touchEndX > 100) {
+                    panel.classList.remove('collapsed');
+                    toggleBtn.textContent = '◀';
+                    localStorage.setItem('scenePanelCollapsed', 'false');
+                }
+                
+                if (!panelCollapsed && touchStartX < 100 && touchStartX - touchEndX > 50) {
+                    panel.classList.add('collapsed');
+                    toggleBtn.textContent = '▶';
+                    localStorage.setItem('scenePanelCollapsed', 'true');
+                }
+            });
         }
-        
-        // إذا كانت اللوحة مفتوحة والمستخدم سحب لليسار
-        if (!panelCollapsed && touchStartX < 100 && touchStartX - touchEndX > 50) {
-            panel.classList.add('collapsed');
-            toggleBtn.textContent = '▶';
-            localStorage.setItem('scenePanelCollapsed', 'true');
-        }
-    });
-    
-    console.log('✅ لوحة المشاهد مهيأة للهواتف');
-}
+
         function updateSceneList() {
             const container = document.getElementById('sceneListContainer');
             if (!container) return;
@@ -1155,26 +1075,25 @@ function initScenePanel() {
         function loadScene(index) {
             const sceneData = scenes[index];
             if (!sceneData) return;
-
+            
             currentSceneIndex = index;
-
+            
             if (sphereMesh) scene3D.remove(sphereMesh);
             
             allPaths.forEach(p => scene3D.remove(p));
             allPaths = [];
-
+            
             new THREE.TextureLoader().load(sceneData.image, function(texture) {
                 texture.wrapS = THREE.RepeatWrapping;
                 texture.wrapT = THREE.RepeatWrapping;
                 texture.repeat.x = -1;
-
+                
                 sphereMesh = new THREE.Mesh(
                     new THREE.SphereGeometry(500, 128, 128),
                     new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide })
                 );
                 scene3D.add(sphereMesh);
-
-                // إعادة بناء المسارات
+                
                 if (sceneData.paths) {
                     sceneData.paths.forEach(pathData => {
                         const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
@@ -1184,7 +1103,7 @@ function initScenePanel() {
                             const direction = new THREE.Vector3().subVectors(end, start);
                             const distance = direction.length();
                             if (distance < 5) continue;
-
+                            
                             const cylinder = new THREE.Mesh(
                                 new THREE.CylinderGeometry(3.5, 3.5, distance, 12),
                                 new THREE.MeshStandardMaterial({ 
@@ -1193,7 +1112,7 @@ function initScenePanel() {
                                     emissiveIntensity: 0.3 
                                 })
                             );
-
+                            
                             const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
                             cylinder.position.copy(midpoint);
                             cylinder.lookAt(end);
@@ -1205,7 +1124,7 @@ function initScenePanel() {
                         }
                     });
                 }
-
+                
                 setTimeout(() => rebuildHotspots(), 200);
                 loadMeasurements(sceneData);
                 updateSceneList();
@@ -1237,7 +1156,6 @@ function initScenePanel() {
                 controls.autoRotate = autoRotate;
                 controls.autoRotateSpeed = 0.5;
                 
-                // تنظيف
                 if (sphereMesh) scene3D.remove(sphereMesh);
                 document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
                 allPaths.forEach(p => scene3D.remove(p));
@@ -1247,7 +1165,6 @@ function initScenePanel() {
                 initScenePanel();
                 loadScene(0);
                 
-                // زر إظهار/إخفاء القياسات
                 document.getElementById('toggleMeasurements').addEventListener('click', function() {
                     showMeasurements = !showMeasurements;
                     this.textContent = showMeasurements ? '📏 إخفاء القياسات' : '📏 إظهار القياسات';
@@ -1260,14 +1177,13 @@ function initScenePanel() {
                         if (elem.label) elem.label.style.display = showMeasurements ? 'block' : 'none';
                     });
                 });
-                // زر التدوير التلقائي
+                
                 document.getElementById('autoRotateBtn').addEventListener('click', function() {
                     autoRotate = !autoRotate;
                     controls.autoRotate = autoRotate;
                     this.textContent = autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
                 });
-                
-                // حدث تغيير حجم النافذة
+
                 window.addEventListener('resize', function() {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
@@ -1275,7 +1191,6 @@ function initScenePanel() {
                     rebuildHotspots();
                 });
                 
-                // حلقة التحريك
                 function animate() {
                     requestAnimationFrame(animate);
                     controls.update();
@@ -1283,7 +1198,7 @@ function initScenePanel() {
                     updateHotspotsPosition();
                     updateMeasurementPositions();
                 }
-
+                
                 animate();
             })
             .catch(error => {
@@ -1293,26 +1208,7 @@ function initScenePanel() {
     </script> 
 </body>
 </html>`;
-  }
-    generatePlayerCSS() {
-        return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
-#container { width: 100vw; height: 100vh; background: #000; }
-.info {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: rgba(20, 30, 40, 0.75);
-    backdrop-filter: blur(12px);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 30px;
-    border: 2px solid rgba(74, 108, 143, 0.5);
-    z-index: 100;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}`;
-    }
+}
 
     generateReadme(projectName) {
         return `# ${projectName}
