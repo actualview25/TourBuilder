@@ -1879,6 +1879,7 @@ function showCustomInfoWindow(title, content, type = 'info') {
 // =======================================
 // ١٠. تحديث لوحة المشاهد
 // =======================================
+
 function updateScenePanel() {
     const list = document.getElementById('sceneList');
     if (!list) return;
@@ -1887,7 +1888,8 @@ function updateScenePanel() {
     
     if (!sceneManager || !sceneManager.scenes) return;
     
-    sceneManager.scenes.forEach(scene => {
+    // عرض المشاهد بالترتيب (الأحدث أولاً)
+    [...sceneManager.scenes].reverse().forEach(scene => {
         const item = document.createElement('div');
         item.className = 'scene-item';
         
@@ -1898,16 +1900,13 @@ function updateScenePanel() {
         const infoCount = scene.hotspots?.filter(h => h.type === 'INFO').length || 0;
         const sceneCount = scene.hotspots?.filter(h => h.type === 'SCENE').length || 0;
         const totalPoints = infoCount + sceneCount;
-        const measureCount = scene.measurements?.length || 0;
         
         const icon = scene.id.includes('start') ? '🏠' : (sceneCount > 0 ? '🚪' : '🌄');
         
         item.innerHTML = `
             <span class='scene-icon'>${icon}</span>
-            <span class='scene-name' title='${scene.name}'>${scene.name}</span>
-            <span class='scene-hotspots' title='معلومات: ${infoCount} | انتقال: ${sceneCount} | قياسات: ${measureCount}'>
-                ${totalPoints} | 📏${measureCount}
-            </span>
+            <span class='scene-name' title='${scene.name}'>${scene.name.substring(0, 15)}${scene.name.length > 15 ? '...' : ''}</span>
+            <span class='scene-hotspots'>${totalPoints}</span>
             <button class='delete-scene-btn' data-id='${scene.id}' title='حذف المشهد'>🗑️</button>
         `;
 
@@ -1923,11 +1922,93 @@ function updateScenePanel() {
         const deleteBtn = item.querySelector('.delete-scene-btn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (sceneManager) sceneManager.deleteScene(scene.id);
+            if (confirm('هل أنت متأكد من حذف هذا المشهد؟')) {
+                if (sceneManager) sceneManager.deleteScene(scene.id);
+            }
         });
         
         list.appendChild(item);
     });
+    
+    // سكرول تلقائي للمشهد النشط
+    setTimeout(() => {
+        const activeItem = list.querySelector('.scene-item.active');
+        if (activeItem) {
+            activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, 100);
+}
+
+// =======================================
+// تفعيل خاصية السحب والترتيب للمشاهد
+// =======================================
+function enableSceneSorting() {
+    const sceneList = document.getElementById('sceneList');
+    if (!sceneList) return;
+
+    // التأكد من وجود المكتبة
+    if (typeof Sortable === 'undefined') {
+        console.warn('⚠️ SortableJS غير موجودة');
+        return;
+    }
+
+    new Sortable(sceneList, {
+        animation: 300, // سرعة الحركة (بالملي ثانية)
+        handle: '.scene-item', // ما الذي نسحب
+        draggable: '.scene-item', // العناصر القابلة للسحب
+        ghostClass: 'scene-item-ghost', // كلاس العنصر أثناء السحب
+        chosenClass: 'scene-item-chosen', // كلاس العنصر المختار
+        dragClass: 'scene-item-drag', // كلاس أثناء السحب
+        
+        onEnd: function(evt) {
+            // هذا الكود ينفذ بعد إنهاء السحب
+            console.log('🔄 تم تغيير ترتيب المشاهد');
+            
+            // الحصول على الترتيب الجديد
+            const items = evt.to.children;
+            const newOrder = [];
+            
+            // نقرأ الـ IDs بالترتيب الجديد
+            for (let i = 0; i < items.length; i++) {
+                const deleteBtn = items[i].querySelector('.delete-scene-btn');
+                if (deleteBtn) {
+                    const sceneId = deleteBtn.getAttribute('data-id');
+                    newOrder.push(sceneId);
+                }
+            }
+            
+            // إعادة ترتيب المشاهد في الذاكرة
+            if (sceneManager && sceneManager.scenes) {
+                const reorderedScenes = [];
+                newOrder.forEach(id => {
+                    const scene = sceneManager.scenes.find(s => s.id === id);
+                    if (scene) reorderedScenes.push(scene);
+                });
+                
+                // إضافة أي مشاهد مفقودة (للأمان)
+                sceneManager.scenes.forEach(scene => {
+                    if (!newOrder.includes(scene.id)) {
+                        reorderedScenes.push(scene);
+                    }
+                });
+                
+                // تحديث المشاهد
+                sceneManager.scenes = reorderedScenes;
+                sceneManager.saveScenes();
+                
+                console.log('✅ تم حفظ الترتيب الجديد');
+            }
+        }
+    });
+    
+    console.log('✅ تم تفعيل السحب والترتيب');
+}
+
+// استدعاء الدالة بعد تحميل الصفحة
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', enableSceneSorting);
+} else {
+    enableSceneSorting();
 }
 
 // =======================================
