@@ -469,6 +469,16 @@ return `<!DOCTYPE html>
         }
         #autoRotateBtn:hover { background: rgba(74, 108, 143, 0.8); transform: translateX(-50%) scale(1.05); }
         
+        /* زر القياسات */
+        #toggleMeasurements {
+            position: fixed; bottom: 80px; right: 20px; padding: 10px 20px;
+            background: rgba(136, 68, 136, 0.8); color: white; border: 2px solid #ffaa44;
+            border-radius: 30px; cursor: pointer; z-index: 200; font-size: 14px;
+            backdrop-filter: blur(5px); transition: all 0.3s ease;
+        }
+        #toggleMeasurements:hover { background: #884488; transform: scale(1.05); }
+        #toggleMeasurements.active { background: #884488; box-shadow: 0 0 15px #ffaa44; }
+        
         .scene-list-panel {
             position: fixed; top: 50%; left: 20px; transform: translateY(-50%);
             width: 260px; max-height: 70vh;
@@ -529,27 +539,16 @@ return `<!DOCTYPE html>
         
         /* أنماط Hotspots */
         .hotspot-marker {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            cursor: pointer !important;
-            z-index: 1000;
-            pointer-events: auto !important;
-            transition: none;
+            position: absolute; transform: translate(-50%, -50%);
+            cursor: pointer; z-index: 100; transition: all 0.2s ease;
+            pointer-events: all;
         }
         .hotspot-marker img {
-            width: 40px;
-            height: 40px;
-            filter: drop-shadow(0 0 10px currentColor);
-            pointer-events: none;
-            transition: transform 0.2s ease;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.3);
-            border: 2px solid;
+            width: 40px; height: 40px; filter: drop-shadow(0 0 10px currentColor);
+            pointer-events: none; transition: all 0.2s ease;
+            border-radius: 50%; background: rgba(0,0,0,0.3);
         }
-        .hotspot-marker:hover img {
-            transform: scale(1.15);
-            filter: drop-shadow(0 0 15px gold);
-        }
+        .hotspot-marker:hover img { transform: scale(1.15); filter: drop-shadow(0 0 15px gold); }
         
         .hotspot-label {
             position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
@@ -561,49 +560,26 @@ return `<!DOCTYPE html>
             font-weight: 500;
         }
         .hotspot-marker:hover .hotspot-label { opacity: 1; }
-        
+
         /* أنماط القياسات */
         .measurement-line {
-            position: absolute;
-            pointer-events: none;
-            z-index: 500;
-            border-top: 6px solid #ffaa44;
-            box-shadow: 0 0 30px #ffaa44;
-            border-radius: 6px;
-            transform-origin: 0 0;
-            height: 6px;
+            position: absolute; pointer-events: none; z-index: 500;
+            border-top: 6px solid #ffaa44; box-shadow: 0 0 30px #ffaa44;
+            border-radius: 6px; transform-origin: 0 0; height: 6px;
         }
-        
         .measurement-point {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: #ffaa44;
-            border-radius: 50%;
-            box-shadow: 0 0 30px #ffaa44;
-            transform: translate(-50%, -50%);
-            z-index: 501;
+            position: absolute; width: 16px; height: 16px;
+            background: #ffaa44; border-radius: 50%;
+            box-shadow: 0 0 30px #ffaa44; transform: translate(-50%, -50%); z-index: 501;
         }
-        
         .measurement-label {
-            position: absolute;
-            background: linear-gradient(135deg, #000000 0%, #222222 100%);
-            color: white;
-            padding: 20px 40px;
-            border-radius: 60px;
-            font-size: 48px;
-            font-weight: bold;
-            border: 6px solid #ffaa44;
-            box-shadow: 0 0 60px #ffaa44;
-            transform: translate(-50%, -50%);
-            white-space: nowrap;
-            z-index: 503;
-            backdrop-filter: blur(10px);
-            text-shadow: 4px 4px 8px black;
-            letter-spacing: 2px;
+            position: absolute; background: linear-gradient(135deg, #000000 0%, #222222 100%);
+            color: white; padding: 20px 40px; border-radius: 60px; font-size: 48px;
+            font-weight: bold; border: 6px solid #ffaa44; box-shadow: 0 0 60px #ffaa44;
+            transform: translate(-50%, -50%); white-space: nowrap; z-index: 503;
+            backdrop-filter: blur(10px); text-shadow: 4px 4px 8px black; letter-spacing: 2px;
         }
         
-        /* نافذة المعلومات */
         .custom-info-window {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(10px);
@@ -625,31 +601,6 @@ return `<!DOCTYPE html>
         }
         .custom-info-window .window-close:hover { background: #ffaa44; color: black; }
         
-        /* زر إظهار/إخفاء القياسات */
-        #toggleMeasurements {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            padding: 10px 20px;
-            background: rgba(136, 68, 136, 0.8);
-            color: white;
-            border: 2px solid #ffaa44;
-            border-radius: 30px;
-            cursor: pointer;
-            z-index: 200;
-            font-size: 14px;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-        }
-        #toggleMeasurements:hover {
-            background: #884488;
-            transform: scale(1.05);
-        }
-        #toggleMeasurements.active {
-            background: #884488;
-            box-shadow: 0 0 15px #ffaa44;
-        }
-        
         @keyframes slideUp {
             from { transform: translate(-50%, 100%); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
@@ -657,58 +608,23 @@ return `<!DOCTYPE html>
         
         /* تحسينات للهواتف */
         @media (max-width: 768px) {
-            .scene-list-panel {
-                width: 200px;
-                left: 10px;
-            }
-            .scene-list-panel.collapsed {
-                width: 40px;
-                left: 0;
-            }
+            .scene-list-panel { width: 200px; left: 10px; }
+            .scene-list-panel.collapsed { width: 40px; left: 0; }
             .scene-list-panel.collapsed .panel-header h3 span:last-child,
-            .scene-list-panel.collapsed .scene-list-container {
-                display: none;
-            }
-            .panel-toggle {
-                width: 44px;
-                height: 44px;
-                font-size: 24px;
-            }
+            .scene-list-panel.collapsed .scene-list-container { display: none; }
+            .panel-toggle { width: 44px; height: 44px; font-size: 24px; }
             .scene-list-panel.collapsed::after {
-                content: '☰';
-                position: absolute;
-                top: 50%;
-                right: -5px;
-                transform: translateY(-50%);
-                color: #88aaff;
-                font-size: 24px;
-                opacity: 0.5;
-                pointer-events: none;
+                content: '☰'; position: absolute; top: 50%; right: -5px;
+                transform: translateY(-50%); color: #88aaff; font-size: 24px;
+                opacity: 0.5; pointer-events: none;
             }
-            .paths-control-panel {
-                top: 10px;
-                right: 10px;
-                padding: 10px;
-                min-width: 150px;
-            }
+            .paths-control-panel { top: 10px; right: 10px; padding: 10px; min-width: 150px; }
             .paths-control-panel h3 { font-size: 14px; }
             .path-toggle-item label { font-size: 12px; }
-            .custom-info-window {
-                width: 90%;
-                padding: 15px 20px;
-                bottom: 20px;
-            }
+            .custom-info-window { width: 90%; padding: 15px 20px; bottom: 20px; }
             .hotspot-marker img { width: 35px; height: 35px; }
-            #autoRotateBtn {
-                font-size: 14px;
-                padding: 10px 20px;
-            }
-            #toggleMeasurements {
-                bottom: 70px;
-                right: 10px;
-                padding: 8px 16px;
-                font-size: 12px;
-            }
+            #autoRotateBtn { font-size: 14px; padding: 10px 20px; }
+            #toggleMeasurements { bottom: 70px; right: 10px; padding: 8px 16px; font-size: 12px; }
         }
     </style>
 </head>
@@ -732,13 +648,11 @@ return `<!DOCTYPE html>
     </div>
 
     <script>
-        // الأيقونات
         const ICONS = {
             hotspot: 'icon/hotspot.png',
             info: 'icon/info.png'
         };
 
-        // المتغيرات العامة
         let autoRotate = true;
         let currentSceneIndex = 0;
         let scenes = [];
@@ -747,16 +661,9 @@ return `<!DOCTYPE html>
         let hotspotMarkers = {};
         let measurementElements = [];
         let showMeasurements = true;
-
-        // ألوان المسارات
-        const pathColors = { 
-            EL: '#ffcc00', 
-            AC: '#00ccff', 
-            WP: '#0066cc', 
-            WA: '#ff3300', 
-            GS: '#33cc33' 
-        };
-
+        
+        const pathColors = { EL: '#ffcc00', AC: '#00ccff', WP: '#0066cc', WA: '#ff3300', GS: '#33cc33' };
+        
         // ===== دوال القياس =====
         function createMeasurementElement(measurement) {
             const elements = {};
@@ -866,142 +773,9 @@ return `<!DOCTYPE html>
                     const elem = createMeasurementElement(m);
                     measurementElements.push(elem);
                 });
-                console.log('📏 تم تحميل', sceneData.measurements.length, 'قياس');
             }
         }
-
-        // ===== دوال Hotspots =====
-        function createHotspotElement(x, y, type, data) {
-            type = type.toUpperCase();
-            
-            const div = document.createElement('div');
-            div.className = 'hotspot-marker';
-            div.style.left = x + 'px';
-            div.style.top = y + 'px';
-            
-            const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
-            const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
-            const displayText = type === 'SCENE'
-                ? (data.targetSceneName || 'انتقال')
-                : (data.title || 'معلومات');
-            
-            div.innerHTML =
-                '<img src="' + iconUrl + '" alt="' + type + '" ' +
-                'style="border: 2px solid ' + borderColor + '; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); pointer-events: none;">' +
-                '<div class="hotspot-label" style="border-color: ' + borderColor + ';">' +
-                displayText +
-                '</div>';
-            
-            div.addEventListener('click', function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-                
-                if (type === 'INFO') {
-                    showInfoWindow(data.title, data.content);
-                } else {
-                    const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
-                    if (targetIndex !== -1) {
-                        setTimeout(() => loadScene(targetIndex), 300);
-                    }
-                }
-            });
-            
-            return div;
-        }
         
-       function showInfoWindow(title, content) {
-            document.querySelectorAll('.custom-info-window').forEach(el => el.remove());
-            
-            const win = document.createElement('div');
-            win.className = 'custom-info-window';
-            win.innerHTML = '<div class="window-header">' +
-                '<img src="' + ICONS.info + '">' +
-                '<h3>' + (title || 'معلومات') + '</h3>' +
-                '</div>' +
-                '<div class="window-content">' + (content || '') + '</div>' +
-                '<button class="window-close">حسناً</button>';
-            
-            win.querySelector('.window-close').onclick = () => win.remove();
-            document.body.appendChild(win);
-            
-            setTimeout(() => win.remove(), 5000);
-        }
-
-        function rebuildHotspots() {
-            document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
-            hotspotMarkers = {};
-            
-            const currentScene = scenes[currentSceneIndex];
-            if (!currentScene || !currentScene.hotspots || !currentScene.hotspots.length) return;
-            
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            
-            currentScene.hotspots.forEach(h => {
-                const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
-                const projected = pos.clone().project(camera);
-                
-                const x = (projected.x * 0.5 + 0.5) * width;
-                const y = (-projected.y * 0.5 + 0.5) * height;
-                
-                const iconElement = createHotspotElement(x, y, h.type, h.data);
-                iconElement._worldPosition = pos.clone();
-                iconElement.dataset.id = h.id;
-                
-                document.body.appendChild(iconElement);
-                hotspotMarkers[h.id] = iconElement;
-            });
-        }
-
-        function updateHotspotsPosition() {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            
-            Object.values(hotspotMarkers).forEach(el => {
-                if (!el._worldPosition) return;
-                
-                const projected = el._worldPosition.clone().project(camera);
-                
-                if (projected.z > 1) {
-                    el.style.display = 'none';
-                    return;
-                }
-                
-                const x = (projected.x * 0.5 + 0.5) * width;
-                const y = (-projected.y * 0.5 + 0.5) * height;
-                
-                if (x < -100 || x > width + 100 || y < -100 || y > height + 100) {
-                    el.style.display = 'none';
-                    return;
-                }
-                
-                el.style.display = 'block';
-                el.style.left = x + 'px';
-                el.style.top = y + 'px';
-            });
-        }
-
-        // ===== دوال المسارات =====
-        function togglePathsByType(type, visible) {
-            allPaths.forEach(p => { 
-                if (p.userData && p.userData.type === type) p.visible = visible; 
-            });
-        }
-
-        function createPathsTogglePanel() {
-            const toggleList = document.getElementById('paths-toggle-list');
-            if (!toggleList) return;
-            toggleList.innerHTML = '';
-            ['EL', 'AC', 'WP', 'WA', 'GS'].forEach(type => {
-                const div = document.createElement('div');
-                div.className = 'path-toggle-item';
-                div.innerHTML = '<input type="checkbox" id="toggle-' + type + '" checked data-type="' + type + '">' +
-                    '<label for="toggle-' + type + '"><span class="path-color-dot" style="background:' + pathColors[type] + '"></span> ' + type + '</label>';
-                div.querySelector('input').addEventListener('change', e => togglePathsByType(type, e.target.checked));
-                toggleList.appendChild(div);
-            });
-        }
-
         // ===== دوال المشاهد =====
         function initScenePanel() {
             const panel = document.getElementById('sceneListPanel');
@@ -1014,7 +788,6 @@ return `<!DOCTYPE html>
                 e.stopPropagation();
                 panel.classList.toggle('collapsed');
                 toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
-                localStorage.setItem('scenePanelCollapsed', panel.classList.contains('collapsed'));
             });
             
             if (panelHeader) {
@@ -1022,14 +795,7 @@ return `<!DOCTYPE html>
                     if (e.target === toggleBtn) return;
                     panel.classList.toggle('collapsed');
                     toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
-                    localStorage.setItem('scenePanelCollapsed', panel.classList.contains('collapsed'));
                 });
-            }
-
-            const savedState = localStorage.getItem('scenePanelCollapsed');
-            if (savedState === 'true') {
-                panel.classList.add('collapsed');
-                toggleBtn.textContent = '▶';
             }
             
             let touchStartX = 0;
@@ -1044,17 +810,15 @@ return `<!DOCTYPE html>
                 if (panelCollapsed && touchStartX < 50 && touchEndX > 100) {
                     panel.classList.remove('collapsed');
                     toggleBtn.textContent = '◀';
-                    localStorage.setItem('scenePanelCollapsed', 'false');
                 }
                 
                 if (!panelCollapsed && touchStartX < 100 && touchStartX - touchEndX > 50) {
                     panel.classList.add('collapsed');
                     toggleBtn.textContent = '▶';
-                    localStorage.setItem('scenePanelCollapsed', 'true');
                 }
             });
         }
-
+        
         function updateSceneList() {
             const container = document.getElementById('sceneListContainer');
             if (!container) return;
@@ -1072,6 +836,106 @@ return `<!DOCTYPE html>
             });
         }
 
+        // ===== دوال Hotspots =====
+        function createHotspotElement(x, y, type, data) {
+            const div = document.createElement('div');
+            div.className = 'hotspot-marker';
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            div.style.cursor = 'pointer';
+            div.style.zIndex = '1000';
+            
+            const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
+            const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
+            const displayText = type === 'SCENE' 
+                ? (data.targetSceneName || 'انتقال') 
+                : (data.title || 'معلومات');
+            
+            div.innerHTML = '<img src="' + iconUrl + '" alt="' + type + '" style="border: 2px solid ' + borderColor + '; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); cursor: pointer; pointer-events: none;">' +
+                '<div class="hotspot-label" style="border-color: ' + borderColor + ';">' + displayText + '</div>';
+            
+            div.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                if (type === 'INFO') {
+                    showInfoWindow(data.title, data.content);
+                } else {
+                    const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
+                    if (targetIndex !== -1) {
+                        setTimeout(() => loadScene(targetIndex), 300);
+                    }
+                }
+            });
+            
+            return div;
+        }
+        
+        function showInfoWindow(title, content) {
+            document.querySelectorAll('.custom-info-window').forEach(el => el.remove());
+            
+            const win = document.createElement('div');
+            win.className = 'custom-info-window';
+            win.innerHTML = '<div class="window-header">' +
+                '<img src="' + ICONS.info + '">' +
+                '<h3>' + (title || 'معلومات') + '</h3>' +
+                '</div>' +
+                '<div class="window-content">' + (content || '') + '</div>' +
+                '<button class="window-close">حسناً</button>';
+            
+            win.querySelector('.window-close').onclick = () => win.remove();
+            document.body.appendChild(win);
+            
+            setTimeout(() => win.remove(), 5000);
+        }
+        
+        function rebuildHotspots() {
+            document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
+            hotspotMarkers = {};
+            
+            const currentScene = scenes[currentSceneIndex];
+            if (!currentScene || !currentScene.hotspots || !currentScene.hotspots.length) return;
+            
+            const width = window.innerWidth, height = window.innerHeight;
+            
+            currentScene.hotspots.forEach(h => {
+                const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
+                pos.project(camera);
+                
+                if (pos.z > 1) return;
+                
+                const x = (pos.x * 0.5 + 0.5) * width;
+                const y = (-pos.y * 0.5 + 0.5) * height;
+                
+                if (x < -100 || x > width + 100 || y < -100 || y > height + 100) return;
+                
+                const iconElement = createHotspotElement(x, y, h.type, h.data);
+                iconElement._worldPosition = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
+                iconElement.dataset.id = h.id;
+                document.body.appendChild(iconElement);
+                hotspotMarkers[h.id] = iconElement;
+            });
+        }
+
+       .        // ===== دوال المسارات =====
+        function togglePathsByType(type, visible) {
+            allPaths.forEach(p => { if (p.userData && p.userData.type === type) p.visible = visible; });
+        }
+        
+        function createPathsTogglePanel() {
+            const toggleList = document.getElementById('paths-toggle-list');
+            if (!toggleList) return;
+            toggleList.innerHTML = '';
+            ['EL', 'AC', 'WP', 'WA', 'GS'].forEach(type => {
+                const div = document.createElement('div');
+                div.className = 'path-toggle-item';
+                div.innerHTML = '<input type="checkbox" id="toggle-' + type + '" checked data-type="' + type + '">' +
+                    '<label for="toggle-' + type + '"><span class="path-color-dot" style="background:' + pathColors[type] + '"></span> ' + type + '</label>';
+                div.querySelector('input').addEventListener('change', e => togglePathsByType(type, e.target.checked));
+                toggleList.appendChild(div);
+            });
+        }
+        
         function loadScene(index) {
             const sceneData = scenes[index];
             if (!sceneData) return;
@@ -1079,7 +943,7 @@ return `<!DOCTYPE html>
             currentSceneIndex = index;
             
             if (sphereMesh) scene3D.remove(sphereMesh);
-            
+            document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
             allPaths.forEach(p => scene3D.remove(p));
             allPaths = [];
             
@@ -1115,22 +979,23 @@ return `<!DOCTYPE html>
                             
                             const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
                             cylinder.position.copy(midpoint);
+                            
                             cylinder.lookAt(end);
                             cylinder.rotateX(Math.PI / 2);
-                            cylinder.userData = { type: pathData.type };
                             
+                            cylinder.userData = { type: pathData.type };
                             scene3D.add(cylinder);
                             allPaths.push(cylinder);
                         }
                     });
                 }
                 
-                setTimeout(() => rebuildHotspots(), 200);
+                setTimeout(rebuildHotspots, 200);
                 loadMeasurements(sceneData);
                 updateSceneList();
             });
         }
-
+        
         // ===== التهيئة =====
         fetch('tour-data.json')
             .then(res => res.json())
@@ -1156,14 +1021,12 @@ return `<!DOCTYPE html>
                 controls.autoRotate = autoRotate;
                 controls.autoRotateSpeed = 0.5;
                 
-                if (sphereMesh) scene3D.remove(sphereMesh);
-                document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
-                allPaths.forEach(p => scene3D.remove(p));
-                allPaths = [];
-                
-                createPathsTogglePanel();
-                initScenePanel();
-                loadScene(0);
+                document.getElementById('autoRotateBtn').onclick = function() {
+                    autoRotate = !autoRotate;
+                    controls.autoRotate = autoRotate;
+                    document.getElementById('autoRotateBtn').textContent = 
+                        autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
+                };
                 
                 document.getElementById('toggleMeasurements').addEventListener('click', function() {
                     showMeasurements = !showMeasurements;
@@ -1178,12 +1041,10 @@ return `<!DOCTYPE html>
                     });
                 });
                 
-                document.getElementById('autoRotateBtn').addEventListener('click', function() {
-                    autoRotate = !autoRotate;
-                    controls.autoRotate = autoRotate;
-                    this.textContent = autoRotate ? '⏸️ إيقاف الدوران' : '▶️ تشغيل الدوران';
-                });
-
+                createPathsTogglePanel();
+                initScenePanel();
+                loadScene(0);
+                
                 window.addEventListener('resize', function() {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
@@ -1195,20 +1056,16 @@ return `<!DOCTYPE html>
                     requestAnimationFrame(animate);
                     controls.update();
                     renderer.render(scene3D, camera);
-                    updateHotspotsPosition();
+                    rebuildHotspots();
                     updateMeasurementPositions();
                 }
-                
                 animate();
             })
-            .catch(error => {
-                console.error('خطأ في تحميل بيانات الجولة:', error);
-                document.body.innerHTML += '<div style="color:red; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:black; padding:20px;">خطأ في تحميل الجولة</div>';
-            });
-    </script> 
+            .catch(err => console.error('خطأ في تحميل البيانات:', err));
+    </script>
 </body>
 </html>`;
-}
+} 
 
     generateReadme(projectName) {
         return `# ${projectName}
