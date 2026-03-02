@@ -1245,69 +1245,147 @@ const tourExporter = new TourExporter();
 // =======================================
 
 // إنشاء خط القياس
+// دالة createMeasureLine المحسنة - شكل مسطرة احترافي
 function createMeasureLine(point1, point2) {
-    const points = [point1, point2];
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({ 
-        color: 0xffaa44,
-        linewidth: 2
-    });
-    const line = new THREE.Line(geometry, material);
-    
-    // إضافة كرات صغيرة في النقاط
-    const sphereGeo = new THREE.SphereGeometry(4, 16, 16);
-    const sphereMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
-    const sphere1 = new THREE.Mesh(sphereGeo, sphereMat);
-    const sphere2 = new THREE.Mesh(sphereGeo, sphereMat);
-    sphere1.position.copy(point1);
-    sphere2.position.copy(point2);
-    
-    // تجميع كل العناصر في مجموعة
     const group = new THREE.Group();
+    
+    const start = point1.clone();
+    const end = point2.clone();
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const distance = direction.length();
+    const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    
+    // ===== 1. الجسم الرئيسي للمسطرة (خط سميك) =====
+    const lineGeo = new THREE.CylinderGeometry(1.2, 1.2, distance, 8);
+    const lineMat = new THREE.MeshStandardMaterial({
+        color: 0xffaa44,
+        emissive: 0x442200,
+        emissiveIntensity: 0.3,
+        transparent: true,
+        opacity: 0.9
+    });
+    const line = new THREE.Mesh(lineGeo, lineMat);
+    
+    // توجيه الاسطوانة
+    const quaternion = new THREE.Quaternion();
+    quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.clone().normalize()
+    );
+    line.applyQuaternion(quaternion);
+    line.position.copy(midPoint);
     group.add(line);
+    
+    // ===== 2. أطراف المسطرة (كرات مضيئة) =====
+    const endGeo = new THREE.SphereGeometry(2.5, 16, 16);
+    const endMat = new THREE.MeshStandardMaterial({
+        color: 0xffaa44,
+        emissive: 0xff4400,
+        emissiveIntensity: 0.8
+    });
+    
+    const sphere1 = new THREE.Mesh(endGeo, endMat);
+    sphere1.position.copy(start);
     group.add(sphere1);
+    
+    const sphere2 = new THREE.Mesh(endGeo, endMat);
+    sphere2.position.copy(end);
     group.add(sphere2);
+    
+    // ===== 3. علامات المسطرة (تدرجات) =====
+    const segments = Math.floor(distance / 5); // علامة كل 5 وحدات
+    for (let i = 1; i < segments; i++) {
+        const t = i / segments;
+        const pos = new THREE.Vector3().lerpVectors(start, end, t);
+        
+        // علامات صغيرة وكبيرة
+        const isBigMark = i % 5 === 0;
+        const markHeight = isBigMark ? 3 : 1.5;
+        const markWidth = isBigMark ? 0.8 : 0.4;
+        
+        const markGeo = new THREE.BoxGeometry(markWidth, markHeight, markWidth);
+        const markMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff,
+            emissive: isBigMark ? 0x444444 : 0x222222
+        });
+        const mark = new THREE.Mesh(markGeo, markMat);
+        mark.position.copy(pos);
+        
+        // تدوير العلامة بشكل عمودي على المسطرة
+        mark.quaternion.copy(quaternion);
+        group.add(mark);
+    }
     
     return group;
 }
-
 // إنشاء ملصق القياس
+// دالة createMeasureLabel المحسنة - أرقام إنجليزية
 function createMeasureLabel(text, position) {
+    const group = new THREE.Group();
+    
+    // ===== 1. الخلفية المضيئة =====
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = 256;
-    canvas.height = 128;
+    canvas.width = 512;
+    canvas.height = 256;
     
-    // خلفية
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    // خلفية متدرجة
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    gradient.addColorStop(0, 'rgba(0,0,0,0)');
+    gradient.addColorStop(0.1, 'rgba(255,170,68,0.9)');
+    gradient.addColorStop(0.5, 'rgba(255,200,100,0.95)');
+    gradient.addColorStop(0.9, 'rgba(255,170,68,0.9)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // حدود
-    ctx.strokeStyle = '#ffaa44';
+    // إطار برّاق
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 4;
-    ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
     
-    // نص
+    // نص عريض - أرقام إنجليزية
+    ctx.font = 'bold 80px "Segoe UI", "Arial", sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 32px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2); // m انجليزي
     
-    // وحدة القياس
-    ctx.font = '20px Arial';
-    ctx.fillStyle = '#ffaa44';
-    ctx.fillText('متر', canvas.width / 2, canvas.height - 20);
+    // ظل للنص
+    ctx.shadowColor = '#000000';
+    ctx.shadowBlur = 10;
+    ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2);
     
     const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.SpriteMaterial({ map: texture });
+    const material = new THREE.SpriteMaterial({ 
+        map: texture,
+        transparent: true,
+        depthTest: true,
+        depthWrite: false
+    });
+    
     const sprite = new THREE.Sprite(material);
+    sprite.scale.set(2.5, 1.2, 1);
+    sprite.position.copy(position.clone().add(new THREE.Vector3(0, 8, 0)));
     
-    sprite.scale.set(0.8, 0.4, 1);
-    sprite.position.copy(position);
+    group.add(sprite);
     
-    return sprite;
+    // ===== 2. خط رابط للقياس =====
+    const lineToLabelGeo = new THREE.BufferGeometry().setFromPoints([
+        position,
+        position.clone().add(new THREE.Vector3(0, 8, 0))
+    ]);
+    const lineToLabelMat = new THREE.LineBasicMaterial({ 
+        color: 0xffaa44,
+        transparent: true,
+        opacity: 0.5
+    });
+    const lineToLabel = new THREE.Line(lineToLabelGeo, lineToLabelMat);
+    group.add(lineToLabel);
+    
+    return group;
 }
 
 // معالجة النقر للقياس
