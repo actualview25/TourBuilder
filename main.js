@@ -1119,7 +1119,9 @@ let measureMode = false;
 let measureStartPoint = null;
 let measureTempLine = null;
 let measureGroups = [];
-
+// كائنات التصدير
+let tourExporter;
+let projectManager = new ProjectManager();
 // إنشاء خط القياس - مسطرة صفراء واضحة
 // =======================================
 // دالة createMeasureLine - مع علامات المسطرة
@@ -2314,8 +2316,11 @@ scene = new THREE.Scene();
     controls.target.set(0, 0, 0);
     controls.update();
 
-    sceneManager = new SceneManager(); // هذا يستخدم الكلاس المحسن الآن
-    window.sceneManager = sceneManager; // للوصول العام
+    // تهيئة الكائنات
+sceneManager = new SceneManager();
+tourExporter = new TourExporter(); // 👈 أضف هذا السطر
+window.sceneManager = sceneManager;
+window.tourExporter = tourExporter; // 👈 وهذا أيضاًلوصول العام
     
     loadPanorama();
     setupEvents();
