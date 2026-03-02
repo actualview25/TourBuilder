@@ -1220,29 +1220,17 @@ let hotspotMode = null;
 
 // ===============================
 // متغيرات أداة القياس
-// ===============================
+// ===============================// =======================================
+// ٧. دوال أداة القياس - النسخة المحسنة
+// =======================================
+
+// متغيرات القياس
 let measureMode = false;
 let measureStartPoint = null;
 let measureTempLine = null;
-let measureGroups = []; // لتخزين مجموعات القياس
+let measureGroups = [];
 
-// =======================================
-// ٦. دوال المساعدة
-// =======================================
-window.setCurrentPathType = (t) => {
-    currentPathType = t;
-    if (markerPreview) {
-        markerPreview.material.color.setHex(pathColors[currentPathType]);
-        markerPreview.material.emissive.setHex(pathColors[currentPathType]);
-    }
-};
-
-const projectManager = new ProjectManager();
-const tourExporter = new TourExporter();
-
-// =======================================
-// دالة createMeasureLine - النسخة النهائية
-// =======================================
+// إنشاء خط القياس - مسطرة صفراء واضحة
 function createMeasureLine(point1, point2) {
     const group = new THREE.Group();
     
@@ -1252,21 +1240,31 @@ function createMeasureLine(point1, point2) {
     const distance = direction.length();
     const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     
-    // خط أصفر سميك
+    // ===== الجسم الرئيسي - خط أصفر سميك =====
     const lineGeo = new THREE.CylinderGeometry(2, 2, distance, 8);
-    const lineMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
+    const lineMat = new THREE.MeshStandardMaterial({
+        color: 0xffaa44,
+        emissive: 0x442200,
+        emissiveIntensity: 0.3
+    });
     const line = new THREE.Mesh(lineGeo, lineMat);
     
-    // تدوير الخط
+    // تدوير الخط ليوازي الاتجاه
     const quaternion = new THREE.Quaternion();
-    quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+    quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.clone().normalize()
+    );
     line.applyQuaternion(quaternion);
     line.position.copy(midPoint);
     group.add(line);
     
-    // كرات في الأطراف
-    const sphereGeo = new THREE.SphereGeometry(3, 16, 16);
-    const sphereMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
+    // ===== كرات في الأطراف =====
+    const sphereGeo = new THREE.SphereGeometry(4, 16, 16);
+    const sphereMat = new THREE.MeshStandardMaterial({
+        color: 0xffaa44,
+        emissive: 0x442200
+    });
     
     const sphere1 = new THREE.Mesh(sphereGeo, sphereMat);
     sphere1.position.copy(start);
@@ -1278,30 +1276,29 @@ function createMeasureLine(point1, point2) {
     
     return group;
 }
-// =======================================
-// دالة createMeasureLabel - النسخة النهائية
-// =======================================
+
+// إنشاء ملصق القياس - نص كبير وواضح
 function createMeasureLabel(text, position) {
     const group = new THREE.Group();
     
-    // Canvas للنص
+    // Canvas كبير
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = 512;
-    canvas.height = 256;
+    canvas.width = 1024;
+    canvas.height = 512;
     
-    // خلفية سوداء
+    // خلفية سوداء قوية
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // إطار أصفر
+    // إطار أصفر سميك
     ctx.strokeStyle = '#ffaa44';
-    ctx.lineWidth = 8;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+    ctx.lineWidth = 20;
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
     
-    // نص أبيض كبير
-    ctx.font = 'bold 100px Arial';
+    // نص عملاق
+    ctx.font = 'bold 180px "Arial", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -1311,14 +1308,56 @@ function createMeasureLabel(text, position) {
     const material = new THREE.SpriteMaterial({ map: texture });
     const sprite = new THREE.Sprite(material);
     
-    // حجم كبير
-    sprite.scale.set(3, 1.5, 1);
+    // حجم كبير في المشهد
+    sprite.scale.set(6, 3, 1);
     sprite.position.copy(position.clone().add(new THREE.Vector3(0, 15, 0)));
     
     group.add(sprite);
     
     return group;
 }
+
+// تفعيل/إلغاء وضع القياس
+function setMeasureMode(active) {
+    measureMode = active;
+    
+    const measureBtn = document.getElementById('toggleMeasure');
+    if (measureBtn) {
+        if (active) {
+            measureBtn.classList.add('active');
+            measureBtn.textContent = '📏 إيقاف القياس';
+            measureBtn.style.background = '#884488';
+        } else {
+            measureBtn.classList.remove('active');
+            measureBtn.textContent = '📏 تفعيل القياس';
+            measureBtn.style.background = 'rgba(136, 68, 136, 0.4)';
+        }
+    }
+    
+    // إيقاف الرسم إذا كان مفعلاً
+    if (active && typeof drawMode !== 'undefined' && drawMode) {
+        setDrawMode(false);
+    }
+    
+    // إعادة تعيين
+    measureStartPoint = null;
+    if (measureTempLine) {
+        scene.remove(measureTempLine);
+        measureTempLine = null;
+    }
+    
+    document.body.style.cursor = active ? 'crosshair' : 'default';
+    
+    const statusEl = document.getElementById('status');
+    if (statusEl) {
+        if (active) {
+            statusEl.innerHTML = '📏 وضع القياس: اختر النقطة الأولى';
+        } else {
+            statusEl.innerHTML = 'النوع الحالي: <span style="color:#ffcc00;">EL</span>';
+        }
+    }
+}
+
 // معالجة النقر للقياس
 function handleMeasureClick(point) {
     if (!measureStartPoint) {
@@ -1326,8 +1365,11 @@ function handleMeasureClick(point) {
         measureStartPoint = point.clone();
         
         // مؤشر مؤقت
-        const markerGeo = new THREE.SphereGeometry(4, 16, 16);
-        const markerMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
+        const markerGeo = new THREE.SphereGeometry(5, 16, 16);
+        const markerMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffaa44,
+            emissive: 0x442200
+        });
         const marker = new THREE.Mesh(markerGeo, markerMat);
         marker.position.copy(measureStartPoint);
         scene.add(marker);
@@ -1362,17 +1404,15 @@ function handleMeasureClick(point) {
             return;
         }
         
-        // 🔴 🔴 🔴 الأهم: إنشاء وإضافة القياس
-        // 1. إنشاء الخط
+        // إنشاء وإضافة القياس
         const lineGroup = createMeasureLine(measureStartPoint, endPoint);
         scene.add(lineGroup);
         
-        // 2. إنشاء الملصق
         const midPoint = new THREE.Vector3().addVectors(measureStartPoint, endPoint).multiplyScalar(0.5);
         const labelGroup = createMeasureLabel(realLength, midPoint);
-        scene.add(labelGroup); // ✅ هذا السطر كان ناقصاً!
+        scene.add(labelGroup);
         
-        // 3. حفظ في القائمة
+        // حفظ في القائمة
         measureGroups.push(lineGroup);
         measureGroups.push(labelGroup);
         
@@ -1391,56 +1431,12 @@ function handleMeasureClick(point) {
         }
         
         // رسالة نجاح
-        showCustomInfoWindow('📏 تم القياس', `الطول: ${realLength} m`, 'success');
+        alert(`✅ تم القياس: ${realLength} m`);
         
         // إعادة تعيين
         measureStartPoint = null;
         document.getElementById('status').innerHTML = 'النوع الحالي: <span style="color:#ffcc00;">EL</span>';
     }
-}
-// تفعيل/إلغاء وضع القياس
-function setMeasureMode(active) {
-    measureMode = active;
-    
-    const measureBtn = document.getElementById('toggleMeasure');
-    if (measureBtn) {
-        if (active) {
-            measureBtn.classList.add('active');
-            measureBtn.textContent = '📏 إيقاف القياس';
-            measureBtn.style.background = '#884488';
-        } else {
-            measureBtn.classList.remove('active');
-            measureBtn.textContent = '📏 تفعيل القياس';
-            measureBtn.style.background = 'rgba(136, 68, 136, 0.4)';
-        }
-    }
-    
-    // إيقاف الرسم إذا كان مفعلاً
-    if (active && drawMode) {
-        setDrawMode(false);
-    }
-    
-    // إعادة تعيين نقطة البداية
-    measureStartPoint = null;
-    if (measureTempLine) {
-        scene.remove(measureTempLine);
-        measureTempLine = null;
-    }
-    
-    // تحديث المؤشر
-    document.body.style.cursor = active ? 'crosshair' : 'default';
-    
-    // تحديث شريط الحالة
-    const statusEl = document.getElementById('status');
-    if (statusEl) {
-        if (active) {
-            statusEl.innerHTML = '📏 وضع القياس: اختر النقطة الأولى';
-        } else {
-            statusEl.innerHTML = 'النوع الحالي: <span style="color:#ffcc00;">EL</span>';
-        }
-    }
-    
-    console.log(active ? '📏 Measure Mode ON' : '📏 Measure Mode OFF');
 }
 
 // إظهار القياسات لمشهد معين
@@ -1455,19 +1451,16 @@ function showMeasurementsForScene(sceneId) {
         const start = new THREE.Vector3(m.start.x, m.start.y, m.start.z);
         const end = new THREE.Vector3(m.end.x, m.end.y, m.end.z);
         
-        const group = createMeasureLine(start, end);
-        scene.add(group);
-        measureGroups.push(group);
+        const lineGroup = createMeasureLine(start, end);
+        scene.add(lineGroup);
+        measureGroups.push(lineGroup);
         
         const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-        const label = createMeasureLabel(m.length + 'م', midPoint);
-        scene.add(label);
-        measureGroups.push(label);
+        const labelGroup = createMeasureLabel(m.length, midPoint);
+        scene.add(labelGroup);
+        measureGroups.push(labelGroup);
     });
-    
-    console.log(`📏 تم إظهار ${measurements.length} قياس`);
 }
-
 // =======================================
 // ٨. دوال الرسم (محدثة)
 // =======================================
