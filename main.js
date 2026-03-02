@@ -1241,42 +1241,48 @@ const projectManager = new ProjectManager();
 const tourExporter = new TourExporter();
 
 // =======================================
-// ٧. دوال أداة القياس
-// =======================================
-
-// إنشاء خط القياس
-// دالة createMeasureLine المحسنة - شكل مسطرة احترافي
-// =======================================
-// دالة إنشاء خط القياس بشكل مسطرة احترافية
-// =======================================
-// دالة createMeasureLine - نسخة اختبارية
+// دالة createMeasureLine - النسخة النهائية
 // =======================================
 function createMeasureLine(point1, point2) {
     const group = new THREE.Group();
     
     const start = point1.clone();
     const end = point2.clone();
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const distance = direction.length();
     const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     
-    // خط أحمر سميك جداً (للاختبار)
-    const lineGeo = new THREE.CylinderGeometry(5, 5, 100, 8);
+    // ===== 1. الجسم الرئيسي (مسطرة صفراء) =====
+    const lineGeo = new THREE.CylinderGeometry(1.5, 1.5, distance, 8);
     const lineMat = new THREE.MeshStandardMaterial({
-        color: 0xff0000, // أحمر صارخ
-        emissive: 0xff0000,
-        emissiveIntensity: 1
+        color: 0xffaa44,
+        emissive: 0x442200,
+        emissiveIntensity: 0.5
     });
     const line = new THREE.Mesh(lineGeo, lineMat);
+    
+    // تدوير الاسطوانة لتصبح باتجاه الخط
+    const quaternion = new THREE.Quaternion();
+    quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.clone().normalize()
+    );
+    line.applyQuaternion(quaternion);
     line.position.copy(midPoint);
     group.add(line);
     
-    // كرة زرقاء كبيرة في البداية
-    const sphereGeo = new THREE.SphereGeometry(10, 32, 32);
-    const sphereMat = new THREE.MeshStandardMaterial({ color: 0x0000ff, emissive: 0x0000ff });
+    // ===== 2. أطراف مضيئة =====
+    const sphereGeo = new THREE.SphereGeometry(3, 16, 16);
+    const sphereMat = new THREE.MeshStandardMaterial({
+        color: 0xffaa44,
+        emissive: 0xff4400,
+        emissiveIntensity: 0.8
+    });
+    
     const sphere1 = new THREE.Mesh(sphereGeo, sphereMat);
     sphere1.position.copy(start);
     group.add(sphere1);
     
-    // كرة خضراء كبيرة في النهاية
     const sphere2 = new THREE.Mesh(sphereGeo, sphereMat);
     sphere2.position.copy(end);
     group.add(sphere2);
@@ -1285,24 +1291,29 @@ function createMeasureLine(point1, point2) {
 }
 
 // =======================================
-// دالة createMeasureLabel - نسخة اختبارية
+// دالة createMeasureLabel - النسخة النهائية
 // =======================================
 function createMeasureLabel(text, position) {
     const group = new THREE.Group();
     
-    // Canvas كبير جداً
+    // Canvas للنص
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = 1024;
-    canvas.height = 512;
+    canvas.width = 512;
+    canvas.height = 256;
     
-    // خلفية حمراء
-    ctx.fillStyle = '#ff0000';
+    // خلفية سوداء شفافة
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // نص أبيض ضخم
-    ctx.font = 'bold 200px Arial';
+    // إطار ذهبي
+    ctx.strokeStyle = '#ffaa44';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+    
+    // نص أبيض كبير
+    ctx.font = 'bold 60px Arial';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -1312,9 +1323,9 @@ function createMeasureLabel(text, position) {
     const material = new THREE.SpriteMaterial({ map: texture });
     const sprite = new THREE.Sprite(material);
     
-    // حجم ضخم
-    sprite.scale.set(8, 4, 1);
-    sprite.position.copy(position.clone().add(new THREE.Vector3(0, 20, 0)));
+    // حجم مناسب
+    sprite.scale.set(2, 1, 1);
+    sprite.position.copy(position.clone().add(new THREE.Vector3(0, 8, 0)));
     
     group.add(sprite);
     
