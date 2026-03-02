@@ -1246,6 +1246,9 @@ const tourExporter = new TourExporter();
 
 // إنشاء خط القياس
 // دالة createMeasureLine المحسنة - شكل مسطرة احترافي
+// =======================================
+// دالة إنشاء خط القياس بشكل مسطرة احترافية
+// =======================================
 function createMeasureLine(point1, point2) {
     const group = new THREE.Group();
     
@@ -1255,12 +1258,12 @@ function createMeasureLine(point1, point2) {
     const distance = direction.length();
     const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     
-    // ===== 1. الجسم الرئيسي للمسطرة (خط سميك) =====
-    const lineGeo = new THREE.CylinderGeometry(1.2, 1.2, distance, 8);
+    // ===== 1. الجسم الرئيسي (خط مضيء) =====
+    const lineGeo = new THREE.CylinderGeometry(1.5, 1.5, distance, 8);
     const lineMat = new THREE.MeshStandardMaterial({
         color: 0xffaa44,
         emissive: 0x442200,
-        emissiveIntensity: 0.3,
+        emissiveIntensity: 0.5,
         transparent: true,
         opacity: 0.9
     });
@@ -1276,11 +1279,11 @@ function createMeasureLine(point1, point2) {
     line.position.copy(midPoint);
     group.add(line);
     
-    // ===== 2. أطراف المسطرة (كرات مضيئة) =====
-    const endGeo = new THREE.SphereGeometry(2.5, 16, 16);
+    // ===== 2. أطراف مضيئة (كرات ذهبية) =====
+    const endGeo = new THREE.SphereGeometry(3, 32, 32);
     const endMat = new THREE.MeshStandardMaterial({
         color: 0xffaa44,
-        emissive: 0xff4400,
+        emissive: 0x442200,
         emissiveIntensity: 0.8
     });
     
@@ -1292,21 +1295,22 @@ function createMeasureLine(point1, point2) {
     sphere2.position.copy(end);
     group.add(sphere2);
     
-    // ===== 3. علامات المسطرة (تدرجات) =====
-    const segments = Math.floor(distance / 5); // علامة كل 5 وحدات
-    for (let i = 1; i < segments; i++) {
-        const t = i / segments;
+    // ===== 3. علامات المسطرة =====
+    const numMarks = Math.floor(distance / 2);
+    for (let i = 1; i < numMarks; i++) {
+        const t = i / numMarks;
         const pos = new THREE.Vector3().lerpVectors(start, end, t);
         
         // علامات صغيرة وكبيرة
         const isBigMark = i % 5 === 0;
-        const markHeight = isBigMark ? 3 : 1.5;
-        const markWidth = isBigMark ? 0.8 : 0.4;
+        const markHeight = isBigMark ? 4 : 2;
+        const markWidth = isBigMark ? 1 : 0.5;
         
         const markGeo = new THREE.BoxGeometry(markWidth, markHeight, markWidth);
         const markMat = new THREE.MeshStandardMaterial({ 
-            color: 0xffffff,
-            emissive: isBigMark ? 0x444444 : 0x222222
+            color: isBigMark ? 0xffffff : 0xffaa44,
+            emissive: isBigMark ? 0x333333 : 0x221100,
+            emissiveIntensity: 0.3
         });
         const mark = new THREE.Mesh(markGeo, markMat);
         mark.position.copy(pos);
@@ -1318,12 +1322,15 @@ function createMeasureLine(point1, point2) {
     
     return group;
 }
-// إنشاء ملصق القياس
-// دالة createMeasureLabel المحسنة - أرقام إنجليزية
+// دالة إنشاء خط القياس بشكل مسطرة احترافية
+// =======================================
+// =======================================
+// دالة إنشاء ملصق القياس بشكل احترافي
+// =======================================
 function createMeasureLabel(text, position) {
     const group = new THREE.Group();
     
-    // ===== 1. الخلفية المضيئة =====
+    // ===== 1. إنشاء كانفاس للنص =====
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
@@ -1333,30 +1340,34 @@ function createMeasureLabel(text, position) {
     // خلفية متدرجة
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
     gradient.addColorStop(0, 'rgba(0,0,0,0)');
-    gradient.addColorStop(0.1, 'rgba(255,170,68,0.9)');
-    gradient.addColorStop(0.5, 'rgba(255,200,100,0.95)');
-    gradient.addColorStop(0.9, 'rgba(255,170,68,0.9)');
+    gradient.addColorStop(0.2, 'rgba(255,170,68,0.95)');
+    gradient.addColorStop(0.5, 'rgba(255,200,100,1)');
+    gradient.addColorStop(0.8, 'rgba(255,170,68,0.95)');
     gradient.addColorStop(1, 'rgba(0,0,0,0)');
     
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // إطار برّاق
+    // إطار ذهبي
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 6;
     ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
     
-    // نص عريض - أرقام إنجليزية
-    ctx.font = 'bold 80px "Segoe UI", "Arial", sans-serif';
+    // ظل النص
+    ctx.shadowColor = '#000000';
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
+    
+    // نص القياس - أرقام إنجليزية
+    ctx.font = 'bold 90px "Segoe UI", "Arial", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2); // m انجليزي
-    
-    // ظل للنص
-    ctx.shadowColor = '#000000';
-    ctx.shadowBlur = 10;
     ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2);
+    
+    // إزالة الظل للنص الرئيسي
+    ctx.shadowBlur = 0;
     
     const texture = new THREE.CanvasTexture(canvas);
     const material = new THREE.SpriteMaterial({ 
@@ -1367,27 +1378,29 @@ function createMeasureLabel(text, position) {
     });
     
     const sprite = new THREE.Sprite(material);
-    sprite.scale.set(2.5, 1.2, 1);
-    sprite.position.copy(position.clone().add(new THREE.Vector3(0, 8, 0)));
+    sprite.scale.set(3, 1.5, 1);
+    
+    // ===== 2. وضع الملصق في منتصف المسطرة مع إزاحة للأعلى =====
+    const labelPos = position.clone().add(new THREE.Vector3(0, 10, 0));
+    sprite.position.copy(labelPos);
     
     group.add(sprite);
     
-    // ===== 2. خط رابط للقياس =====
-    const lineToLabelGeo = new THREE.BufferGeometry().setFromPoints([
+    // ===== 3. خط رابط من الملصق للمسطرة =====
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
         position,
-        position.clone().add(new THREE.Vector3(0, 8, 0))
+        labelPos
     ]);
-    const lineToLabelMat = new THREE.LineBasicMaterial({ 
+    const lineMat = new THREE.LineBasicMaterial({ 
         color: 0xffaa44,
         transparent: true,
-        opacity: 0.5
+        opacity: 0.4
     });
-    const lineToLabel = new THREE.Line(lineToLabelGeo, lineToLabelMat);
-    group.add(lineToLabel);
+    const line = new THREE.Line(lineGeo, lineMat);
+    group.add(line);
     
     return group;
 }
-
 // معالجة النقر للقياس
 function handleMeasureClick(point) {
     if (!measureStartPoint) {
