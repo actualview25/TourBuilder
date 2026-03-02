@@ -1300,70 +1300,63 @@ function createMeasureLine(point1, point2) {
 // =======================================
 // دالة createMeasureLabel - نسخة مؤكدة 100%
 // =======================================
+// =======================================
+// دالة createMeasureLabel - نسخة النص ثلاثي الأبعاد
+// =======================================
 function createMeasureLabel(text, position) {
     const group = new THREE.Group();
     
-    // Canvas ضخم جداً
+    // إنشاء Canvas للنص
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = 1024;
-    canvas.height = 512;
+    canvas.width = 512;
+    canvas.height = 256;
     
-    // خلفية سوداء قوية
-    ctx.fillStyle = '#000000';
+    // خلفية سوداء
+    ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // إطار أصفر سميك
+    // إطار أصفر
     ctx.strokeStyle = '#ffaa44';
-    ctx.lineWidth = 20;
-    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+    ctx.lineWidth = 10;
+    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
     
-    // نص أبيض عملاق
-    ctx.font = 'bold 200px "Arial", "Segoe UI", sans-serif';
-    ctx.fillStyle = '#ffffff';
+    // نص أبيض كبير جداً
+    ctx.font = 'bold 120px Arial';
+    ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2);
     
-    // ظل للنص
-    ctx.shadowColor = '#ffaa44';
-    ctx.shadowBlur = 30;
-    ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2);
-    
     const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.SpriteMaterial({ 
+    const material = new THREE.MeshBasicMaterial({ 
         map: texture,
-        transparent: false,
-        depthTest: false, // مهم: يظهر فوق كل شيء
-        depthWrite: false
+        side: THREE.DoubleSide,
+        transparent: true
     });
     
-    const sprite = new THREE.Sprite(material);
+    // إنشاء سطح مستطيل يحمل النص
+    const geometry = new THREE.PlaneGeometry(15, 7.5);
+    const mesh = new THREE.Mesh(geometry, material);
     
-    // حجم ضخم جداً
-    sprite.scale.set(10, 5, 1);
+    // وضع النص في المكان المطلوب مع إزاحة للأعلى
+    mesh.position.copy(position.clone().add(new THREE.Vector3(0, 15, 0)));
     
-    // رفع النص عالياً فوق الخط
-    const labelPos = position.clone().add(new THREE.Vector3(0, 30, 0));
-    sprite.position.copy(labelPos);
+    // تدوير النص ليكون مواجهاً للكاميرا
+    mesh.quaternion.copy(camera.quaternion);
     
-    group.add(sprite);
+    group.add(mesh);
     
-    // إضافة خط رابط من النص للخط
-    const lineGeo = new THREE.BufferGeometry().setFromPoints([
+    // إضافة خط رابط صغير
+    const points = [
         position,
-        labelPos
-    ]);
-    const lineMat = new THREE.LineBasicMaterial({ 
-        color: 0xffaa44,
-        transparent: true,
-        opacity: 0.3
-    });
+        mesh.position.clone()
+    ];
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa44 });
     const line = new THREE.Line(lineGeo, lineMat);
     group.add(line);
-    
-    console.log('📏 تم إنشاء ملصق:', text + ' m', 'في الموقع:', labelPos);
     
     return group;
 }
