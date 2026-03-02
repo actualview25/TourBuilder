@@ -2244,12 +2244,6 @@ function hideLoader() {
     }
 }
 
-// =======================================
-// تصدير الجولة كاملة
-// =======================================
-
-// ١٠. دوال التحميل والتصدير
-// =======================================
 function showLoader(message) {
     const loader = document.getElementById('loader');
     if (loader) {
