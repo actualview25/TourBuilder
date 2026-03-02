@@ -919,106 +919,94 @@ body {
 }/* =======================================
    لوحة المشاهد - ثابتة بـ 3 مشاهد فقط
    ======================================= */
+/* =======================================
+   لوحة المشاهد - نسخة مصغرة وجميلة
+   ======================================= */
 .scene-panel {
     position: fixed;
     top: 50%;
-    right: 20px;
+    right: 15px; /* أقرب للحافة */
     transform: translateY(-50%);
-    width: 280px;
-    max-height: 330px; /* ارتفاع ثابت لـ 3 مشاهد */
-    background: rgba(20, 30, 40, 0.25);
+    width: 200px; /* أصغر من قبل */
+    max-height: 280px; /* أصغر */
+    background: rgba(15, 25, 35, 0.2); /* أخف وأكثر شفافية */
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(74, 108, 143, 0.3);
-    border-radius: 16px;
+    border: 1px solid rgba(74, 108, 143, 0.2); /* حدود أخف */
+    border-radius: 14px;
     color: white;
     z-index: 900;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    font-size: 12px; /* خط أصغر */
 }
 
-/* رأس اللوحة */
+/* رأس اللوحة - مصغر */
 .scene-panel .panel-header {
-    padding: 15px 18px;
-    border-bottom: 1px solid rgba(74, 108, 143, 0.3);
+    padding: 10px 12px; /* أقل */
+    border-bottom: 1px solid rgba(74, 108, 143, 0.2);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.15);
     flex-shrink: 0;
-    height: 60px; /* ارتفاع ثابت */
-    box-sizing: border-box;
+    height: 45px;
 }
 
 .scene-panel h3 {
     margin: 0;
     color: white;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 13px; /* خط أصغر */
+    font-weight: 500;
 }
 
-/* زر إضافة مشهد */
+/* زر إضافة مشهد - مصغر */
 .add-scene-btn {
-    padding: 6px 16px;
-    background: rgba(34, 136, 34, 0.25);
-    border: 1px solid rgba(68, 255, 68, 0.4);
-    border-radius: 30px;
+    padding: 4px 10px; /* أصغر */
+    background: rgba(34, 136, 34, 0.2);
+    border: 1px solid rgba(68, 255, 68, 0.3);
+    border-radius: 20px;
     color: white;
     cursor: pointer;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 10px; /* خط أصغر */
     transition: all 0.2s ease;
-    height: 35px;
-    box-sizing: border-box;
+    height: 28px;
 }
 
-/* قائمة المشاهد - ارتفاع ثابت لـ 3 مشاهد */
+/* قائمة المشاهد - مصغرة */
 .scene-list {
-    max-height: 210px; /* 3 مشاهد × 60px + مسافات */
+    max-height: 170px; /* 3 مشاهد مصغرة */
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 12px;
+    padding: 8px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(74, 108, 143, 0.4) transparent;
+    scrollbar-color: rgba(74, 108, 143, 0.3) transparent;
 }
 
-/* إخفاء شريط التمرير في كروم */
-.scene-list::-webkit-scrollbar {
-    width: 3px;
-}
-
-.scene-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.scene-list::-webkit-scrollbar-thumb {
-    background: rgba(74, 108, 143, 0.3);
-    border-radius: 3px;
-}
-
-/* عناصر المشاهد - حجم ثابت */
+/* عناصر المشاهد - مصغرة جداً */
 .scene-item {
-    padding: 10px 16px;
-    margin: 5px 0;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
+    padding: 6px 10px; /* مساحة أقل */
+    margin: 3px 0;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px; /* مسافة أقل */
     transition: all 0.2s ease;
     border: 1px solid transparent;
-    font-size: 13px;
-    height: 60px; /* ارتفاع ثابت لكل مشهد */
+    font-size: 11px; /* خط أصغر */
+    height: 40px; /* أقصر */
     box-sizing: border-box;
 }
 
-/* باقي الأنماط كما هي */
+/* أيقونات - مصغرة */
 .scene-icon {
-    font-size: 20px;
-    min-width: 28px;
+    font-size: 16px; /* أصغر */
+    min-width: 22px;
     text-align: center;
 }
 
@@ -1028,29 +1016,31 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: 500;
+    font-size: 11px; /* أصغر */
 }
 
+/* عداد النقاط - مصغر */
 .scene-hotspots {
-    font-size: 11px;
-    background: rgba(74, 108, 143, 0.3);
-    padding: 4px 8px;
-    border-radius: 20px;
+    font-size: 9px; /* أصغر */
+    background: rgba(74, 108, 143, 0.25);
+    padding: 2px 5px;
+    border-radius: 12px;
     color: white;
-    min-width: 30px;
+    min-width: 24px;
     text-align: center;
-    font-weight: 600;
 }
 
+/* زر الحذف - مصغر */
 .delete-scene-btn {
     background: none;
     border: none;
-    color: rgba(255, 100, 100, 0.6);
-    font-size: 16px;
+    color: rgba(255, 100, 100, 0.5);
+    font-size: 14px; /* أصغر */
     cursor: pointer;
-    padding: 4px;
+    padding: 2px;
     border-radius: 50%;
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1058,47 +1048,16 @@ body {
 }
 
 .delete-scene-btn:hover {
-    background: rgba(255, 0, 0, 0.15);
+    background: rgba(255, 0, 0, 0.1);
     color: #ff8888;
 }
-/* =======================================
-   القضاء على الشريط الأبيض نهائياً
-   ======================================= */
 
-/* تأكد من أن الخلفية سوداء بالكامل */
-html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    background-color: black !important;
-    overflow-x: hidden;
+/* شريط التمرير - أنحف */
+.scene-list::-webkit-scrollbar {
+    width: 2px; /* أنحف */
 }
 
-/* الحاوية الرئيسية تغطي كل شيء */
-#container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-}
-
-/* إزالة أي حدود من toolbar */
-.toolbar {
-    border: none !important;
-    outline: none !important;
-}
-
-/* إزالة أي شيء غريب */
-*::before, *::after {
-    border: none !important;
-    outline: none !important;
-}
-
-/* منع أي شريط جانبي */
-body {
-    overflow-y: hidden;
+.scene-list::-webkit-scrollbar-thumb {
+    background: rgba(74, 108, 143, 0.3);
+    border-radius: 2px;
 }
