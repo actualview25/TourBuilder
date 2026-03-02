@@ -1303,64 +1303,74 @@ function createMeasureLine(point1, point2) {
 // =======================================
 // دالة createMeasureLabel - نسخة النص ثلاثي الأبعاد
 // =======================================
+// =======================================
+// دالة createMeasureLabel - نسخة عملاقة
+// =======================================
 function createMeasureLabel(text, position) {
     const group = new THREE.Group();
     
-    // إنشاء Canvas للنص
+    // Canvas ضخم جداً
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = 512;
-    canvas.height = 256;
+    canvas.width = 2048;        // ضخم
+    canvas.height = 1024;        // ضخم
     
-    // خلفية سوداء
-    ctx.fillStyle = 'black';
+    // خلفية سوداء قوية
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // إطار أصفر
+    // إطار أصفر سميك جداً
     ctx.strokeStyle = '#ffaa44';
-    ctx.lineWidth = 10;
-    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+    ctx.lineWidth = 40;
+    ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
     
-    // نص أبيض كبير جداً
-    ctx.font = 'bold 120px Arial';
-    ctx.fillStyle = 'white';
+    // نص عملاق جداً
+    ctx.font = 'bold 400px "Arial", "Segoe UI", sans-serif';
+    ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2);
     
+    // ظل قوي
+    ctx.shadowColor = '#ffaa44';
+    ctx.shadowBlur = 50;
+    ctx.fillText(text + ' m', canvas.width / 2, canvas.height / 2);
+    
     const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.MeshBasicMaterial({ 
+    const material = new THREE.SpriteMaterial({ 
         map: texture,
-        side: THREE.DoubleSide,
-        transparent: true
+        transparent: false,
+        depthTest: true
     });
     
-    // إنشاء سطح مستطيل يحمل النص
-    const geometry = new THREE.PlaneGeometry(15, 7.5);
-    const mesh = new THREE.Mesh(geometry, material);
+    const sprite = new THREE.Sprite(material);
     
-    // وضع النص في المكان المطلوب مع إزاحة للأعلى
-    mesh.position.copy(position.clone().add(new THREE.Vector3(0, 15, 0)));
+    // حجم عملاق جداً
+    sprite.scale.set(50, 25, 1);  // 50 وحدة عرض!
     
-    // تدوير النص ليكون مواجهاً للكاميرا
-    mesh.quaternion.copy(camera.quaternion);
+    // رفعه عالياً
+    const labelPos = position.clone().add(new THREE.Vector3(0, 40, 0));
+    sprite.position.copy(labelPos);
     
-    group.add(mesh);
+    group.add(sprite);
     
-    // إضافة خط رابط صغير
-    const points = [
+    // خط رابط سميك
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
         position,
-        mesh.position.clone()
-    ];
-    const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-    const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa44 });
+        labelPos
+    ]);
+    const lineMat = new THREE.LineBasicMaterial({ 
+        color: 0xffaa44,
+        linewidth: 5
+    });
     const line = new THREE.Line(lineGeo, lineMat);
     group.add(line);
     
+    console.log('📏 تم إنشاء ملصق عملاق:', text + ' m');
+    
     return group;
 }
-
 // تفعيل/إلغاء وضع القياس
 function setMeasureMode(active) {
     measureMode = active;
