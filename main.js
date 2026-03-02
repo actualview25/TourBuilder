@@ -2243,7 +2243,9 @@ function hideLoader() {
         loader.style.display = 'none';
     }
 }
-
+// =======================================
+// تصدير الجولة كاملة
+// =======================================
 async function exportCompleteTour() {
     if (!sceneManager || sceneManager.scenes.length === 0) {
         alert('❌ لا توجد مشاهد للتصدير');
@@ -2253,20 +2255,25 @@ async function exportCompleteTour() {
     showLoader('جاري تحضير الجولة...');
 
     try {
+        // استخدام projectManager العمومي
+        const projectName = window.projectManager?.currentProject?.name || `tour-${Date.now()}`;
+        
+        // تجهيز بيانات المشاهد للتصدير
         const exportScenes = sceneManager.scenes.map(s => ({
             id: s.id,
             name: s.name,
-            image: s.originalImage,
+            originalImage: s.originalImage,
             paths: s.paths || [],
             hotspots: (s.hotspots || []).map(h => ({
                 id: h.id,
                 type: h.type,
                 position: h.position,
                 data: h.data || {}
-            }))
+            })),
+            measurements: s.measurements || []
         }));
 
-        const projectName = projectManager.currentProject?.name || `tour-${Date.now()}`;
+        // استخدام كائن tourExporter للتصدير
         await tourExporter.exportTour(projectName, exportScenes);
 
         hideLoader();
@@ -2274,11 +2281,10 @@ async function exportCompleteTour() {
 
     } catch (error) {
         console.error('❌ خطأ في التصدير:', error);
-        alert('حدث خطأ في التصدير');
+        alert('حدث خطأ في التصدير: ' + error.message);
         hideLoader();
     }
 }
-
 function clearAllPaths() {
     if (confirm('هل أنت متأكد من مسح جميع المسارات؟')) {
         paths.forEach(p => scene.remove(p));
