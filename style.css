@@ -916,25 +916,24 @@ body {
 #toggleMeasure.active {
     background: rgba(136, 68, 136, 0.8);
     box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
-}
-/* =======================================
-   لوحة المشاهد - النسخة النهائية
+}/* =======================================
+   لوحة المشاهد - ثابتة بـ 3 مشاهد فقط
    ======================================= */
 .scene-panel {
     position: fixed;
     top: 50%;
     right: 20px;
     transform: translateY(-50%);
-    width: 260px;
-    max-height: 70vh; /* أطول بكثير */
-    background: rgba(20, 30, 40, 0.25); /* نفس اللون الضبابي الأصلي */
+    width: 280px;
+    max-height: 330px; /* ارتفاع ثابت لـ 3 مشاهد */
+    background: rgba(20, 30, 40, 0.25);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(74, 108, 143, 0.3);
-    border-radius: 12px;
+    border-radius: 16px;
     color: white;
     z-index: 900;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -942,80 +941,85 @@ body {
 
 /* رأس اللوحة */
 .scene-panel .panel-header {
-    padding: 15px;
-    border-bottom: 1px solid rgba(74, 108, 143, 0.2);
+    padding: 15px 18px;
+    border-bottom: 1px solid rgba(74, 108, 143, 0.3);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
+    height: 60px; /* ارتفاع ثابت */
+    box-sizing: border-box;
 }
 
 .scene-panel h3 {
     margin: 0;
     color: white;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 /* زر إضافة مشهد */
 .add-scene-btn {
-    padding: 5px 14px;
-    background: rgba(34, 136, 34, 0.3);
-    border: 1px solid rgba(68, 255, 68, 0.3);
-    border-radius: 20px;
+    padding: 6px 16px;
+    background: rgba(34, 136, 34, 0.25);
+    border: 1px solid rgba(68, 255, 68, 0.4);
+    border-radius: 30px;
     color: white;
     cursor: pointer;
     font-weight: bold;
     font-size: 12px;
     transition: all 0.2s ease;
-    flex-shrink: 0;
+    height: 35px;
+    box-sizing: border-box;
 }
 
-.add-scene-btn:hover {
-    background: rgba(34, 136, 34, 0.6);
-    border-color: #44ff44;
-}
-
-/* قائمة المشاهد - مع سكرول طويل */
+/* قائمة المشاهد - ارتفاع ثابت لـ 3 مشاهد */
 .scene-list {
-    max-height: calc(70vh - 70px); /* ارتفاع كبير جداً */
-    overflow-y: auto !important;
+    max-height: 210px; /* 3 مشاهد × 60px + مسافات */
+    overflow-y: auto;
     overflow-x: hidden;
     padding: 12px;
-    flex: 1;
-    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(74, 108, 143, 0.4) transparent;
 }
 
-/* عناصر المشاهد - بحجم مريح */
+/* إخفاء شريط التمرير في كروم */
+.scene-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+.scene-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scene-list::-webkit-scrollbar-thumb {
+    background: rgba(74, 108, 143, 0.3);
+    border-radius: 3px;
+}
+
+/* عناصر المشاهد - حجم ثابت */
 .scene-item {
-    padding: 12px 15px; /* مساحة داخلية أكبر */
-    margin: 6px 0;
-    background: rgba(255, 255, 255, 0.05); /* خفيف جداً */
-    border-radius: 8px;
+    padding: 10px 16px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     transition: all 0.2s ease;
     border: 1px solid transparent;
     font-size: 13px;
+    height: 60px; /* ارتفاع ثابت لكل مشهد */
+    box-sizing: border-box;
 }
 
-.scene-item:hover {
-    background: rgba(74, 108, 143, 0.2);
-    border-color: rgba(74, 108, 143, 0.3);
-}
-
-.scene-item.active {
-    background: rgba(74, 108, 143, 0.3); /* تفعيل خفيف */
-    border-right: 3px solid #88aaff;
-}
-
-/* أيقونات */
+/* باقي الأنماط كما هي */
 .scene-icon {
-    font-size: 18px;
-    min-width: 24px;
+    font-size: 20px;
+    min-width: 28px;
+    text-align: center;
 }
 
 .scene-name {
@@ -1026,57 +1030,34 @@ body {
     font-weight: 500;
 }
 
-/* عداد النقاط */
 .scene-hotspots {
     font-size: 11px;
-    background: rgba(74, 108, 143, 0.3); /* شفاف */
-    padding: 3px 8px;
-    border-radius: 12px;
-    color: rgba(255, 255, 255, 0.9);
+    background: rgba(74, 108, 143, 0.3);
+    padding: 4px 8px;
+    border-radius: 20px;
+    color: white;
     min-width: 30px;
     text-align: center;
+    font-weight: 600;
 }
 
-/* زر الحذف */
 .delete-scene-btn {
     background: none;
     border: none;
-    color: rgba(255, 100, 100, 0.5);
-    font-size: 15px;
+    color: rgba(255, 100, 100, 0.6);
+    font-size: 16px;
     cursor: pointer;
     padding: 4px;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    flex-shrink: 0;
 }
 
 .delete-scene-btn:hover {
-    background: rgba(255, 0, 0, 0.1);
+    background: rgba(255, 0, 0, 0.15);
     color: #ff8888;
-}
-
-/* =======================================
-   شريط التمرير - أنيق وواضح
-   ======================================= */
-.scene-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.scene-list::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
-}
-
-.scene-list::-webkit-scrollbar-thumb {
-    background: rgba(74, 108, 143, 0.4);
-    border-radius: 6px;
-}
-
-.scene-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(74, 108, 143, 0.7);
 }
