@@ -2244,21 +2244,6 @@ function hideLoader() {
     }
 }
 
-function showLoader(message) {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        loader.style.display = 'flex';
-        loader.textContent = message || '⏳ جاري التحميل...';
-    }
-}
-
-function hideLoader() {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        loader.style.display = 'none';
-    }
-}
-
 async function exportCompleteTour() {
     if (!sceneManager || sceneManager.scenes.length === 0) {
         alert('❌ لا توجد مشاهد للتصدير');
