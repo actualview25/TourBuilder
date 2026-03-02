@@ -733,107 +733,166 @@ to { transform: translate(-50%, 0); opacity: 1; }
         };
         
         // ===== دوال القياس =====
-        function createMeasurementElement(measurement) {
-            const elements = {};
-            
-            // إنشاء خط القياس
-            const lineDiv = document.createElement('div');
-            lineDiv.className = 'measurement-line';
-            
-            // إنشاء نقطة البداية
-            const startPoint = document.createElement('div');
-            startPoint.className = 'measurement-point';
-            
-            // إنشاء نقطة النهاية
-            const endPoint = document.createElement('div');
-            endPoint.className = 'measurement-point';
-            
-            // إنشاء ملصق القياس
-            const label = document.createElement('div');
-            label.className = 'measurement-label';
-            label.textContent = measurement.length + 'م' + (measurement.height > 0 ? ' (ارتفاع: ' + measurement.height + 'م)' : '');
-            
-            // حفظ الإحداثيات
-            lineDiv._start = new THREE.Vector3(measurement.start.x, measurement.start.y, measurement.start.z);
-            lineDiv._end = new THREE.Vector3(measurement.end.x, measurement.end.y, measurement.end.z);
-            startPoint._worldPos = new THREE.Vector3(measurement.start.x, measurement.start.y, measurement.start.z);
-            endPoint._worldPos = new THREE.Vector3(measurement.end.x, measurement.end.y, measurement.end.z);
-            label._worldPos = new THREE.Vector3().addVectors(startPoint._worldPos, endPoint._worldPos).multiplyScalar(0.5);
-            
-            document.body.appendChild(lineDiv);
-            document.body.appendChild(startPoint);
-            document.body.appendChild(endPoint);
-            document.body.appendChild(label);
-            
-            return { line: lineDiv, start: startPoint, end: endPoint, label };
-        }
+       // ===== دوال القياس المحسنة للجولة المستخرجة =====
+function createMeasurementElement(measurement) {
+    const elements = {};
+    
+    // إنشاء خط المسطرة
+    const lineDiv = document.createElement('div');
+    lineDiv.className = 'measurement-line';
+    lineDiv.style.position = 'absolute';
+    lineDiv.style.borderTop = '6px solid #ffaa44';
+    lineDiv.style.boxShadow = '0 0 30px #ffaa44';
+    lineDiv.style.borderRadius = '6px';
+    lineDiv.style.transformOrigin = '0 0';
+    lineDiv.style.zIndex = '500';
+    lineDiv.style.height = '6px';
+    
+    // إنشاء نقطة البداية (كرة كبيرة)
+    const startPoint = document.createElement('div');
+    startPoint.className = 'measurement-point';
+    startPoint.style.position = 'absolute';
+    startPoint.style.width = '16px';
+    startPoint.style.height = '16px';
+    startPoint.style.background = '#ffaa44';
+    startPoint.style.borderRadius = '50%';
+    startPoint.style.boxShadow = '0 0 30px #ffaa44';
+    startPoint.style.transform = 'translate(-50%, -50%)';
+    startPoint.style.zIndex = '501';
+    
+    // إنشاء نقطة النهاية (كرة كبيرة)
+    const endPoint = document.createElement('div');
+    endPoint.className = 'measurement-point';
+    endPoint.style.position = 'absolute';
+    endPoint.style.width = '16px';
+    endPoint.style.height = '16px';
+    endPoint.style.background = '#ffaa44';
+    endPoint.style.borderRadius = '50%';
+    endPoint.style.boxShadow = '0 0 30px #ffaa44';
+    endPoint.style.transform = 'translate(-50%, -50%)';
+    endPoint.style.zIndex = '501';
+    
+    // إنشاء علامات المسطرة
+    const distance = Math.sqrt(
+        Math.pow(measurement.end.x - measurement.start.x, 2) +
+        Math.pow(measurement.end.y - measurement.start.y, 2) +
+        Math.pow(measurement.end.z - measurement.start.z, 2)
+    );
+    
+    const numMarks = Math.floor(distance / 2);
+    for (let i = 1; i < numMarks; i += 2) {
+        const mark = document.createElement('div');
+        mark.className = 'measurement-mark';
+        mark.style.position = 'absolute';
+        mark.style.width = '2px';
+        mark.style.height = i % 4 === 0 ? '12px' : '6px';
+        mark.style.background = i % 4 === 0 ? '#ffffff' : '#ffaa44';
+        mark.style.transform = 'translate(-50%, -50%)';
+        mark.style.zIndex = '502';
+        mark._t = i / numMarks;
+        document.body.appendChild(mark);
+        elements['mark' + i] = mark;
+    }
+    
+    // إنشاء ملصق القياس (عملاق)
+    const label = document.createElement('div');
+    label.className = 'measurement-label';
+    label.style.position = 'absolute';
+    label.style.background = 'linear-gradient(135deg, #000000 0%, #222222 100%)';
+    label.style.color = 'white';
+    label.style.padding = '20px 40px';
+    label.style.borderRadius = '60px';
+    label.style.fontSize = '48px';
+    label.style.fontWeight = 'bold';
+    label.style.border = '6px solid #ffaa44';
+    label.style.boxShadow = '0 0 60px #ffaa44';
+    label.style.transform = 'translate(-50%, -50%)';
+    label.style.whiteSpace = 'nowrap';
+    label.style.zIndex = '503';
+    label.style.backdropFilter = 'blur(10px)';
+    label.style.textShadow = '4px 4px 8px black';
+    label.style.letterSpacing = '2px';
+    label.textContent = measurement.length + ' m';
+    
+    // حفظ الإحداثيات
+    lineDiv._start = new THREE.Vector3(measurement.start.x, measurement.start.y, measurement.start.z);
+    lineDiv._end = new THREE.Vector3(measurement.end.x, measurement.end.y, measurement.end.z);
+    startPoint._worldPos = new THREE.Vector3(measurement.start.x, measurement.start.y, measurement.start.z);
+    endPoint._worldPos = new THREE.Vector3(measurement.end.x, measurement.end.y, measurement.end.z);
+    label._worldPos = new THREE.Vector3().addVectors(startPoint._worldPos, endPoint._worldPos).multiplyScalar(0.5);
+    
+    document.body.appendChild(lineDiv);
+    document.body.appendChild(startPoint);
+    document.body.appendChild(endPoint);
+    document.body.appendChild(label);
+    
+    return { line: lineDiv, start: startPoint, end: endPoint, label };
+}
 
-        function updateMeasurementPositions() {
-            if (!camera) return;
-            
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            
-            measurementElements.forEach(elem => {
-                if (!elem.line || !elem.line._start || !elem.line._end) return;
-                
-                const start = elem.line._start.clone().project(camera);
-                const end = elem.line._end.clone().project(camera);
-                
-                if (start.z > 1 || end.z > 1) {
-                    elem.line.style.display = 'none';
-                    elem.start.style.display = 'none';
-                    elem.end.style.display = 'none';
-                    elem.label.style.display = 'none';
-                    return;
-                }
-                
-                const x1 = (start.x * 0.5 + 0.5) * width;
-                const y1 = (-start.y * 0.5 + 0.5) * height;
-                const x2 = (end.x * 0.5 + 0.5) * width;
-                const y2 = (-end.y * 0.5 + 0.5) * height;
-                
-                // التحقق من أن النقاط داخل الشاشة
-                if (x1 < -100 || x1 > width + 100 || y1 < -100 || y1 > height + 100 ||
-                    x2 < -100 || x2 > width + 100 || y2 < -100 || y2 > height + 100) {
-                    elem.line.style.display = 'none';
-                    elem.start.style.display = 'none';
-                    elem.end.style.display = 'none';
-                    elem.label.style.display = 'none';
-                    return;
-                }
-                
-                // حساب طول الخط وزاويته
-                const dx = x2 - x1;
-                const dy = y2 - y1;
-                const length = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-                
-                // تحديث موضع الخط
-                elem.line.style.display = showMeasurements ? 'block' : 'none';
-                elem.line.style.left = x1 + 'px';
-                elem.line.style.top = y1 + 'px';
-                elem.line.style.width = length + 'px';
-                elem.line.style.transform = 'rotate(' + angle + 'deg)';
-                
-                // تحديث موضع نقطة البداية
-                elem.start.style.display = showMeasurements ? 'block' : 'none';
-                elem.start.style.left = x1 + 'px';
-                elem.start.style.top = y1 + 'px';
-                
-                // تحديث موضع نقطة النهاية
-                elem.end.style.display = showMeasurements ? 'block' : 'none';
-                elem.end.style.left = x2 + 'px';
-                elem.end.style.top = y2 + 'px';
-                
-                // تحديث موضع الملصق
-                const midX = (x1 + x2) / 2;
-                const midY = (y1 + y2) / 2;
-                elem.label.style.display = showMeasurements ? 'block' : 'none';
-                elem.label.style.left = midX + 'px';
-                elem.label.style.top = (midY - 20) + 'px';
-            });
+// دالة تحديث مواقع القياسات
+function updateMeasurementPositions() {
+    if (!camera) return;
+    
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    measurementElements.forEach(elem => {
+        if (!elem.line || !elem.line._start || !elem.line._end) return;
+        
+        const start = elem.line._start.clone().project(camera);
+        const end = elem.line._end.clone().project(camera);
+        
+        if (start.z > 1 || end.z > 1) {
+            elem.line.style.display = 'none';
+            elem.start.style.display = 'none';
+            elem.end.style.display = 'none';
+            elem.label.style.display = 'none';
+            return;
         }
+        
+        const x1 = (start.x * 0.5 + 0.5) * width;
+        const y1 = (-start.y * 0.5 + 0.5) * height;
+        const x2 = (end.x * 0.5 + 0.5) * width;
+        const y2 = (-end.y * 0.5 + 0.5) * height;
+        
+        if (x1 < -100 || x1 > width + 100 || y1 < -100 || y1 > height + 100 ||
+            x2 < -100 || x2 > width + 100 || y2 < -100 || y2 > height + 100) {
+            elem.line.style.display = 'none';
+            elem.start.style.display = 'none';
+            elem.end.style.display = 'none';
+            elem.label.style.display = 'none';
+            return;
+        }
+        
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        
+        // تحديث الخط
+        elem.line.style.display = showMeasurements ? 'block' : 'none';
+        elem.line.style.left = x1 + 'px';
+        elem.line.style.top = y1 + 'px';
+        elem.line.style.width = length + 'px';
+        elem.line.style.transform = 'rotate(' + angle + 'deg)';
+        
+        // تحديث نقاط البداية والنهاية
+        elem.start.style.display = showMeasurements ? 'block' : 'none';
+        elem.start.style.left = x1 + 'px';
+        elem.start.style.top = y1 + 'px';
+        
+        elem.end.style.display = showMeasurements ? 'block' : 'none';
+        elem.end.style.left = x2 + 'px';
+        elem.end.style.top = y2 + 'px';
+        
+        // تحديث الملصق (في المنتصف مع إزاحة كبيرة للأعلى)
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        elem.label.style.display = showMeasurements ? 'block' : 'none';
+        elem.label.style.left = midX + 'px';
+        elem.label.style.top = (midY - 100) + 'px';
+    });
+}
 
         function clearMeasurements() {
             measurementElements.forEach(elem => {
