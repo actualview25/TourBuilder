@@ -408,35 +408,117 @@ class TourExporter {
         this.zip = new JSZip();
     }
 
-    async exportTour(projectName, scenes) {
-        const folder = this.zip.folder(projectName);
+   async exportTour(projectName, scenes) {
+    const folder = this.zip.folder(projectName);
+    
+    // إضافة صور المشاهد مع الحماية
+    scenes.forEach((scene, index) => {
+        try {
+            // حماية الصورة
+            const imageSrc = scene.originalImage || scene.image;
+            if (imageSrc && typeof imageSrc === 'string' && imageSrc.includes(',')) {
+                const imageData = imageSrc.split(',')[1];
+                if (imageData) {
+                    folder.file(`scene-${index}.jpg`, imageData, { base64: true });
+                }
+            } else {
+                console.warn('⚠️ المشهد', index, 'لا يحتوي على صورة صالحة');
+            }
+        } catch (e) {
+            console.warn('⚠️ فشل إضافة صورة المشهد', index, e.message);
+        }
+    });
+    
+    // إضافة مجلد icon مع الصور
+    const iconFolder = folder.folder('icon');
+    
+    try {
+        const hotspotResponse = await fetch('icon/hotspot.png');
+        const hotspotBlob = await hotspotResponse.blob();
+        iconFolder.file('hotspot.png', hotspotBlob);
         
-        scenes.forEach((scene, index) => {
-            const imageData = scene.image.split(',')[1];
-            folder.file(`scene-${index}.jpg`, imageData, { base64: true });
-        });
+        const infoResponse = await fetch('icon/info.png');
+        const infoBlob = await infoResponse.blob();
+        iconFolder.file('info.png', infoBlob);
+    } catch (error) {
+        console.warn('⚠️ لم يتم العثور على الأيقونات، استخدام base64');
         
-        const scenesData = scenes.map((scene, index) => ({
-            id: scene.id,
-            name: scene.name,
-            image: `scene-${index}.jpg`,
-            paths: scene.paths || [],
-            hotspots: (scene.hotspots || []).map(h => ({
-                id: h.id,
-                type: h.type,
-                position: h.position,
-                data: h.data || {}
-            }))
-        }));
+        const hotspotBase64 = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIzSURBVFiF7ZbNaxNBGMZ/djdpk0hS9KIoigp68RRyUw8iKHgRLyIoePCi4F8g3nrwU0Tx4lEQvSh4EcF78NqLIAp68SNoFZE2TdMk3R2f2SSbdNPd2Z0NIvpAXjLMvM/8ZucjMwsHqIEa+J+hlJpOkrS0Z0mS1NM0nSu7l+M4h5VSy1rrn1rrb6W4LmBZ1hWl1LKUsl3L+t+01rdLcUMApdRVpdTC3r6iKOqMx+O+UsoPw/CFlHK1lFoJMAzjiVJqRQgR+b5/37Ks4+Fw+DaKovvtdvux4ziLUkq/LEcIYVvW3SRJ+lLKL5qmZ9I0HUopDc/zTmZZtpZlWZJl2YYoG4MQYgSAYRgIIW5IKZ1iPGmaXgPA8zySJOlKKdM0TdM0rZfRB8iyrC2lTNI0nSmKIl3X69M0PTRN0+WyHMa11pckSRohhC2l/JYkyXBRPrdt25RSr5Zl3zFN88F4PP4mpdwJguBpFEX3m83mGRhzLwjDMHzJmP0wDMMXWZZ93G63H5fN78sopdA5N0opP0mSl/P5vN5sNh/zAymE+LqcT2uN1jqRUn6Joqg9nU4fFNM2DMMo2l95GGP/SylvR1H0oEifMzsIgoNSyjaMpZRfl8vlvTAMP0dRdG/btvu+7z9jzG4X6Wc3j8OYe7Lf75+M47hXdXyUUh8BgDF7yhj7yZhbzOfz22maHjPGTjPGxJ+WnzE2Wq/Xh5RSl1ar1Yk8zzvL5fJ4GIa9JEk6URT1lFL9NE17cRwfybLsp9Z6tVqtDsI4fAtjX6rGgRrY4/wCJ8zvggPQ/IEAAAAASUVORK5CYII=';
+        const infoBase64 = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI5SURBVFiF7ZbPaxNBFMfnt5vdJBIp1l6kFQU9eCk9tQcVBC+iIAgK4kXw7l/w4EEQ70178aAHQfBPRBCvXrwIgqBQ6FURtPUDLVIrSdP9MW+TTbrZzWazWwX7hQWZZeZ95v2Y994bGAVK0P8ZY2yP1rohpXzDOS9JKfcaY56Ypvk4DMMyY+xrFEWJ53nblFKPm812qVR6qJRa55w/aF3GGJ9zHiqlZqIoOgIAtm2f6nQ6FxhjZZZlH6IoOtsfhzF2l2VZXSlV55y/CYLgJgCkaToex/G0lHIGAAqFgimESBhjUwCglNqqlPoqhIgBQEq5GEXRac55RUr5xXGcQQBQSq2GYfgGAJRS61LKz4yxm2EYjhbzL5VKawBgrgM3DONBEARHlFKbAIBS6nOl1B6l1DwA6Hq9frRQKNSiKNohl6vVal+hUNjfbDaPAkCxWHzKGNtXKBSqk8nksWEYZ5Ikqbquu1Yul2d938+63e5UoVA4I6W8CgC2bT9JkuQeAGRZ5gOAaZqjUkpTSrmZZdl9pVQtSZJ7xWKxBAA6jmOO42wIIa4BQLlcDjjn3w3DqAkhVgGAc34tjuM5pdS8EOJXmUwmE0KIvQDAOT8KACzLspc8z3vLGJuJomg6TVPP87zJLMu8TqfzI89zLwiCvZxzkWVZP5/P5wFgLMs2pJTVKIp6nPOs2Wx+Y4z9FkKcBICRUmkpy7K6lPJGHMfHS6XSEs65ZVnWbD6f38rzfMxxnM+B759I0/Qp5/w4Y6wQJMl2IcRcGIaHhRDbgyB4JKU8yRirCiE+D7z/H6AE9Y1+As0ZxH2vO/WTAAAAAElFTkSuQmCC';
         
-        folder.file('tour-data.json', JSON.stringify(scenesData, null, 2));
-        folder.file('index.html', this.generatePlayerHTML(projectName));
-        folder.file('style.css', this.generatePlayerCSS());
-        folder.file('README.md', this.generateReadme(projectName));
-        
-        const content = await this.zip.generateAsync({ type: 'blob' });
-        saveAs(content, `${projectName}.zip`);
+        iconFolder.file('hotspot.png', hotspotBase64, { base64: true });
+        iconFolder.file('info.png', infoBase64, { base64: true });
     }
+    
+    // تجهيز بيانات المشاهد مع الحماية الكاملة
+    const scenesData = scenes.map((scene, index) => {
+        // حماية المسارات
+        const paths = (scene.paths || []).map(p => {
+            if (!p || typeof p !== 'object') return null;
+            return {
+                type: p.type || 'unknown',
+                color: p.color || '#ffaa44',
+                points: (p.points || []).map(pt => ({
+                    x: pt?.x || 0,
+                    y: pt?.y || 0,
+                    z: pt?.z || 0
+                }))
+            };
+        }).filter(p => p !== null);
+        
+        // حماية الهوتسبوتات
+        const hotspots = (scene.hotspots || []).map(h => {
+            if (!h || typeof h !== 'object') return null;
+            return {
+                id: h.id || `hotspot-${Date.now()}`,
+                type: h.type || 'INFO',
+                position: {
+                    x: h.position?.x || 0,
+                    y: h.position?.y || 0,
+                    z: h.position?.z || 0
+                },
+                data: h.data || {}
+            };
+        }).filter(h => h !== null);
+        
+        // حماية القياسات (الجديدة)
+        const measurements = (scene.measurements || []).map(m => {
+            if (!m || typeof m !== 'object') return null;
+            return {
+                id: m.id || `measure-${Date.now()}`,
+                length: m.length || 0,
+                height: m.height || 0,
+                start: {
+                    x: m.start?.x || 0,
+                    y: m.start?.y || 0,
+                    z: m.start?.z || 0
+                },
+                end: {
+                    x: m.end?.x || 0,
+                    y: m.end?.y || 0,
+                    z: m.end?.z || 0
+                }
+            };
+        }).filter(m => m !== null);
+        
+        return {
+            id: scene.id || `scene-${index}`,
+            name: scene.name || `مشهد ${index + 1}`,
+            image: `scene-${index}.jpg`,
+            paths: paths,
+            hotspots: hotspots,
+            measurements: measurements // الآن آمنة 100%
+        };
+    });
+    
+    folder.file('tour-data.json', JSON.stringify(scenesData, null, 2));
+    folder.file('index.html', this.generatePlayerHTML(projectName));
+    folder.file('style.css', this.generatePlayerCSS());
+    folder.file('README.md', this.generateReadme(projectName));
+    
+    const content = await this.zip.generateAsync({ type: 'blob' });
+    saveAs(content, `${projectName}.zip`);
+}
 
 generatePlayerHTML(projectName) {
 return `<!DOCTYPE html>
