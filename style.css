@@ -908,3 +908,12 @@ body {
         font-size: 12px;
     }
 }
+/* زر القياس */
+#toggleMeasure {
+    background: rgba(136, 68, 136, 0.4);
+}
+
+#toggleMeasure.active {
+    background: rgba(136, 68, 136, 0.8);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+}
