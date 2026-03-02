@@ -2382,6 +2382,49 @@ function animate() {
         HotspotSystem.updatePositions();
     }
 }
+// =======================================
+// التأكد من عمل السكرول بشكل صحيح
+// =======================================
+function fixScenePanelScroll() {
+    const sceneList = document.getElementById('sceneList');
+    const scenePanel = document.getElementById('scenePanel');
+    
+    if (!sceneList || !scenePanel) return;
+    
+    // حساب الارتفاع المناسب ديناميكياً
+    function updateScrollHeight() {
+        const panelHeight = scenePanel.clientHeight;
+        const headerHeight = document.querySelector('.scene-panel .panel-header')?.clientHeight || 50;
+        const availableHeight = panelHeight - headerHeight - 20; // 20px مسافة للأمان
+        
+        sceneList.style.maxHeight = availableHeight + 'px';
+        console.log('📐 تحديث ارتفاع السكرول:', availableHeight);
+    }
+    
+    // تحديث عند تحميل الصفحة
+    updateScrollHeight();
+    
+    // تحديث عند تغيير حجم النافذة
+    window.addEventListener('resize', updateScrollHeight);
+    
+    // تحديث عند إضافة/حذف مشاهد
+    const originalUpdatePanel = window.updateScenePanel;
+    if (originalUpdatePanel) {
+        window.updateScenePanel = function() {
+            originalUpdatePanel();
+            setTimeout(updateScrollHeight, 100); // تأخير بسيط للتأكد من اكتمال التحديث
+        };
+    }
+    
+    console.log('✅ تم تفعيل السكرول الذكي');
+}
+
+// استدعاء الدالة بعد تحميل كل شيء
+if (document.readyState === 'complete') {
+    fixScenePanelScroll();
+} else {
+    window.addEventListener('load', fixScenePanelScroll);
+}
 
 // بدء التشغيل
 init();
