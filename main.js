@@ -2425,7 +2425,7 @@ if (document.readyState === 'complete') {
 } else {
     window.addEventListener('load', fixScenePanelScroll);
 }
-ذ
+
 // =======================================
 // إجبار ظهور شريط التمرير
 // =======================================
