@@ -2425,6 +2425,33 @@ if (document.readyState === 'complete') {
 } else {
     window.addEventListener('load', fixScenePanelScroll);
 }
+ذ
+// =======================================
+// إجبار ظهور شريط التمرير
+// =======================================
+function forceScrollbar() {
+    const sceneList = document.getElementById('sceneList');
+    if (!sceneList) return;
+    
+    // إضافة بعض الأنماط مباشرة للتأكد
+    sceneList.style.overflowY = 'auto';
+    sceneList.style.maxHeight = 'calc(60vh - 50px)';
+    
+    // مراقبة إضافة مشاهد جديدة
+    const observer = new MutationObserver(() => {
+        sceneList.style.overflowY = 'auto';
+    });
+    
+    observer.observe(sceneList, { childList: true, subtree: true });
+    
+    console.log('✅ تم تفعيل شريط التمرير');
+}
 
+// استدعاء الدالة بعد تحميل الصفحة
+if (document.readyState === 'complete') {
+    forceScrollbar();
+} else {
+    window.addEventListener('load', forceScrollbar);
+}
 // بدء التشغيل
 init();
