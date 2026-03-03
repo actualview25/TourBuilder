@@ -925,41 +925,45 @@ return `<!DOCTYPE html>
                 container.appendChild(item);
             });
         }
-
-        // ===== دوال Hotspots =====
-        function createHotspotElement(x, y, type, data) {
-            const div = document.createElement('div');
-            div.className = 'hotspot-marker';
-            div.style.left = x + 'px';
-            div.style.top = y + 'px';
-            div.style.cursor = 'pointer';
-            div.style.zIndex = '1000';
-            
-            const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
-            const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
-            const displayText = type === 'SCENE' 
-                ? (data.targetSceneName || 'انتقال') 
-                : (data.title || 'معلومات');
-            
-            div.innerHTML = '<img src="' + iconUrl + '" alt="' + type + '" style="border: 2px solid ' + borderColor + '; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); cursor: pointer; pointer-events: none;">' +
-                '<div class="hotspot-label" style="border-color: ' + borderColor + ';">' + displayText + '</div>';
-            
-            div.addEventListener('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
-                
-                if (type === 'INFO') {
-                    showInfoWindow(data.title, data.content);
-                } else {
-                    const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
-                    if (targetIndex !== -1) {
-                        setTimeout(() => loadScene(targetIndex), 300);
-                    }
-                }
-            });
-            
-            return div;
+// ===== دوال Hotspots =====
+function createHotspotElement(x, y, type, data) {
+    const div = document.createElement('div');
+    div.className = 'hotspot-marker';
+    div.style.left = x + 'px';
+    div.style.top = y + 'px';
+    div.style.cursor = 'pointer';
+    div.style.zIndex = '1000';
+    div.style.pointerEvents = 'auto'; // 👈 1. الحاوية تستقبل النقر
+    
+    const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
+    const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
+    const displayText = type === 'SCENE' 
+        ? (data.targetSceneName || 'انتقال') 
+        : (data.title || 'معلومات');
+    
+    // 👈 2. أضف pointer-events: none للعناصر الداخلية
+    div.innerHTML = '<img src="' + iconUrl + '" alt="' + type + '" ' +
+        'style="border: 2px solid ' + borderColor + '; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); pointer-events: none;">' +
+        '<div class="hotspot-label" style="border-color: ' + borderColor + '; pointer-events: none;">' + 
+        displayText + 
+        '</div>';
+    
+    div.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        if (type === 'INFO') {
+            showInfoWindow(data.title, data.content);
+        } else {
+            const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
+            if (targetIndex !== -1) {
+                setTimeout(() => loadScene(targetIndex), 300);
+            }
         }
+    });
+    
+    return div;
+}
         
         function showInfoWindow(title, content) {
             document.querySelectorAll('.custom-info-window').forEach(el => el.remove());
@@ -978,7 +982,7 @@ return `<!DOCTYPE html>
             
             setTimeout(() => win.remove(), 5000);
         }
-        
+
         function rebuildHotspots() {
             document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
             hotspotMarkers = {};
@@ -986,24 +990,50 @@ return `<!DOCTYPE html>
             const currentScene = scenes[currentSceneIndex];
             if (!currentScene || !currentScene.hotspots || !currentScene.hotspots.length) return;
             
-            const width = window.innerWidth, height = window.innerHeight;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
             
             currentScene.hotspots.forEach(h => {
                 const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
-                pos.project(camera);
+                const projected = pos.clone().project(camera);
                 
-                if (pos.z > 1) return;
-                
-                const x = (pos.x * 0.5 + 0.5) * width;
-                const y = (-pos.y * 0.5 + 0.5) * height;
-                
-                if (x < -100 || x > width + 100 || y < -100 || y > height + 100) return;
+                const x = (projected.x * 0.5 + 0.5) * width;
+                const y = (-projected.y * 0.5 + 0.5) * height;
                 
                 const iconElement = createHotspotElement(x, y, h.type, h.data);
-                iconElement._worldPosition = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
+                iconElement._worldPosition = pos.clone();
                 iconElement.dataset.id = h.id;
+                
                 document.body.appendChild(iconElement);
                 hotspotMarkers[h.id] = iconElement;
+            });
+        }
+
+        function updateHotspotsPosition() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            Object.values(hotspotMarkers).forEach(el => {
+                if (!el._worldPosition) return;
+
+                const projected = el._worldPosition.clone().project(camera);
+
+                if (projected.z > 1) {
+                    el.style.display = 'none';
+                    return;
+                }
+
+                const x = (projected.x * 0.5 + 0.5) * width;
+                const y = (-projected.y * 0.5 + 0.5) * height;
+
+                if (x < -100 || x > width + 100 || y < -100 || y > height + 100) {
+                    el.style.display = 'none';
+                    return;
+                }
+
+                el.style.display = 'block';
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
             });
         }
 
