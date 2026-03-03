@@ -1156,7 +1156,23 @@ return `<!DOCTYPE html>
 </body>
 </html>`;
 } 
-
+generatePlayerCSS() {
+        return `body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+#container { width: 100vw; height: 100vh; background: #000; }
+.info {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: 2px solid #4a6c8f;
+    z-index: 100;
+    font-weight: bold;
+    backdrop-filter: blur(5px);
+}`;
+    }
     generateReadme(projectName) {
         return `# ${projectName}
 
