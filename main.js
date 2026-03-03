@@ -1007,7 +1007,7 @@ return `<!DOCTYPE html>
             });
         }
 
-       .        // ===== دوال المسارات =====
+              // ===== دوال المسارات =====
         function togglePathsByType(type, visible) {
             allPaths.forEach(p => { if (p.userData && p.userData.type === type) p.visible = visible; });
         }
