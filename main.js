@@ -412,22 +412,30 @@ class TourExporter {
     const folder = this.zip.folder(projectName);
     
     // إضافة صور المشاهد مع الحماية
-    scenes.forEach((scene, index) => {
-        try {
-            // حماية الصورة
-            const imageSrc = scene.originalImage || scene.image;
-            if (imageSrc && typeof imageSrc === 'string' && imageSrc.includes(',')) {
-                const imageData = imageSrc.split(',')[1];
-                if (imageData) {
-                    folder.file(`scene-${index}.jpg`, imageData, { base64: true });
-                }
+   // إضافة صور المشاهد مع الحماية القصوى
+scenes.forEach((scene, index) => {
+    try {
+        const imageSrc = scene.originalImage || scene.image;
+        
+        // ✅ الحماية الذكية التي ذكرتها
+        if (
+            typeof imageSrc === 'string' && 
+            imageSrc.includes(',') && 
+            imageSrc.split(',').length > 1
+        ) {
+            const imageData = imageSrc.split(',')[1];
+            if (imageData) {
+                folder.file(`scene-${index}.jpg`, imageData, { base64: true });
             } else {
-                console.warn('⚠️ المشهد', index, 'لا يحتوي على صورة صالحة');
+                console.warn('⚠️ المشهد', index, 'بيانات الصورة فارغة');
             }
-        } catch (e) {
-            console.warn('⚠️ فشل إضافة صورة المشهد', index, e.message);
+        } else {
+            console.warn('⚠️ المشهد', index, 'لا يحتوي على صورة base64 صالحة');
         }
-    });
+    } catch (e) {
+        console.warn('⚠️ خطأ في معالجة صورة المشهد', index, e.message);
+    }
+});
     
     // إضافة مجلد icon مع الصور
     const iconFolder = folder.folder('icon');
