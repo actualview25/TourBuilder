@@ -529,11 +529,12 @@ scenes.forEach((scene, index) => {
 }
 
 generatePlayerHTML(projectName) {
-return `<!DOCTYPE html>
+return `
+<!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>tour-1772503070614 - جولة افتراضية</title>
+    <title>${projectName} - جولة افتراضية</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -542,193 +543,450 @@ return `<!DOCTYPE html>
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
         #container { width: 100vw; height: 100vh; background: #000; }
         
+        /* ===== شريط الأدوات العلوي - مثل الأداة تماماً ===== */
+        .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(20, 30, 40, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(74, 108, 143, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(136, 170, 255, 0.5);
+        }
+
+        .tour-name {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.1);
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(74,108,143,0.4);
+            backdrop-filter: blur(5px);
+        }
+        
+        /* ===== إزالة الـ info القديم ===== */
         .info {
-            position: absolute; top: 20px; left: 20px;
-            background: rgba(0, 0, 0, 0.7); color: white;
-            padding: 10px 20px; border-radius: 30px;
-            border: 2px solid #4a6c8f; z-index: 100;
-            font-weight: bold; backdrop-filter: blur(5px); font-size: 14px;
+            display: none;
         }
         
+        /* ===== أزرار التحكم ===== */
         #autoRotateBtn {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 12px 24px; background: rgba(0, 0, 0, 0.7); color: white;
-            border: 2px solid #4a6c8f; border-radius: 30px; cursor: pointer;
-            z-index: 100; font-size: 16px; backdrop-filter: blur(5px);
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            padding: 12px 24px; 
+            background: rgba(20, 30, 40, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: white;
+            border: 1px solid rgba(74, 108, 143, 0.3);
+            border-radius: 30px; 
+            cursor: pointer;
+            z-index: 900; 
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
         }
-        #autoRotateBtn:hover { background: rgba(74, 108, 143, 0.8); transform: translateX(-50%) scale(1.05); }
+        #autoRotateBtn:hover { 
+            background: rgba(74, 108, 143, 0.6); 
+            transform: translateX(-50%) scale(1.05); 
+        }
         
-        /* زر القياسات */
+        /* ===== زر القياسات ===== */
         #toggleMeasurements {
-            position: fixed; bottom: 80px; right: 20px; padding: 10px 20px;
-            background: rgba(136, 68, 136, 0.8); color: white; border: 2px solid #ffaa44;
-            border-radius: 30px; cursor: pointer; z-index: 200; font-size: 14px;
-            backdrop-filter: blur(5px); transition: all 0.3s ease;
-        }
-        #toggleMeasurements:hover { background: #884488; transform: scale(1.05); }
-        #toggleMeasurements.active { background: #884488; box-shadow: 0 0 15px #ffaa44; }
-        
-        .scene-list-panel {
-            position: fixed; top: 50%; left: 20px; transform: translateY(-50%);
-            width: 260px; max-height: 70vh;
-            background: rgba(20, 30, 40, 0.75); backdrop-filter: blur(12px);
-            border: 2px solid #4a6c8f; border-radius: 16px; color: white;
-            z-index: 200; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            direction: rtl; overflow: hidden; display: flex; flex-direction: column;
+            position: fixed; 
+            bottom: 80px; 
+            right: 20px; 
+            padding: 10px 20px;
+            background: rgba(20, 30, 40, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: white; 
+            border: 1px solid rgba(74, 108, 143, 0.3);
+            border-radius: 30px; 
+            cursor: pointer; 
+            z-index: 900; 
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
+        }
+        #toggleMeasurements:hover { 
+            background: rgba(74, 108, 143, 0.6); 
+            transform: scale(1.05); 
+        }
+        #toggleMeasurements.active { 
+            background: rgba(136, 68, 136, 0.6);
+            border-color: #ffaa44;
+        }
+        
+        /* ===== زر المسارات للهاتف ===== */
+        .paths-toggle-btn {
+            display: none;
+        }
+        
+        /* ===== لوحة المسارات ===== */
+        .paths-control-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(20, 30, 40, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(74, 108, 143, 0.3);
+            border-radius: 12px;
+            color: white;
+            z-index: 900;
+            padding: 15px;
+            min-width: 200px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            direction: rtl;
+        }
+        .paths-control-panel h3 { 
+            margin: 0 0 10px 0; 
+            color: white; 
+            font-size: 14px; 
+            text-align: center; 
+            border-bottom: 1px solid rgba(74, 108, 143, 0.2); 
+            padding-bottom: 8px; 
+            font-weight: 500;
+        }
+        .path-toggle-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 6px 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .path-toggle-item:last-child { border-bottom: none; }
+        .path-toggle-item input[type="checkbox"] { 
+            width: 16px; 
+            height: 16px; 
+            cursor: pointer; 
+            accent-color: #4a6c8f; 
+            background: transparent;
+        }
+        .path-toggle-item label { 
+            flex: 1; 
+            cursor: pointer; 
+            font-size: 13px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            color: rgba(255,255,255,0.9);
+        }
+        .path-color-dot { 
+            width: 14px; 
+            height: 14px; 
+            border-radius: 4px; 
+            display: inline-block; 
+        }
+        
+        /* ===== لوحة المشاهد ===== */
+        .scene-list-panel {
+            position: fixed; 
+            top: 50%; 
+            left: 20px; 
+            transform: translateY(-50%);
+            width: 260px; 
+            max-height: 70vh;
+            background: rgba(20, 30, 40, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(74, 108, 143, 0.3);
+            border-radius: 12px;
+            color: white;
+            z-index: 900;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         .scene-list-panel.collapsed { width: 50px; overflow: hidden; }
         .scene-list-panel.collapsed .panel-header h3 span:last-child,
         .scene-list-panel.collapsed .scene-list-container { display: none; }
         
         .panel-header {
-            padding: 15px; background: rgba(30, 40, 50, 0.95);
-            border-bottom: 1px solid #4a6c8f; display: flex;
-            justify-content: space-between; align-items: center; cursor: pointer;
+            padding: 12px;
+            border-bottom: 1px solid rgba(74, 108, 143, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            flex-shrink: 0;
         }
-        .panel-header h3 { margin: 0; color: #88aaff; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .panel-header h3 { 
+            margin: 0; 
+            color: white; 
+            font-size: 14px; 
+            font-weight: 500; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
         .panel-toggle {
-            background: none; border: none; color: white; font-size: 18px; cursor: pointer;
-            width: 30px; height: 30px; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; transition: all 0.2s;
+            background: none; 
+            border: none; 
+            color: rgba(255,255,255,0.7); 
+            font-size: 16px; 
+            cursor: pointer;
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            display: flex;
+            align-items: center; 
+            justify-content: center; 
+            transition: all 0.2s;
         }
-        .panel-toggle:hover { background: rgba(255,255,255,0.1); color: #88aaff; }
+        .panel-toggle:hover { background: rgba(255,255,255,0.1); color: white; }
         
         .scene-list-container {
-            max-height: calc(70vh - 60px); overflow-y: auto; padding: 10px;
+            max-height: calc(70vh - 60px); 
+            overflow-y: auto; 
+            padding: 8px;
         }
         .scene-list-container::-webkit-scrollbar { width: 4px; }
         .scene-list-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
-        .scene-list-container::-webkit-scrollbar-thumb { background: rgba(74, 108, 143, 0.5); border-radius: 4px; }
+        .scene-list-container::-webkit-scrollbar-thumb { background: rgba(74, 108, 143, 0.4); border-radius: 4px; }
         
         .scene-item {
-            padding: 10px 12px; margin: 4px 0; background: rgba(255,255,255,0.03);
-            border-radius: 8px; cursor: pointer; display: flex; align-items: center;
-            gap: 10px; transition: all 0.2s ease; border: 1px solid transparent; font-size: 13px;
+            padding: 8px 10px;
+            margin: 4px 0;
+            background: rgba(255,255,255,0.03);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            font-size: 12px;
         }
-        .scene-item:hover { background: rgba(74, 108, 143, 0.2); border-color: rgba(74, 108, 143, 0.3); }
-        .scene-item.active { background: rgba(74, 108, 143, 0.6); border-right: 3px solid #88aaff; }
-        .scene-icon { font-size: 18px; }
+        .scene-item:hover { background: rgba(74, 108, 143, 0.2); }
+        .scene-item.active { background: rgba(74, 108, 143, 0.3); border-right: 3px solid #88aaff; }
+        .scene-icon { font-size: 16px; }
         .scene-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .scene-hotspot-count { font-size: 11px; background: rgba(74, 108, 143, 0.4); padding: 2px 6px; border-radius: 12px; color: #88aaff; }
-        
-        .paths-control-panel {
-            position: fixed; top: 20px; right: 20px;
-            background: rgba(20, 30, 40, 0.85); backdrop-filter: blur(10px);
-            border: 2px solid #4a6c8f; border-radius: 15px; color: white;
-            z-index: 200; padding: 15px; min-width: 200px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); direction: rtl;
+        .scene-hotspot-count { 
+            font-size: 11px; 
+            background: rgba(74, 108, 143, 0.3); 
+            padding: 2px 6px; 
+            border-radius: 10px; 
+            color: white; 
         }
-        .paths-control-panel h3 { margin: 0 0 10px 0; color: #88aaff; font-size: 16px; text-align: center; border-bottom: 1px solid #4a6c8f; padding-bottom: 8px; }
-        .path-toggle-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .path-toggle-item:last-child { border-bottom: none; }
-        .path-toggle-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #4a6c8f; }
-        .path-toggle-item label { flex: 1; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-        .path-color-dot { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
         
-        /* أنماط Hotspots */
+        /* ===== أنماط Hotspots ===== */
         .hotspot-marker {
-            position: absolute; transform: translate(-50%, -50%);
-            cursor: pointer; z-index: 100; transition: all 0.2s ease;
-            pointer-events: all;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 1000;
+            pointer-events: auto;
+            transition: none;
         }
         .hotspot-marker img {
-            width: 40px; height: 40px; filter: drop-shadow(0 0 10px currentColor);
-            pointer-events: none; transition: all 0.2s ease;
-            border-radius: 50%; background: rgba(0,0,0,0.3);
+            width: 40px;
+            height: 40px;
+            filter: drop-shadow(0 0 10px currentColor);
+            pointer-events: none;
+            transition: transform 0.2s ease;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid;
         }
-        .hotspot-marker:hover img { transform: scale(1.15); filter: drop-shadow(0 0 15px gold); }
-        
+        .hotspot-marker:hover img {
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 15px gold);
+        }
         .hotspot-label {
-            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
-            background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(5px);
-            color: white; padding: 6px 12px; border-radius: 20px;
-            font-size: 12px; white-space: nowrap; border: 2px solid;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0;
-            transition: opacity 0.2s ease; pointer-events: none; z-index: 101;
+            position: absolute; 
+            top: -40px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            background: rgba(20, 30, 40, 0.95); 
+            backdrop-filter: blur(5px);
+            color: white; 
+            padding: 6px 12px; 
+            border-radius: 20px;
+            font-size: 12px; 
+            white-space: nowrap; 
+            border: 2px solid;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            opacity: 0;
+            transition: opacity 0.2s ease; 
+            pointer-events: none; 
+            z-index: 1001;
             font-weight: 500;
         }
         .hotspot-marker:hover .hotspot-label { opacity: 1; }
-
-        /* أنماط القياسات */
+        
+        /* ===== أنماط القياسات ===== */
         .measurement-line {
-            position: absolute; pointer-events: none; z-index: 500;
-            border-top: 6px solid #ffaa44; box-shadow: 0 0 30px #ffaa44;
-            border-radius: 6px; transform-origin: 0 0; height: 6px;
+            position: absolute; 
+            pointer-events: none; 
+            z-index: 500;
+            border-top: 4px solid #ffaa44; 
+            box-shadow: 0 0 20px #ffaa44;
+            border-radius: 4px; 
+            transform-origin: 0 0; 
+            height: 4px;
         }
         .measurement-point {
-            position: absolute; width: 16px; height: 16px;
-            background: #ffaa44; border-radius: 50%;
-            box-shadow: 0 0 30px #ffaa44; transform: translate(-50%, -50%); z-index: 501;
+            position: absolute; 
+            width: 12px; 
+            height: 12px;
+            background: #ffaa44; 
+            border-radius: 50%;
+            box-shadow: 0 0 20px #ffaa44; 
+            transform: translate(-50%, -50%); 
+            z-index: 501;
         }
         .measurement-label {
-            position: absolute; background: linear-gradient(135deg, #000000 0%, #222222 100%);
-            color: white; padding: 20px 40px; border-radius: 60px; font-size: 48px;
-            font-weight: bold; border: 6px solid #ffaa44; box-shadow: 0 0 60px #ffaa44;
-            transform: translate(-50%, -50%); white-space: nowrap; z-index: 503;
-            backdrop-filter: blur(10px); text-shadow: 4px 4px 8px black; letter-spacing: 2px;
+            position: absolute; 
+            background: rgba(0, 0, 0, 0.8);
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 30px; 
+            font-size: 20px;
+            font-weight: bold; 
+            border: 2px solid #ffaa44; 
+            box-shadow: 0 0 30px #ffaa44;
+            transform: translate(-50%, -50%); 
+            white-space: nowrap; 
+            z-index: 503;
+            backdrop-filter: blur(5px); 
+            text-shadow: 2px 2px 4px black;
         }
         
+        /* ===== نافذة المعلومات ===== */
         .custom-info-window {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(20, 30, 40, 0.95); backdrop-filter: blur(10px);
-            border: 2px solid #ffaa44; border-radius: 20px; padding: 20px 30px;
-            color: white; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            max-width: 400px; width: 90%; animation: slideUp 0.3s ease; direction: rtl;
+            position: fixed; 
+            bottom: 30px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            background: rgba(20, 30, 40, 0.95); 
+            backdrop-filter: blur(10px);
+            border: 2px solid #ffaa44; 
+            border-radius: 16px; 
+            padding: 20px 30px;
+            color: white; 
+            z-index: 2000; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            max-width: 400px; 
+            width: 90%; 
+            animation: slideUp 0.3s ease; 
+            direction: rtl;
         }
-        .custom-info-window .window-header {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
-            padding-bottom: 10px; border-bottom: 2px solid #ffaa44;
-        }
-        .custom-info-window .window-header img { width: 30px; height: 30px; }
-        .custom-info-window .window-header h3 { margin: 0; color: #ffaa44; font-size: 18px; font-weight: bold; }
-        .custom-info-window .window-content { margin-bottom: 20px; line-height: 1.6; font-size: 14px; }
-        .custom-info-window .window-close {
-            background: rgba(255,255,255,0.1); border: 2px solid #ffaa44; color: white;
-            padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;
-            transition: all 0.2s; width: 100%;
-        }
-        .custom-info-window .window-close:hover { background: #ffaa44; color: black; }
         
         @keyframes slideUp {
             from { transform: translate(-50%, 100%); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
         }
         
-        /* تحسينات للهواتف */
+        /* ===== تحسينات الهاتف ===== */
         @media (max-width: 768px) {
-            .scene-list-panel { width: 200px; left: 10px; }
-            .scene-list-panel.collapsed { width: 40px; left: 0; }
-            .scene-list-panel.collapsed .panel-header h3 span:last-child,
-            .scene-list-panel.collapsed .scene-list-container { display: none; }
-            .panel-toggle { width: 44px; height: 44px; font-size: 24px; }
-            .scene-list-panel.collapsed::after {
-                content: '☰'; position: absolute; top: 50%; right: -5px;
-                transform: translateY(-50%); color: #88aaff; font-size: 24px;
-                opacity: 0.5; pointer-events: none;
+            .toolbar {
+                height: 50px;
+                padding: 0 15px;
             }
-            .paths-control-panel { top: 10px; right: 10px; padding: 10px; min-width: 150px; }
-            .paths-control-panel h3 { font-size: 14px; }
-            .path-toggle-item label { font-size: 12px; }
-            .custom-info-window { width: 90%; padding: 15px 20px; bottom: 20px; }
-            .hotspot-marker img { width: 35px; height: 35px; }
-            #autoRotateBtn { font-size: 14px; padding: 10px 20px; }
-            #toggleMeasurements { bottom: 70px; right: 10px; padding: 8px 16px; font-size: 12px; }
+            .logo { font-size: 16px; }
+            .tour-name { font-size: 12px; padding: 4px 12px; }
+            
+            .paths-control-panel {
+                position: fixed;
+                top: auto;
+                bottom: 140px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                max-width: none;
+                display: none;
+                z-index: 950;
+            }
+            .paths-control-panel.show {
+                display: block;
+            }
+            
+            .paths-toggle-btn {
+                display: flex;
+                position: fixed;
+                bottom: 140px;
+                right: 10px;
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background: rgba(74, 108, 143, 0.8);
+                border: 2px solid #88aaff;
+                color: white;
+                font-size: 20px;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                z-index: 900;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            }
+            
+            .scene-list-panel { 
+                width: 200px; 
+                left: 10px; 
+            }
+            .scene-list-panel.collapsed { 
+                width: 40px; 
+                left: 0; 
+            }
+            
+            #autoRotateBtn { 
+                font-size: 13px; 
+                padding: 10px 18px; 
+            }
+            #toggleMeasurements { 
+                bottom: 70px; 
+                right: 10px; 
+                padding: 8px 14px; 
+                font-size: 12px; 
+            }
         }
     </style>
 </head>
 <body>
-    <div class="info">🏗️ tour-1772503070614</div>
+    <!-- شريط الأدوات العلوي -->
+    <div class="toolbar">
+        <div class="logo">🏗️ Actual view Studio</div>
+        <div class="tour-name">${projectName}</div>
+    </div>
+    
     <div id="container"></div>
+    
+    <!-- أزرار التحكم -->
     <button id="autoRotateBtn">⏸️ إيقاف الدوران</button>
     <button id="toggleMeasurements" class="active">📏 إخفاء القياسات</button>
     
+    <!-- زر المسارات للهاتف -->
+    <button class="paths-toggle-btn" id="pathsToggleBtn">🔘</button>
+    
+    <!-- لوحة التحكم بالمسارات -->
     <div class="paths-control-panel">
         <h3>🔘 التحكم بالمسارات</h3>
         <div id="paths-toggle-list"></div>
     </div>
     
+    <!-- لوحة المشاهد -->
     <div class="scene-list-panel" id="sceneListPanel">
         <div class="panel-header" id="panelHeader">
             <h3><span>📋</span><span>قائمة المشاهد</span></h3>
@@ -738,6 +996,7 @@ return `<!DOCTYPE html>
     </div>
 
     <script>
+        // ===== المتغيرات العامة =====
         const ICONS = {
             hotspot: 'icon/hotspot.png',
             info: 'icon/info.png'
@@ -756,8 +1015,6 @@ return `<!DOCTYPE html>
         
         // ===== دوال القياس =====
         function createMeasurementElement(measurement) {
-            const elements = {};
-            
             const lineDiv = document.createElement('div');
             lineDiv.className = 'measurement-line';
             
@@ -804,7 +1061,7 @@ return `<!DOCTYPE html>
                     elem.label.style.display = 'none';
                     return;
                 }
-                
+
                 const x1 = (start.x * 0.5 + 0.5) * width;
                 const y1 = (-start.y * 0.5 + 0.5) * height;
                 const x2 = (end.x * 0.5 + 0.5) * width;
@@ -842,7 +1099,7 @@ return `<!DOCTYPE html>
                 const midY = (y1 + y2) / 2;
                 elem.label.style.display = showMeasurements ? 'block' : 'none';
                 elem.label.style.left = midX + 'px';
-                elem.label.style.top = (midY - 50) + 'px';
+                elem.label.style.top = (midY - 30) + 'px';
             });
         }
 
@@ -870,7 +1127,6 @@ return `<!DOCTYPE html>
         function initScenePanel() {
             const panel = document.getElementById('sceneListPanel');
             const toggleBtn = document.getElementById('togglePanelBtn');
-            const panelHeader = document.getElementById('panelHeader');
             
             if (!panel || !toggleBtn) return;
             
@@ -880,33 +1136,12 @@ return `<!DOCTYPE html>
                 toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
             });
             
-            if (panelHeader) {
-                panelHeader.addEventListener('click', function(e) {
-                    if (e.target === toggleBtn) return;
-                    panel.classList.toggle('collapsed');
-                    toggleBtn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
-                });
+            // استعادة الحالة المخزنة
+            const savedState = localStorage.getItem('scenePanelCollapsed');
+            if (savedState === 'true') {
+                panel.classList.add('collapsed');
+                toggleBtn.textContent = '▶';
             }
-            
-            let touchStartX = 0;
-            document.addEventListener('touchstart', function(e) {
-                touchStartX = e.touches[0].clientX;
-            });
-            
-            document.addEventListener('touchend', function(e) {
-                const touchEndX = e.changedTouches[0].clientX;
-                const panelCollapsed = panel.classList.contains('collapsed');
-                
-                if (panelCollapsed && touchStartX < 50 && touchEndX > 100) {
-                    panel.classList.remove('collapsed');
-                    toggleBtn.textContent = '◀';
-                }
-                
-                if (!panelCollapsed && touchStartX < 100 && touchStartX - touchEndX > 50) {
-                    panel.classList.add('collapsed');
-                    toggleBtn.textContent = '▶';
-                }
-            });
         }
         
         function updateSceneList() {
@@ -925,46 +1160,45 @@ return `<!DOCTYPE html>
                 container.appendChild(item);
             });
         }
-// ===== دوال Hotspots =====
-// ===== دوال Hotspots =====
-function createHotspotElement(x, y, type, data) {
-    const div = document.createElement('div');
-    div.className = 'hotspot-marker';
-    div.style.left = x + 'px';
-    div.style.top = y + 'px';
-    div.style.cursor = 'pointer';
-    div.style.zIndex = '1000';
-    div.style.pointerEvents = 'auto'; // 👈 1. الحاوية تستقبل النقر
-    
-    const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
-    const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
-    const displayText = type === 'SCENE' 
-        ? (data.targetSceneName || 'انتقال') 
-        : (data.title || 'معلومات');
-    
-    // 👈 2. أضف pointer-events: none للعناصر الداخلية
-    div.innerHTML = '<img src="' + iconUrl + '" alt="' + type + '" ' +
-        'style="border: 2px solid ' + borderColor + '; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); pointer-events: none;">' +
-        '<div class="hotspot-label" style="border-color: ' + borderColor + '; pointer-events: none;">' + 
-        displayText + 
-        '</div>';
-    
-    div.addEventListener('click', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
         
-        if (type === 'INFO') {
-            showInfoWindow(data.title, data.content);
-        } else {
-            const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
-            if (targetIndex !== -1) {
-                setTimeout(() => loadScene(targetIndex), 300);
-            }
+        // ===== دوال Hotspots =====
+        function createHotspotElement(x, y, type, data) {
+            const div = document.createElement('div');
+            div.className = 'hotspot-marker';
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            div.style.cursor = 'pointer';
+            div.style.zIndex = '1000';
+            div.style.pointerEvents = 'auto';
+            
+            const iconUrl = type === 'SCENE' ? ICONS.hotspot : ICONS.info;
+            const borderColor = type === 'SCENE' ? '#44aaff' : '#ffaa44';
+            const displayText = type === 'SCENE' 
+                ? (data.targetSceneName || 'انتقال') 
+                : (data.title || 'معلومات');
+            
+            div.innerHTML = '<img src="' + iconUrl + '" alt="' + type + '" ' +
+                'style="border: 2px solid ' + borderColor + '; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); pointer-events: none;">' +
+                '<div class="hotspot-label" style="border-color: ' + borderColor + '; pointer-events: none;">' + 
+                displayText + 
+                '</div>';
+            
+            div.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                if (type === 'INFO') {
+                    showInfoWindow(data.title, data.content);
+                } else {
+                    const targetIndex = scenes.findIndex(s => s.id === data.targetSceneId);
+                    if (targetIndex !== -1) {
+                        setTimeout(() => loadScene(targetIndex), 300);
+                    }
+                }
+            });
+            
+            return div;
         }
-    });
-    
-    return div;
-}
         
         function showInfoWindow(title, content) {
             document.querySelectorAll('.custom-info-window').forEach(el => el.remove());
@@ -983,76 +1217,72 @@ function createHotspotElement(x, y, type, data) {
             
             setTimeout(() => win.remove(), 5000);
         }
-function rebuildHotspots() {
-    document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
-    hotspotMarkers = {};
-    
-    const currentScene = scenes[currentSceneIndex];
-    if (!currentScene || !currentScene.hotspots || !currentScene.hotspots.length) return;
-    
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    
-    currentScene.hotspots.forEach(h => {
-        // 👇 حماية نوع النقطة (ذكية)
-        let type = (typeof h.type === 'string') ? h.type.toUpperCase() : 'INFO';
-        
-        const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
-        const projected = pos.clone().project(camera);
-        
-        // 👇 نخفي فقط ولا نمنع الإنشاء
-        const hiddenByZ = projected.z > 1;
-        
-        const x = (projected.x * 0.5 + 0.5) * width;
-        const y = (-projected.y * 0.5 + 0.5) * height;
-        
-        // 👇 ننشئ دائماً
-        const iconElement = createHotspotElement(x, y, type, h.data || {});
-        iconElement._worldPosition = pos.clone();
-        iconElement.dataset.id = h.id;
-        
-        // 👇 نخفي إذا كان خارج الرؤية
-        if (hiddenByZ || x < -100 || x > width + 100 || y < -100 || y > height + 100) {
-            iconElement.style.display = 'none';
+
+        function rebuildHotspots() {
+            document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
+            hotspotMarkers = {};
+            
+            const currentScene = scenes[currentSceneIndex];
+            if (!currentScene || !currentScene.hotspots || !currentScene.hotspots.length) return;
+            
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            currentScene.hotspots.forEach(h => {
+                let type = (typeof h.type === 'string') ? h.type.toUpperCase() : 'INFO';
+                
+                const pos = new THREE.Vector3(h.position.x, h.position.y, h.position.z);
+                const projected = pos.clone().project(camera);
+                
+                if (projected.z > 1) return;
+                
+                const x = (projected.x * 0.5 + 0.5) * width;
+                const y = (-projected.y * 0.5 + 0.5) * height;
+                
+                if (x < -100 || x > width + 100 || y < -100 || y > height + 100) return;
+                
+                const iconElement = createHotspotElement(x, y, type, h.data || {});
+                iconElement._worldPosition = pos.clone();
+                iconElement.dataset.id = h.id;
+                
+                document.body.appendChild(iconElement);
+                hotspotMarkers[h.id] = iconElement;
+            });
         }
-        
-        document.body.appendChild(iconElement);
-        hotspotMarkers[h.id] = iconElement;
-    });
-}
+
         function updateHotspotsPosition() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
 
-    Object.values(hotspotMarkers).forEach(el => {
-        if (!el._worldPosition) return;
+            Object.values(hotspotMarkers).forEach(el => {
+                if (!el._worldPosition) return;
 
-        const projected = el._worldPosition.clone().project(camera);
+                const projected = el._worldPosition.clone().project(camera);
 
-        // إخفاء النقاط خلف الكاميرا
-        if (projected.z > 1) {
-            el.style.display = 'none';
-            return;
+                if (projected.z > 1) {
+                    el.style.display = 'none';
+                    return;
+                }
+
+                const x = (projected.x * 0.5 + 0.5) * width;
+                const y = (-projected.y * 0.5 + 0.5) * height;
+
+                if (x < -100 || x > width + 100 || y < -100 || y > height + 100) {
+                    el.style.display = 'none';
+                    return;
+                }
+
+                el.style.display = 'block';
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+            });
         }
-
-        const x = (projected.x * 0.5 + 0.5) * width;
-        const y = (-projected.y * 0.5 + 0.5) * height;
-
-        // إخفاء النقاط خارج الشاشة
-        if (x < -100 || x > width + 100 || y < -100 || y > height + 100) {
-            el.style.display = 'none';
-            return;
-        }
-
-        // إظهار وتحديث الموقع
-        el.style.display = 'block';
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
-    });
-}
-              // ===== دوال المسارات =====
+        
+        // ===== دوال المسارات =====
         function togglePathsByType(type, visible) {
-            allPaths.forEach(p => { if (p.userData && p.userData.type === type) p.visible = visible; });
+            allPaths.forEach(p => { 
+                if (p.userData && p.userData.type === type) p.visible = visible; 
+            });
         }
         
         function createPathsTogglePanel() {
@@ -1112,11 +1342,10 @@ function rebuildHotspots() {
                             
                             const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
                             cylinder.position.copy(midpoint);
-                            
                             cylinder.lookAt(end);
                             cylinder.rotateX(Math.PI / 2);
-                            
                             cylinder.userData = { type: pathData.type };
+                            
                             scene3D.add(cylinder);
                             allPaths.push(cylinder);
                         }
@@ -1178,32 +1407,51 @@ function rebuildHotspots() {
                 initScenePanel();
                 loadScene(0);
                 
-              window.addEventListener('resize', function() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    rebuildHotspots();
-});
+                window.addEventListener('resize', function() {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    rebuildHotspots();
+                });
+                
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene3D, camera);
+                    
+                    if (typeof updateMeasurementPositions === 'function') {
+                        updateMeasurementPositions();
+                    }
+                }
+                animate();
 
-// ✅ دالة animate الصحيحة
-function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene3D, camera);
-    
-    // تحديث مواقع النقاط
-    if (typeof updateHotspotsPosition === 'function') {
-        updateHotspotsPosition();
-    }
-    
-    // تحديث مواقع القياسات
-    if (typeof updateMeasurementPositions === 'function') {
-        updateMeasurementPositions();
-    }
-}
-animate(); // بدء التشغيل
+                controls.addEventListener('change', function() {
+                    if (typeof updateHotspotsPosition === 'function') {
+                        updateHotspotsPosition();
+                    }
+                });
             })
             .catch(err => console.error('خطأ في تحميل البيانات:', err));
+
+        // ===== التحكم بإظهار/إخفاء المسارات في الهاتف =====
+        const pathsToggleBtn = document.getElementById('pathsToggleBtn');
+        const pathsPanel = document.querySelector('.paths-control-panel');
+
+        if (pathsToggleBtn && pathsPanel) {
+            pathsToggleBtn.addEventListener('click', function() {
+                pathsPanel.classList.toggle('show');
+                this.textContent = pathsPanel.classList.contains('show') ? '✕' : '🔘';
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    if (!pathsPanel.contains(e.target) && e.target !== pathsToggleBtn) {
+                        pathsPanel.classList.remove('show');
+                        pathsToggleBtn.textContent = '🔘';
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>`;
