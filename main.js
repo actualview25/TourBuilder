@@ -271,31 +271,32 @@ class SceneManager {
         if (typeof updateScenePanel === 'function') updateScenePanel();
     }
 
-    async addScene(name, imageFile) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const scene = {
-                        id: `scene-${Date.now()}-${Math.random()}`,
-                        name: name,
-                        originalImage: e.target.result,
-                        paths: [],
-                        hotspots: [],
-                        measurements: [], // إضافة مصفوفة القياسات
-                        created: new Date().toISOString()
-                    };
-                    this.scenes.push(scene);
-                    this.measurements[scene.id] = [];
-                    this.saveScenes();
-                    resolve(scene);
+   async addScene(name, imageFile) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const scene = {
+                    id: `scene-${Date.now()}-${Math.random()}`,
+                    name: name,
+                    originalImage: e.target.result,
+                    paths: [],
+                    hotspots: [],
+                    measurements: [],
+                    created: new Date().toISOString(),
+                    order: this.scenes.length  // ✅ هذا يحل مشكلة الترتيب
                 };
-                img.src = e.target.result;
+                this.scenes.push(scene);
+                this.measurements[scene.id] = [];
+                this.saveScenes();
+                resolve(scene);
             };
-            reader.readAsDataURL(imageFile);
-        });
-    }
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(imageFile);
+    });
+}
 
     addHotspot(sceneId, type, position, data) {
         const scene = this.scenes.find(s => s.id === sceneId);
@@ -2255,7 +2256,8 @@ function showCustomInfoWindow(title, content, type = 'info') {
 // ١٠. تحديث لوحة المشاهد
 // =======================================
 
-function updateScenePanel() {
+
+}function updateScenePanel() {
     const list = document.getElementById('sceneList');
     if (!list) return;
 
@@ -2263,8 +2265,10 @@ function updateScenePanel() {
     
     if (!sceneManager || !sceneManager.scenes) return;
     
-    // عرض المشاهد بالترتيب (الأحدث أولاً)
-    [...sceneManager.scenes].reverse().forEach(scene => {
+    // ✅ ترتيب حسب order (الأقدم أولاً)
+    const sortedScenes = [...sceneManager.scenes].sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    sortedScenes.forEach((scene, index) => {
         const item = document.createElement('div');
         item.className = 'scene-item';
         
@@ -2276,34 +2280,32 @@ function updateScenePanel() {
         const sceneCount = scene.hotspots?.filter(h => h.type === 'SCENE').length || 0;
         const totalPoints = infoCount + sceneCount;
         
-        const icon = scene.id.includes('start') ? '🏠' : (sceneCount > 0 ? '🚪' : '🌄');
-        
+        // ✅ عرض الرقم التسلسلي (index + 1)
         item.innerHTML = `
-            <span class='scene-icon'>${icon}</span>
-            <span class='scene-name' title='${scene.name}'>${scene.name.substring(0, 15)}${scene.name.length > 15 ? '...' : ''}</span>
+            <span class='scene-icon'>${index === 0 ? '🏠' : '🌄'}</span>
+            <span class='scene-name' title='${scene.name}'>${index + 1}. ${scene.name}</span>
             <span class='scene-hotspots'>${totalPoints}</span>
             <button class='delete-scene-btn' data-id='${scene.id}' title='حذف المشهد'>🗑️</button>
         `;
 
         item.addEventListener('click', (e) => {
             if (!e.target.classList.contains('delete-scene-btn')) {
-                if (sceneManager) {
-                    sceneManager.switchToScene(scene.id);
-                    updateScenePanel();
-                }
+                sceneManager.switchToScene(scene.id);
+                updateScenePanel();
             }
         });
 
         const deleteBtn = item.querySelector('.delete-scene-btn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (confirm('هل أنت متأكد من حذف هذا المشهد؟')) {
-                if (sceneManager) sceneManager.deleteScene(scene.id);
+            if (confirm('🗑️ هل أنت متأكد من حذف هذا المشهد؟')) {
+                sceneManager.deleteScene(scene.id);
             }
         });
         
         list.appendChild(item);
     });
+}
     
     // سكرول تلقائي للمشهد النشط
     setTimeout(() => {
@@ -2425,48 +2427,81 @@ function hideLoader() {
 // =======================================
 // ١١. إضافة مشهد جديد
 // =======================================
-function addNewScene() {
-    const name = prompt('📝 أدخل اسم المشهد:');
-    if (!name || name.trim() === '') {
-        alert('❌ الرجاء إدخال اسم صحيح');
-        return;
-    }
-
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.style.display = 'none';
-    document.body.appendChild(input);
-
-    input.onchange = async function(e) {
-        const file = e.target.files[0];
-        if (!file) {
-            document.body.removeChild(input);
+وهوfunction addNewScene() {
+    // ✅ استخدام حقل إدخال مخصص بدلاً من prompt
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(20,30,40,0.95);
+        padding: 30px;
+        border-radius: 16px;
+        z-index: 10000;
+        direction: rtl;
+        border: 2px solid #4a6c8f;
+        color: white;
+        min-width: 300px;
+    `;
+    
+    modal.innerHTML = `
+        <h3 style="margin-top:0;">📝 إضافة مشهد جديد</h3>
+        <input type="text" id="sceneNameInput" placeholder="أدخل اسم المشهد" 
+               style="width:100%; padding:10px; margin:10px 0; background:#1a2a3a; border:1px solid #4a6c8f; color:white; border-radius:6px;">
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button id="cancelSceneBtn" style="background:#c0392b; border:none; color:white; padding:8px 16px; border-radius:6px; cursor:pointer;">إلغاء</button>
+            <button id="confirmSceneBtn" style="background:#27ae60; border:none; color:white; padding:8px 16px; border-radius:6px; cursor:pointer;">إضافة</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById('cancelSceneBtn').onclick = () => modal.remove();
+    document.getElementById('confirmSceneBtn').onclick = () => {
+        const name = document.getElementById('sceneNameInput').value.trim();
+        modal.remove();
+        
+        if (!name) {
+            alert('❌ الرجاء إدخال اسم صحيح');
             return;
         }
 
-        showLoader('جاري إضافة المشهد...');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        document.body.appendChild(input);
 
-        try {
-            const scene = await sceneManager.addScene(name.trim(), file);
-            if (scene) {
-                sceneManager.switchToScene(scene.id);
-                updateScenePanel();
-                hideLoader();
-                alert(`✅ تم إضافة المشهد: "${name.trim()}"`);
+        input.onchange = async function(e) {
+            const file = e.target.files[0];
+            if (!file) {
+                document.body.removeChild(input);
+                return;
             }
-        } catch (error) {
-            console.error('❌ خطأ:', error);
-            alert('فشل إضافة المشهد');
-            hideLoader();
-        }
 
-        document.body.removeChild(input);
+            showLoader('جاري إضافة المشهد...');
+
+            try {
+                const scene = await sceneManager.addScene(name, file);
+                if (scene) {
+                    sceneManager.switchToScene(scene.id);
+                    updateScenePanel();
+                    hideLoader();
+                    alert(`✅ تم إضافة المشهد: "${name}"`);
+                }
+            } catch (error) {
+                console.error('❌ خطأ:', error);
+                alert('فشل إضافة المشهد');
+                hideLoader();
+            }
+
+            document.body.removeChild(input);
+        };
+
+        input.click();
     };
-
-    input.click();
 }
-
 // =======================================
 // ١٢. دوال التحميل والتصدير
 // =======================================
