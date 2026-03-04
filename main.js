@@ -1559,12 +1559,6 @@ let exportCanvas, exportContext;
 let sceneManager;
 let hotspotMode = null;
 
-// ===============================
-// متغيرات أداة القياس
-// ===============================// =======================================
-// ٧. دوال أداة القياس - النسخة المحسنة
-// =======================================
-
 // متغيرات القياس
 let measureMode = false;
 let measureStartPoint = null;
@@ -1573,11 +1567,7 @@ let measureGroups = [];
 // كائنات التصدير
 let tourExporter;
 let projectManager = new ProjectManager();
-// إنشاء خط القياس - مسطرة صفراء واضحة
-// =======================================
-// دالة createMeasureLine - مع علامات المسطرة
-// =======================================
-// =======================================
+// 
 // دالة createMeasureLine - شكل مسطرة حقيقي
 // =======================================
 function createMeasureLine(point1, point2) {
