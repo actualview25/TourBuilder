@@ -2257,7 +2257,7 @@ function showCustomInfoWindow(title, content, type = 'info') {
 // =======================================
 
 
-}function updateScenePanel() {
+function updateScenePanel() {
     const list = document.getElementById('sceneList');
     if (!list) return;
 
