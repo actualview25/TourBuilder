@@ -2385,7 +2385,43 @@ if (document.readyState === 'loading') {
 } else {
     enableSceneSorting();
 }
+// =======================================
+// دوال التحميل والتصدير
+// =======================================
 
+function showLoader(message) {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'flex';
+        loader.textContent = message || '⏳ جاري التحميل...';
+    } else {
+        // إذا لم يكن موجوداً، أنشئ واحداً
+        const newLoader = document.createElement('div');
+        newLoader.id = 'loader';
+        newLoader.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            z-index: 10000;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+        `;
+        newLoader.textContent = message || '⏳ جاري التحميل...';
+        document.body.appendChild(newLoader);
+    }
+}
+
+function hideLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+}
 // =======================================
 // ١١. إضافة مشهد جديد
 // =======================================
