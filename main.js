@@ -530,6 +530,7 @@ scenes.forEach((scene, index) => {
 
 generatePlayerHTML(projectName) {
 return `
+
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -698,97 +699,122 @@ return `
             display: inline-block; 
         }
         
-        /* ===== لوحة المشاهد ===== */
-        .scene-list-panel {
-            position: fixed; 
-            top: 50%; 
-            left: 20px; 
-            transform: translateY(-50%);
-            width: 260px; 
-            max-height: 70vh;
-            background: rgba(20, 30, 40, 0.25);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(74, 108, 143, 0.3);
-            border-radius: 12px;
-            color: white;
-            z-index: 900;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .scene-list-panel.collapsed { width: 50px; overflow: hidden; }
-        .scene-list-panel.collapsed .panel-header h3 span:last-child,
-        .scene-list-panel.collapsed .scene-list-container { display: none; }
-        
-        .panel-header {
-            padding: 12px;
-            border-bottom: 1px solid rgba(74, 108, 143, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.2);
-            flex-shrink: 0;
-        }
-        .panel-header h3 { 
-            margin: 0; 
-            color: white; 
-            font-size: 14px; 
-            font-weight: 500; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-        .panel-toggle {
-            background: none; 
-            border: none; 
-            color: rgba(255,255,255,0.7); 
-            font-size: 16px; 
-            cursor: pointer;
-            width: 28px; 
-            height: 28px; 
-            border-radius: 50%; 
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            transition: all 0.2s;
-        }
-        .panel-toggle:hover { background: rgba(255,255,255,0.1); color: white; }
-        
-        .scene-list-container {
-            max-height: calc(70vh - 60px); 
-            overflow-y: auto; 
-            padding: 8px;
-        }
-        .scene-list-container::-webkit-scrollbar { width: 4px; }
-        .scene-list-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
-        .scene-list-container::-webkit-scrollbar-thumb { background: rgba(74, 108, 143, 0.4); border-radius: 4px; }
-        
-        .scene-item {
-            padding: 8px 10px;
-            margin: 4px 0;
-            background: rgba(255,255,255,0.03);
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            font-size: 12px;
-        }
-        .scene-item:hover { background: rgba(74, 108, 143, 0.2); }
-        .scene-item.active { background: rgba(74, 108, 143, 0.3); border-right: 3px solid #88aaff; }
-        .scene-icon { font-size: 16px; }
-        .scene-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .scene-hotspot-count { 
-            font-size: 11px; 
-            background: rgba(74, 108, 143, 0.3); 
-            padding: 2px 6px; 
-            border-radius: 10px; 
-            color: white; 
-        }
+/* ===== لوحة المشاهد - نفس الحجم السابق مع سكرول ===== */
+.scene-list-panel {
+    position: fixed; 
+    top: 50%; 
+    left: 20px; 
+    transform: translateY(-50%);
+    width: 260px; 
+    max-height: 70vh; /* نفس الحجم السابق */
+    background: rgba(20, 30, 40, 0.25);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(74, 108, 143, 0.3);
+    border-radius: 12px;
+    color: white;
+    z-index: 900;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease; /* مهم لزر الإخفاء */
+}
+
+/* حالة الإخفاء - نفس الحجم السابق */
+.scene-list-panel.collapsed {
+    width: 50px;
+    overflow: hidden;
+}
+
+.scene-list-panel.collapsed .panel-header h3 span:last-child,
+.scene-list-panel.collapsed .scene-list-container {
+    display: none;
+}
+
+.panel-header {
+    padding: 12px;
+    border-bottom: 1px solid rgba(74, 108, 143, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+    flex-shrink: 0;
+    cursor: pointer; /* مؤشر يد للزر */
+}
+
+.panel-header h3 { 
+    margin: 0; 
+    color: white; 
+    font-size: 14px; 
+    font-weight: 500; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+}
+
+.panel-toggle {
+    background: none; 
+    border: none; 
+    color: rgba(255,255,255,0.7); 
+    font-size: 16px; 
+    cursor: pointer;
+    width: 28px; 
+    height: 28px; 
+    border-radius: 50%; 
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.panel-toggle:hover { 
+    background: rgba(255,255,255,0.1); 
+    color: white; 
+}
+
+/* قائمة المشاهد - مع سكرول */
+.scene-list-container {
+    max-height: calc(70vh - 60px); /* نفس الحساب السابق */
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(74, 108, 143, 0.4) rgba(0,0,0,0.2);
+}
+
+/* تحسين شريط التمرير - نحيف جداً */
+.scene-list-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scene-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scene-list-container::-webkit-scrollbar-thumb {
+    background: rgba(74, 108, 143, 0.3);
+    border-radius: 4px;
+}
+
+.scene-list-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(74, 108, 143, 0.6);
+}
+
+/* عناصر المشاهد - نفس الحجم */
+.scene-item {
+    padding: 10px 12px;
+    margin: 4px 0;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    font-size: 13px;
+}
         
         /* ===== أنماط Hotspots ===== */
         .hotspot-marker {
@@ -1357,7 +1383,25 @@ return `
                 updateSceneList();
             });
         }
-        
+        // التأكد من ظهور السكرول
+function ensureScrollbar() {
+    const container = document.getElementById('sceneListContainer');
+    if (!container) return;
+    
+    // حساب ارتفاع الرأس
+    const header = document.querySelector('.panel-header');
+    const headerHeight = header ? header.offsetHeight : 50;
+    
+    // ضبط ارتفاع القائمة
+    container.style.maxHeight = (400 - headerHeight - 2) + 'px';
+    container.style.overflowY = 'auto';
+    
+    console.log('📏 ارتفاع القائمة:', container.style.maxHeight);
+}
+
+// استدعاء بعد تحميل المشاهد
+setTimeout(ensureScrollbar, 500);
+window.addEventListener('resize', ensureScrollbar);
         // ===== التهيئة =====
         fetch('tour-data.json')
             .then(res => res.json())
