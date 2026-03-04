@@ -5,9 +5,32 @@ console.log('✅ THREE loaded:', !!THREE);
 console.log('✅ OrbitControls loaded:', !!OrbitControls);
 
 // تعريف pathColors قبل استخدامه
+// تعريف pathColors قبل استخدامه
 const pathColors = { EL: 0xffcc00, AC: 0x00ccff, WP: 0x0066cc, WA: 0xff3300, GS: 0x33cc33 };
 let currentPathType = 'EL';
 
+// =======================================
+// تغيير نوع المسار الحالي (✅ هذه الدالة ناقصة)
+// =======================================
+window.setCurrentPathType = function(type) {
+    // تحديث المتغير العام
+    currentPathType = type;
+    
+    // تحديث لون الكرة (markerPreview)
+    if (markerPreview) {
+        markerPreview.material.color.setHex(pathColors[currentPathType]);
+        markerPreview.material.emissive.setHex(pathColors[currentPathType]);
+        console.log('🎨 تم تحديث لون الكرة إلى:', currentPathType);
+    }
+    
+    // تحديث شريط الحالة
+    const statusEl = document.getElementById('status');
+    if (statusEl) {
+        statusEl.innerHTML = `النوع الحالي: <span style="color:#${pathColors[currentPathType].toString(16)};">${currentPathType}</span>`;
+    }
+    
+    console.log('✅ تم تغيير نوع المسار إلى:', type);
+};
 // =======================================
 // ١. نظام Hotspots الموحد
 // =======================================
