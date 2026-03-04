@@ -6,7 +6,7 @@ console.log('✅ OrbitControls loaded:', !!OrbitControls);
 
 // بهذا (ألوان واضحة تماماً)
 const pathColors = { 
-    EL: 0xffaa00,  // برتقالي ذهبي 🟠
+    EL: 0xffaa00,  // أصفر غامق (ذهب) 🟡
     AC: 0x0033cc,  // 🔵 أزرق غامق (كحلي)
     WP: 0x0044aa,  // أزرق كحلي غامق
     WA: 0xff0000,  // 🔴 أحمر صريح
