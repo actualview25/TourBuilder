@@ -4,13 +4,13 @@ const OrbitControls = THREE.OrbitControls;
 console.log('✅ THREE loaded:', !!THREE);
 console.log('✅ OrbitControls loaded:', !!OrbitControls);
 
-// تعريف pathColors قبل استخدامه - ألوان أكثر وضوحاً
+// بهذا (ألوان واضحة تماماً)
 const pathColors = { 
     EL: 0xffaa00,  // برتقالي ذهبي 🟠
-    AC: 0x00aaff,  // أزرق سماوي فاتح 🔵
-    WP: 0x0044aa,  // أزرق كحلي غامق 🔵
-    WA: 0xff5500,  // برتقالي محمر 🔴
-    GS: 0x33cc33   // أخضر زاهي 🟢
+    AC: 0x0033cc,  // 🔵 أزرق غامق (كحلي)
+    WP: 0x0044aa,  // أزرق كحلي غامق
+    WA: 0xff0000,  // 🔴 أحمر صريح
+    GS: 0x006633   // 🟢 أخضر غامق
 };
 let currentPathType = 'EL';
 // =======================================
