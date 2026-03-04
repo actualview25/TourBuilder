@@ -2433,7 +2433,7 @@ function hideLoader() {
 // =======================================
 // ١١. إضافة مشهد جديد
 // =======================================
-وهوfunction addNewScene() {
+function addNewScene() {
     // ✅ استخدام حقل إدخال مخصص بدلاً من prompt
     const modal = document.createElement('div');
     modal.style.cssText = `
