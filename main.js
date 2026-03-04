@@ -2261,7 +2261,11 @@ function showCustomInfoWindow(title, content, type = 'info') {
 // ١٠. تحديث لوحة المشاهد
 // =======================================
 
-function updateScenePanel() {  // ✅ لا يوجد قوس قبله
+// =======================================
+// ١٠. تحديث لوحة المشاهد
+// =======================================
+
+function updateScenePanel() {
     const list = document.getElementById('sceneList');
     if (!list) return;
 
@@ -2308,8 +2312,7 @@ function updateScenePanel() {  // ✅ لا يوجد قوس قبله
         
         list.appendChild(item);
     });
-}
-    
+
     // سكرول تلقائي للمشهد النشط
     setTimeout(() => {
         const activeItem = list.querySelector('.scene-item.active');
@@ -2317,8 +2320,8 @@ function updateScenePanel() {  // ✅ لا يوجد قوس قبله
             activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }, 100);
-}
-
+} // ✅ قوس إغلاق واحد فقط للدالة
+    
 // =======================================
 // تفعيل خاصية السحب والترتيب للمشاهد
 // =======================================
