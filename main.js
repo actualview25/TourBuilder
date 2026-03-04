@@ -357,17 +357,60 @@ class SceneManager {
     }
 
     switchToScene(sceneId) {
-        const sceneData = this.scenes.find(s => s.id === sceneId);
-        if (!sceneData) return false;
+    const sceneData = this.scenes.find(s => s.id === sceneId);
+    if (!sceneData) return false;
 
-        // حفظ المسارات الحالية إذا وجدت
-        if (this.currentScene && paths.length > 0) {
-            this.currentScene.paths = paths.map(p => ({
-                type: p.userData.type,
-                color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
-                points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
-            }));
-        }
+    // ===== 🔴 الأهم: حفظ المسارات الحالية قبل التبديل =====
+    if (this.currentScene && paths.length > 0) {
+        console.log('💾 حفظ مسارات المشهد الحالي:', paths.length);
+        this.currentScene.paths = paths.map(p => ({
+            type: p.userData.type,
+            color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
+            points: p.userData.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }))
+        }));
+        this.saveScenes(); // حفظ فوري
+    }
+
+    this.currentScene = sceneData;
+
+    // تنظيف المشهد الحالي
+    paths.forEach(p => scene.remove(p));
+    paths = [];
+    clearCurrentDrawing();
+
+    // تحميل صورة المشهد الجديد
+    if (sphereMesh && sphereMesh.material) {
+        loadSceneImage(sceneData.originalImage);
+    }
+
+    // ===== 🔴 إعادة بناء المسارات المحفوظة =====
+    if (sceneData.paths && sceneData.paths.length > 0) {
+        console.log('🔄 استعادة مسارات:', sceneData.paths.length);
+        sceneData.paths.forEach(pathData => {
+            const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+            const oldType = currentPathType;
+            currentPathType = pathData.type;
+            createStraightPath(points);
+            currentPathType = oldType;
+        });
+    }
+
+    // إعادة بناء الهوتسبوتات
+    if (sceneData.hotspots) {
+        HotspotSystem.rebuild(sceneData.hotspots);
+    } else {
+        HotspotSystem.clear();
+    }
+
+    // إظهار القياسات المحفوظة
+    if (sceneData.measurements) {
+        showMeasurementsForScene(sceneId);
+    }
+
+    if (typeof updateScenePanel === 'function') updateScenePanel();
+    this.saveScenes();
+    return true;
+}
 this.currentScene = sceneData;
 
         // تنظيف المشهد الحالي
