@@ -2257,7 +2257,11 @@ function showCustomInfoWindow(title, content, type = 'info') {
 // =======================================
 
 
-function updateScenePanel() {
+// =======================================
+// ١٠. تحديث لوحة المشاهد
+// =======================================
+
+function updateScenePanel() {  // ✅ لا يوجد قوس قبله
     const list = document.getElementById('sceneList');
     if (!list) return;
 
@@ -2265,7 +2269,7 @@ function updateScenePanel() {
     
     if (!sceneManager || !sceneManager.scenes) return;
     
-    // ✅ ترتيب حسب order (الأقدم أولاً)
+    // ترتيب حسب order (الأقدم أولاً)
     const sortedScenes = [...sceneManager.scenes].sort((a, b) => (a.order || 0) - (b.order || 0));
     
     sortedScenes.forEach((scene, index) => {
@@ -2280,7 +2284,6 @@ function updateScenePanel() {
         const sceneCount = scene.hotspots?.filter(h => h.type === 'SCENE').length || 0;
         const totalPoints = infoCount + sceneCount;
         
-        // ✅ عرض الرقم التسلسلي (index + 1)
         item.innerHTML = `
             <span class='scene-icon'>${index === 0 ? '🏠' : '🌄'}</span>
             <span class='scene-name' title='${scene.name}'>${index + 1}. ${scene.name}</span>
