@@ -2182,7 +2182,7 @@ function addHotspot(position) {
         };
 
         const hotspot = sceneManager.addHotspot(
-            sceneManager.currentScene.id,
+            sceneManager.currentScene ? sceneManager.currentScene.id : null
             'SCENE',
             position,
             data
