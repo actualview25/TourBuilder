@@ -410,46 +410,7 @@ class SceneManager {
     if (typeof updateScenePanel === 'function') updateScenePanel();
     this.saveScenes();
     return true;
-}
-
-
-        // تنظيف المشهد الحالي
-        paths.forEach(p => scene.remove(p));
-        paths = [];
-        clearCurrentDrawing();
-
-        // تحميل صورة المشهد الجديد
-        if (sphereMesh && sphereMesh.material) {
-            loadSceneImage(sceneData.originalImage);
-        }
-
-        // إعادة بناء المسارات
-        if (sceneData.paths) {
-            sceneData.paths.forEach(pathData => {
-                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                const oldType = currentPathType;
-                currentPathType = pathData.type;
-                createStraightPath(points);
-                currentPathType = oldType;
-            });
-        }
-
-        // إعادة بناء الهوتسبوتات
-        if (sceneData.hotspots) {
-            HotspotSystem.rebuild(sceneData.hotspots);
-        } else {
-            HotspotSystem.clear();
-        }
-
-        // إظهار القياسات المحفوظة
-        if (sceneData.measurements) {
-            showMeasurementsForScene(sceneId);
-        }
-
-        if (typeof updateScenePanel === 'function') updateScenePanel();
-        this.saveScenes();
-        return true;
-    }
+}   
 
     deleteScene(sceneId) {
         const index = this.scenes.findIndex(s => s.id === sceneId);
