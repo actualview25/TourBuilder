@@ -1384,7 +1384,7 @@ return `
             });
         }
         
-      function loadScene(index) {
+     function loadScene(index) {
     const sceneData = scenes[index];
     if (!sceneData) return;
     
@@ -1406,20 +1406,16 @@ return `
         );
         scene3D.add(sphereMesh);
         
-        // ✅ الأهم: إعادة بناء المسارات
+        // إعادة بناء المسارات
         if (sceneData.paths && sceneData.paths.length > 0) {
             console.log('🔄 بناء', sceneData.paths.length, 'مسار في الجولة المصدرة');
             
             sceneData.paths.forEach(pathData => {
                 if (!pathData.points || pathData.points.length < 2) return;
                 
-                // تحديد اللون
                 const color = pathData.color || '#ffaa44';
-                
-                // تحويل النقاط
                 const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
                 
-                // بناء المسار
                 for (let i = 0; i < points.length - 1; i++) {
                     const start = points[i];
                     const end = points[i + 1];
@@ -1429,11 +1425,13 @@ return `
                     
                     if (distance < 0.5) continue;
                     
+                    // ✅ تعديل السمك هنا
                     const cylinder = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.3, 0.3, distance, 8),
+                        new THREE.CylinderGeometry(3.5, 3.5, distance, 12),  // من 0.3 إلى 3.5
                         new THREE.MeshStandardMaterial({ 
                             color: color,
-                            emissive: color
+                            emissive: color,
+                            emissiveIntensity: 0.4
                         })
                     );
                     
@@ -1455,15 +1453,10 @@ return `
         }
         
         setTimeout(rebuildHotspots, 200);
+        loadMeasurements(sceneData);
         updateSceneList();
     });
 }
-                
-                setTimeout(rebuildHotspots, 200);
-                loadMeasurements(sceneData);
-                updateSceneList();
-            });
-        }
         // التأكد من ظهور السكرول
 function ensureScrollbar() {
     const container = document.getElementById('sceneListContainer');
