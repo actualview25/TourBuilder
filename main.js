@@ -356,12 +356,12 @@ class SceneManager {
         this.saveScenes();
     }
 
-    switchToScene(sceneId) {
+   switchToScene(sceneId) {
     const sceneData = this.scenes.find(s => s.id === sceneId);
     if (!sceneData) return false;
 
-    // ===== 🔴 الأهم: حفظ المسارات الحالية قبل التبديل =====
-    if (this.currentScene && paths.length > 0) {
+    // ===== 🔴 الأهم: حفظ المسارات الحالية قبل التبديل (مع شرط) =====
+    if (this.currentScene && paths.length > 0) {  // 👈 هذا السطر كان ناقصاً!
         console.log('💾 حفظ مسارات المشهد الحالي:', paths.length);
         this.currentScene.paths = paths.map(p => ({
             type: p.userData.type,
@@ -410,7 +410,7 @@ class SceneManager {
     if (typeof updateScenePanel === 'function') updateScenePanel();
     this.saveScenes();
     return true;
-}   
+}
 
     deleteScene(sceneId) {
         const index = this.scenes.findIndex(s => s.id === sceneId);
