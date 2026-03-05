@@ -281,23 +281,38 @@ class SceneManager {
             if (typeof updateScenePanel === 'function') updateScenePanel();
         };
     }
-
-    saveScenes() {
-        if (!this.db) return;
-        const tx = this.db.transaction('scenes', 'readwrite');
-        const store = tx.objectStore('scenes');
-        store.clear();
+saveScenes() {
+    if (!this.db) return;
+    const tx = this.db.transaction('scenes', 'readwrite');
+    const store = tx.objectStore('scenes');
+    store.clear();
+    
+    // دمج المسارات والقياسات مع المشاهد قبل الحفظ
+    this.scenes = this.scenes.map(scene => {
+        // الحصول على المسارات المحفوظة من pathsStorage
+        let scenePaths = [];
+        if (this.pathsStorage && this.pathsStorage[scene.id]) {
+            scenePaths = this.pathsStorage[scene.id];
+        } else if (scene.paths) {
+            scenePaths = scene.paths;
+        }
         
-        // دمج القياسات مع المشاهد قبل الحفظ
-        this.scenes = this.scenes.map(scene => ({
-            ...scene,
-            measurements: this.measurements[scene.id] || []
-        }));
-        
-        this.scenes.forEach(scene => store.add(scene));
-        console.log('✅ تم حفظ المشاهد');
-        if (typeof updateScenePanel === 'function') updateScenePanel();
-    }
+        return {
+            id: scene.id,
+            name: scene.name,
+            originalImage: scene.originalImage,
+            paths: scenePaths,  // ✅ حفظ المسارات
+            hotspots: scene.hotspots || [],
+            measurements: this.measurements[scene.id] || [],  // ✅ حفظ القياسات
+            created: scene.created,
+            order: scene.order
+        };
+    });
+    
+    this.scenes.forEach(scene => store.add(scene));
+    console.log('✅ تم حفظ المشاهد مع المسارات والقياسات');
+    if (typeof updateScenePanel === 'function') updateScenePanel();
+}
 
    async addScene(name, imageFile) {
     return new Promise((resolve, reject) => {
