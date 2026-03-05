@@ -2961,22 +2961,28 @@ if (document.readyState === 'complete') {
 // =======================================
 // إجبار ظهور شريط التمرير
 // =======================================
-function forceScrollbar() {
+function fixScenePanelScroll() {
     const sceneList = document.getElementById('sceneList');
-    if (!sceneList) return;
+    const scenePanel = document.getElementById('scenePanel');
     
-    // إضافة بعض الأنماط مباشرة للتأكد
-    sceneList.style.overflowY = 'auto';
-    sceneList.style.maxHeight = 'calc(60vh - 50px)';
+    if (!sceneList || !scenePanel) return;
     
-    // مراقبة إضافة مشاهد جديدة
-    const observer = new MutationObserver(() => {
+    function updateScrollHeight() {
+        const panelHeight = scenePanel.clientHeight;
+        // ✅ تم التعديل هنا
+        const header = document.querySelector('.scene-panel .panel-header');
+        const headerHeight = header ? header.clientHeight : 50;
+        const availableHeight = panelHeight - headerHeight - 20;
+        
+        sceneList.style.maxHeight = availableHeight + 'px';
         sceneList.style.overflowY = 'auto';
-    });
+        console.log('📐 تحديث ارتفاع السكرول:', availableHeight);
+    }
     
-    observer.observe(sceneList, { childList: true, subtree: true });
+    updateScrollHeight();
+    window.addEventListener('resize', updateScrollHeight);
     
-    console.log('✅ تم تفعيل شريط التمرير');
+    console.log('✅ تم تفعيل السكرول الذكي');
 }
 
 // استدعاء الدالة بعد تحميل الصفحة
