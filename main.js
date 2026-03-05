@@ -2923,53 +2923,9 @@ function fixScenePanelScroll() {
     
     if (!sceneList || !scenePanel) return;
     
-    // حساب الارتفاع المناسب ديناميكياً
     function updateScrollHeight() {
         const panelHeight = scenePanel.clientHeight;
-        const headerHeight = document.querySelector('.scene-panel .panel-header')?.clientHeight || 50;
-        const availableHeight = panelHeight - headerHeight - 20; // 20px مسافة للأمان
-        
-        sceneList.style.maxHeight = availableHeight + 'px';
-        console.log('📐 تحديث ارتفاع السكرول:', availableHeight);
-    }
-    
-    // تحديث عند تحميل الصفحة
-    updateScrollHeight();
-    
-    // تحديث عند تغيير حجم النافذة
-    window.addEventListener('resize', updateScrollHeight);
-    
-    // تحديث عند إضافة/حذف مشاهد
-    const originalUpdatePanel = window.updateScenePanel;
-    if (originalUpdatePanel) {
-        window.updateScenePanel = function() {
-            originalUpdatePanel();
-            setTimeout(updateScrollHeight, 100); // تأخير بسيط للتأكد من اكتمال التحديث
-        };
-    }
-    
-    console.log('✅ تم تفعيل السكرول الذكي');
-}
-
-// استدعاء الدالة بعد تحميل كل شيء
-if (document.readyState === 'complete') {
-    fixScenePanelScroll();
-} else {
-    window.addEventListener('load', fixScenePanelScroll);
-}
-
-// =======================================
-// إجبار ظهور شريط التمرير
-// =======================================
-function fixScenePanelScroll() {
-    const sceneList = document.getElementById('sceneList');
-    const scenePanel = document.getElementById('scenePanel');
-    
-    if (!sceneList || !scenePanel) return;
-    
-    function updateScrollHeight() {
-        const panelHeight = scenePanel.clientHeight;
-        // ✅ تم التعديل هنا
+        // ✅ تم التعديل هنا (إزالة ?.)
         const header = document.querySelector('.scene-panel .panel-header');
         const headerHeight = header ? header.clientHeight : 50;
         const availableHeight = panelHeight - headerHeight - 20;
@@ -2986,10 +2942,13 @@ function fixScenePanelScroll() {
 }
 
 // استدعاء الدالة بعد تحميل الصفحة
-if (document.readyState === 'complete') {
-    forceScrollbar();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(fixScenePanelScroll, 200);
+    });
 } else {
-    window.addEventListener('load', forceScrollbar);
+    setTimeout(fixScenePanelScroll, 200);
 }
+
 // بدء التشغيل
 init();
