@@ -411,7 +411,7 @@ class SceneManager {
     this.saveScenes();
     return true;
 }
-this.currentScene = sceneData;
+
 
         // تنظيف المشهد الحالي
         paths.forEach(p => scene.remove(p));
