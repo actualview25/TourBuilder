@@ -242,6 +242,7 @@ class SceneManager {
         this.currentSceneIndex = 0;
         this.db = null;
         this.measurements = {}; // تخزين القياسات لكل مشهد
+        this.pathsStorage = {};  //
         this.initDB();
     }
 
@@ -356,7 +357,7 @@ class SceneManager {
         this.saveScenes();
     }
 
- // =======================================
+// =======================================
 // التبديل بين المشاهد (داخل SceneManager)
 // =======================================
 switchToScene(sceneId) {
@@ -379,13 +380,10 @@ switchToScene(sceneId) {
             }))
         }));
         
+        // حفظ في pathsStorage
+        this.pathsStorage[this.currentScene.id] = pathsData;
         this.currentScene.paths = pathsData;
         this.saveScenes();
-        
-        // ✅ حفظ في ProjectManager أيضاً
-        if (window.projectManager && window.projectManager.currentProject) {
-            window.projectManager.saveCurrentProject(paths, null);
-        }
     }
 
     this.currentScene = sceneData;
@@ -400,42 +398,21 @@ switchToScene(sceneId) {
         loadSceneImage(sceneData.originalImage);
     }
 
-    // ===== إعادة بناء المسارات المحفوظة =====
-    if (sceneData.paths && sceneData.paths.length > 0) {
-        console.log('🔄 استعادة مسارات:', sceneData.paths.length);
-        
-        sceneData.paths.forEach(pathData => {
-            // تحويل النقاط المحفوظة إلى THREE.Vector3
-            const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-            
-            // حفظ النوع الحالي مؤقتاً
-            const oldType = currentPathType;
-            
-            // تعيين نوع المسار
-            currentPathType = pathData.type;
-            
-            // إنشاء المسار (دالة createStraightPath موجودة في النطاق العام)
-            if (typeof createStraightPath === 'function') {
-                createStraightPath(points);
-            }
-            
-            // إعادة النوع الأصلي
-            currentPathType = oldType;
-        });
-    } else {
-        console.log('📭 لا توجد مسارات محفوظة لهذا المشهد');
+    // ===== استعادة المسارات (مثل القياسات) =====
+    if (typeof showPathsForScene === 'function') {
+        showPathsForScene(sceneId);
     }
 
-    // إعادة بناء الهوتسبوتات
+    // استعادة القياسات
+    if (sceneData.measurements && typeof showMeasurementsForScene === 'function') {
+        showMeasurementsForScene(sceneId);
+    }
+
+    // استعادة الهوتسبوتات
     if (sceneData.hotspots && typeof HotspotSystem !== 'undefined') {
         HotspotSystem.rebuild(sceneData.hotspots);
     } else if (typeof HotspotSystem !== 'undefined') {
         HotspotSystem.clear();
-    }
-
-    // إظهار القياسات المحفوظة
-    if (sceneData.measurements && typeof showMeasurementsForScene === 'function') {
-        showMeasurementsForScene(sceneId);
     }
 
     // تحديث لوحة المشاهد
@@ -1921,6 +1898,59 @@ function showMeasurementsForScene(sceneId) {
     });
 }
 // =======================================
+// إظهار المسارات المحفوظة لمشهد معين
+// =======================================
+function showPathsForScene(sceneId) {
+    if (!sceneManager) return;
+    
+    // إزالة المسارات القديمة
+    paths.forEach(p => scene.remove(p));
+    paths = [];
+    
+    // الحصول على المسارات المحفوظة
+    let scenePaths = [];
+    
+    // من pathsStorage أولاً
+    if (sceneManager.pathsStorage && sceneManager.pathsStorage[sceneId]) {
+        scenePaths = sceneManager.pathsStorage[sceneId];
+    } 
+    // من المشهد الحالي ثانياً
+    else if (sceneManager.currentScene && sceneManager.currentScene.paths) {
+        scenePaths = sceneManager.currentScene.paths;
+    }
+    
+    // إعادة بناء المسارات
+    if (scenePaths && scenePaths.length > 0) {
+        console.log('🔄 استعادة', scenePaths.length, 'مسار');
+        
+        scenePaths.forEach(pathData => {
+            if (!pathData.points || pathData.points.length < 2) return;
+            
+            const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+            
+            // حفظ النوع الحالي
+            const oldType = currentPathType;
+            
+            // تعيين نوع المسار
+            if (pathData.type) {
+                currentPathType = pathData.type;
+            }
+            
+            // إنشاء المسار
+            if (typeof createStraightPath === 'function') {
+                createStraightPath(points);
+            }
+            
+            // إعادة النوع الأصلي
+            currentPathType = oldType;
+        });
+        
+        console.log('✅ تم استعادة', scenePaths.length, 'مسار');
+    } else {
+        console.log('📭 لا توجد مسارات محفوظة لهذا المشهد');
+    }
+}
+// =======================================
 // ٨. دوال الرسم (محدثة)
 // =======================================
 function setupMarkerPreview() {
@@ -2039,7 +2069,7 @@ function clearCurrentDrawing() {
 }
 
 // =======================================
-// حفظ المسار الحالي
+// حفظ المسار الحالي (نسخة محسنة)
 // =======================================
 function saveCurrentPath() {
     if (selectedPoints.length < 2) {
@@ -2051,9 +2081,10 @@ function saveCurrentPath() {
     createStraightPath(selectedPoints);
     clearCurrentDrawing();
     
-    // حفظ في SceneManager
     if (sceneManager && sceneManager.currentScene) {
-        // تحويل المسارات إلى بيانات قابلة للحفظ
+        const sceneId = sceneManager.currentScene.id;
+        
+        // تجهيز بيانات المسارات
         const pathsData = paths.map(p => ({
             type: p.userData.type,
             color: '#' + pathColors[p.userData.type].toString(16).padStart(6, '0'),
@@ -2064,20 +2095,27 @@ function saveCurrentPath() {
             }))
         }));
         
-        // حفظ في المشهد الحالي
+        // ✅ حفظ في pathsStorage (مثل القياسات)
+        sceneManager.pathsStorage[sceneId] = pathsData;
+        
+        // حفظ في المشهد أيضاً
         sceneManager.currentScene.paths = pathsData;
+        
+        // حفظ في IndexedDB
         sceneManager.saveScenes();
         
-        // ✅ حفظ في ProjectManager (مثل النسخة القديمة)
+        // حفظ في ProjectManager (اختياري)
         if (projectManager && projectManager.currentProject) {
             projectManager.saveCurrentProject(paths, null);
         }
         
-        console.log(`✅ تم حفظ ${paths.length} مسار في المشهد: ${sceneManager.currentScene.name}`);
+        console.log(`✅ تم حفظ ${pathsData.length} مسار في المشهد: ${sceneManager.currentScene.name}`);
+        alert(`✅ تم تثبيت ${pathsData.length} مسار بنجاح`);
     } else {
         console.warn('⚠️ لا يوجد مشهد نشط لحفظ المسارات');
     }
 }
+
 function createStraightPath(points) {
     if (points.length < 2) return;
     
