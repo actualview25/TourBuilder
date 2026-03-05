@@ -1384,58 +1384,80 @@ return `
             });
         }
         
-        function loadScene(index) {
-            const sceneData = scenes[index];
-            if (!sceneData) return;
+      function loadScene(index) {
+    const sceneData = scenes[index];
+    if (!sceneData) return;
+    
+    currentSceneIndex = index;
+    
+    if (sphereMesh) scene3D.remove(sphereMesh);
+    document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
+    allPaths.forEach(p => scene3D.remove(p));
+    allPaths = [];
+    
+    new THREE.TextureLoader().load(sceneData.image, function(texture) {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.x = -1;
+        
+        sphereMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(500, 128, 128),
+            new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide })
+        );
+        scene3D.add(sphereMesh);
+        
+        // ✅ الأهم: إعادة بناء المسارات
+        if (sceneData.paths && sceneData.paths.length > 0) {
+            console.log('🔄 بناء', sceneData.paths.length, 'مسار في الجولة المصدرة');
             
-            currentSceneIndex = index;
-            
-            if (sphereMesh) scene3D.remove(sphereMesh);
-            document.querySelectorAll('.hotspot-marker').forEach(el => el.remove());
-            allPaths.forEach(p => scene3D.remove(p));
-            allPaths = [];
-            
-            new THREE.TextureLoader().load(sceneData.image, function(texture) {
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.x = -1;
+            sceneData.paths.forEach(pathData => {
+                if (!pathData.points || pathData.points.length < 2) return;
                 
-                sphereMesh = new THREE.Mesh(
-                    new THREE.SphereGeometry(500, 128, 128),
-                    new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide })
-                );
-                scene3D.add(sphereMesh);
+                // تحديد اللون
+                const color = pathData.color || '#ffaa44';
                 
-                if (sceneData.paths) {
-                    sceneData.paths.forEach(pathData => {
-                        const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                        for (let i = 0; i < points.length - 1; i++) {
-                            const start = points[i];
-                            const end = points[i + 1];
-                            const direction = new THREE.Vector3().subVectors(end, start);
-                            const distance = direction.length();
-                            if (distance < 5) continue;
-                            
-                            const cylinder = new THREE.Mesh(
-                                new THREE.CylinderGeometry(3.5, 3.5, distance, 12),
-                                new THREE.MeshStandardMaterial({ 
-                                    color: pathData.color, 
-                                    emissive: pathData.color, 
-                                    emissiveIntensity: 0.3 
-                                })
-                            );
-                            
-                            const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-                            cylinder.position.copy(midpoint);
-                            cylinder.lookAt(end);
-                            cylinder.rotateX(Math.PI / 2);
-                            cylinder.userData = { type: pathData.type };
-                            
-                            scene3D.add(cylinder);
-                            allPaths.push(cylinder);
-                        }
-                    });
+                // تحويل النقاط
+                const points = pathData.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                
+                // بناء المسار
+                for (let i = 0; i < points.length - 1; i++) {
+                    const start = points[i];
+                    const end = points[i + 1];
+                    
+                    const direction = new THREE.Vector3().subVectors(end, start);
+                    const distance = direction.length();
+                    
+                    if (distance < 0.5) continue;
+                    
+                    const cylinder = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.3, 0.3, distance, 8),
+                        new THREE.MeshStandardMaterial({ 
+                            color: color,
+                            emissive: color
+                        })
+                    );
+                    
+                    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+                    cylinder.position.copy(midpoint);
+                    
+                    cylinder.quaternion.setFromUnitVectors(
+                        new THREE.Vector3(0, 1, 0),
+                        direction.clone().normalize()
+                    );
+                    
+                    cylinder.userData = { type: pathData.type };
+                    scene3D.add(cylinder);
+                    allPaths.push(cylinder);
                 }
+            });
+            
+            console.log('✅ تم بناء', allPaths.length, 'مقطع مسار');
+        }
+        
+        setTimeout(rebuildHotspots, 200);
+        updateSceneList();
+    });
+}
                 
                 setTimeout(rebuildHotspots, 200);
                 loadMeasurements(sceneData);
