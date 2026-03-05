@@ -2285,7 +2285,6 @@ function updateScenePanel() {
     
     if (!sceneManager || !sceneManager.scenes) return;
     
-    // ترتيب حسب order (الأقدم أولاً)
     const sortedScenes = [...sceneManager.scenes].sort((a, b) => (a.order || 0) - (b.order || 0));
     
     sortedScenes.forEach((scene, index) => {
@@ -2295,8 +2294,10 @@ function updateScenePanel() {
         if (sceneManager.currentScene && sceneManager.currentScene.id === scene.id) {
             item.classList.add('active');
         }
-        const infoCount = scene.hotspots?.filter(h => h.type === 'INFO').length || 0;
-        const sceneCount = scene.hotspots?.filter(h.type === 'SCENE').length || 0;
+        
+        // ✅ تصحيح الخطأ هنا
+        const infoCount = scene.hotspots ? scene.hotspots.filter(item => item.type === 'INFO').length : 0;
+        const sceneCount = scene.hotspots ? scene.hotspots.filter(item => item.type === 'SCENE').length : 0;
         const totalPoints = infoCount + sceneCount;
         
         item.innerHTML = `
@@ -2324,14 +2325,14 @@ function updateScenePanel() {
         list.appendChild(item);
     });
 
-    // سكرول تلقائي للمشهد النشط
     setTimeout(() => {
         const activeItem = list.querySelector('.scene-item.active');
         if (activeItem) {
             activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }, 100);
-} // ✅ قوس إغلاق واحد فقط للدالة
+}
+
     
 // =======================================
 // تفعيل خاصية السحب والترتيب للمشاهد
