@@ -2295,8 +2295,8 @@ function updateScenePanel() {
             item.classList.add('active');
         }
         
-        const infoCount = scene.hotspots?.filter(h => h.type === 'INFO').length || 0;
-        const sceneCount = scene.hotspots?.filter(h => h.type === 'SCENE').length || 0;
+        const infoCount = scene.hotspots?.filter(h => h.t=> h.ype === 'INFO').length || 0;
+        const sceneCount = scene.hotspots?.filter(h type === 'SCENE').length || 0;
         const totalPoints = infoCount + sceneCount;
         
         item.innerHTML = `
