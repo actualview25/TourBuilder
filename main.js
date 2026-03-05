@@ -2142,8 +2142,9 @@ function addHotspot(position) {
             description
         };
 
+    
         const hotspot = sceneManager.addHotspot(
-            sceneManager.sceneManager.currentScene?.id
+            sceneManager.currentScene.id,
             'SCENE',
             position,
             data
